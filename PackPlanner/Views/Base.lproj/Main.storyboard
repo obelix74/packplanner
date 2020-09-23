@@ -175,9 +175,14 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <searchBar key="tableHeaderView" contentMode="redraw" id="WkV-KP-V7v">
+                            <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                            <textInputTraits key="textInputTraits"/>
+                        </searchBar>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="gearCell" rowHeight="107" id="wvm-nU-3o3" customClass="GearTableViewCell" customModule="PackPlanner" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="28" width="414" height="107"/>
+                                <rect key="frame" x="0.0" y="72" width="414" height="107"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="wvm-nU-3o3" id="y8c-8g-g2d">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="107"/>
@@ -253,6 +258,7 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="addButton" destination="ewb-zc-CJx" id="AB0-tP-RVS"/>
+                        <outlet property="searchBar" destination="WkV-KP-V7v" id="dGH-b3-Omh"/>
                         <segue destination="g6F-tN-j1m" kind="presentation" identifier="showSettings" id="aaN-Om-x4P"/>
                         <segue destination="1Ka-ZR-cok" kind="show" identifier="showAddGear" id="22E-ie-WwG"/>
                     </connections>

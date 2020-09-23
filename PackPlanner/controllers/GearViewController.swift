@@ -22,13 +22,14 @@ class GearViewController: UITableViewController, ModalTransitionListener, SwipeT
     var categoryMap : [String: [Gear]]? = [:]
     var categoriesSorted : [String]?
     let settings : Settings = SettingsManager.SINGLETON.settings
-    
+    @IBOutlet weak var searchBar: UISearchBar!
     
     @IBOutlet weak var addButton: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.rowHeight = 100.0
+        searchBar.delegate = self 
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -46,7 +47,7 @@ class GearViewController: UITableViewController, ModalTransitionListener, SwipeT
         navBar.scrollEdgeAppearance = navBarAppearance
         
         navBar.tintColor = .flatWhite()
-        //        searchBar.barTintColor = .flatWhite()
+        searchBar.barTintColor = .flatWhite()
         addButton.tintColor = .white
     }
     
@@ -73,16 +74,12 @@ class GearViewController: UITableViewController, ModalTransitionListener, SwipeT
         if (gears?.count == 0) {
             cell.nameLabel.text = "No gear found"
         } else {
-            let weightUnit = self.settings.imperial ? "Oz" : "Grams"
-            
             let section = indexPath.section
             let category = categoriesSorted?[section]
             if (category != nil) {
                 let gearsInSection = categoryMap![category!]
                 let gear = gearsInSection![indexPath.row]
-                cell.nameLabel.text = gear.name
-                cell.descriptionLabel.text = gear.desc
-                cell.weightLabel.text = String(format:"%.2f", gear.weight()) + " " + weightUnit
+                cell.existingGear = gear
                 cell.accessoryType = .disclosureIndicator;
             }
             
@@ -106,8 +103,13 @@ class GearViewController: UITableViewController, ModalTransitionListener, SwipeT
         performSegue(withIdentifier: "showAddGear", sender: self)
     }
     
-    func loadGear() {
+    func loadGear(search: String = "") {
         gears = realm.objects(Gear.self)
+
+        if (!search.isEmpty) {
+            gears = gears?.filter("name CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "name", ascending: true)
+        }
+        
         categoryMap = [:]
         gears?.forEach({ (gear) in
             var gearArray = categoryMap?[gear.category]
@@ -185,5 +187,23 @@ class GearViewController: UITableViewController, ModalTransitionListener, SwipeT
         }))
         
         present(refreshAlert, animated: true, completion: nil)
+    }
+}
+
+//MARK: - Searchbar delegate methods
+
+extension GearViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        print("searchBar delegate called")
+        loadGear(search: searchBar.text!)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadGear()
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
     }
 }
