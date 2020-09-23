@@ -64,6 +64,8 @@ class AddGearViewController: FormViewController {
         navBar.scrollEdgeAppearance = navBarAppearance
         
         navBar.tintColor = .flatWhite()
+        
+        self.title = existingGear?.name ?? "Add gear"
     }
     
     fileprivate func createTextField(_ nameOfTextField: String,
@@ -94,7 +96,6 @@ class AddGearViewController: FormViewController {
     }
     
     private func configure() {
-        title = "Add Gear"
         tableView.contentInset.bottom = 30
         
         // Create RowFormers

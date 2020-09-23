@@ -9,23 +9,30 @@ import UIKit
 import RealmSwift
 import ChameleonFramework
 
-class GearViewController: UITableViewController {
+class GearViewController: UITableViewController, ModalTransitionListener {
+    
+    func popoverDismissed() {
+        tableView.reloadData()
+    }
+    
     
     let realm = try! Realm()
     var gears : Results<Gear>?
+    var categoryMap : [String: [Gear]]? = [:]
+    var categoriesSorted : [String]?
     let settings : Settings = SettingsManager.SINGLETON.settings
-
+    
     
     @IBOutlet weak var addButton: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.rowHeight = 80.0
+        tableView.rowHeight = 100.0
     }
     
     override func viewWillAppear(_ animated: Bool) {
         loadGear()
-
+        
         guard let navBar = navigationController?.navigationBar else { fatalError("Navigation controller does not exist.")
         }
         let navBarAppearance = UINavigationBarAppearance()
@@ -38,19 +45,24 @@ class GearViewController: UITableViewController {
         navBar.scrollEdgeAppearance = navBarAppearance
         
         navBar.tintColor = .flatWhite()
-//        searchBar.barTintColor = .flatWhite()
+        //        searchBar.barTintColor = .flatWhite()
         addButton.tintColor = .white
     }
-
-
+    
+    
     // MARK: - Table view data source
+    
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return categoriesSorted?.count ?? 0
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return categoriesSorted?[section]
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let numberOfGears = gears?.count
-        if numberOfGears == 0 {
-            return 1
-        } else {
-            return gears!.count
-        }
+        let category = categoriesSorted?[section]
+        return categoryMap?[category!]?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -59,21 +71,31 @@ class GearViewController: UITableViewController {
             cell.nameLabel.text = "No gear found"
         } else {
             let weightUnit = self.settings.imperial ? "Oz" : "Grams"
-
-            let gear = gears?[indexPath.row]
-            cell.nameLabel.text = gear?.name
-            cell.descriptionLabel.text = gear?.desc
-            if let weight = gear?.weight() {
-                cell.weightLabel.text = String(format:"%.2f", weight) + " " + weightUnit
+            
+            let section = indexPath.section
+            let category = categoriesSorted?[section]
+            if (category != nil) {
+                let gearsInSection = categoryMap![category!]
+                let gear = gearsInSection![indexPath.row]
+                cell.nameLabel.text = gear.name
+                cell.descriptionLabel.text = gear.desc
+                cell.weightLabel.text = String(format:"%.2f", gear.weight()) + " " + weightUnit
+                cell.accessoryType = .disclosureIndicator;
             }
         }
         return cell
     }
     
+    override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        view.tintColor = UIColor.flatPlumDark()
+        let header = view as! UITableViewHeaderFooterView
+        header.textLabel?.textColor = UIColor.white
+    }
     
     @IBAction func showSettings(_ sender: UIBarButtonItem) {
+        ModalTransitionMediator.instance.setListener(listener: self)
         performSegue(withIdentifier: "showSettings", sender: self)
-
+        
     }
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
@@ -82,6 +104,17 @@ class GearViewController: UITableViewController {
     
     func loadGear() {
         gears = realm.objects(Gear.self)
+        categoryMap = [:]
+        gears?.forEach({ (gear) in
+            var gearArray = categoryMap?[gear.category]
+            if (gearArray == nil) {
+                gearArray = []
+            }
+            gearArray?.append(gear)
+            categoryMap?[gear.category] = gearArray
+        })
+        
+        categoriesSorted = categoryMap?.keys.sorted()
         tableView.reloadData()
     }
     

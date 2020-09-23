@@ -51,5 +51,6 @@ class SettingsViewController: UIViewController {
     
     @IBAction func doneButtonSelected(_ sender: Any) {
         dismiss(animated: true, completion: nil)
+        ModalTransitionMediator.instance.sendPopoverDismissed(modelChanged: true)
     }
 }
