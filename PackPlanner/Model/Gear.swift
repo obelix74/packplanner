@@ -13,12 +13,10 @@ class Gear : Object {
     @objc dynamic var desc: String = ""
     @objc dynamic var weightInGrams : Double = 0.0
     @objc dynamic var category: String = "Unknown"
-    @objc dynamic var consumable: Bool = false
-    @objc dynamic var wornOnBody: Bool = false
     
     let conversion : Double = 28.34952
     
-    func setValues(name: String, desc: String, weight: Double, category: String, consumable: Bool, wornOnBody: Bool) {
+    func setValues(name:String, desc: String, weight: Double, category: String)  {
         self.name = name
         self.desc = desc
         if (SettingsManager.SINGLETON.settings.imperial) {
@@ -27,8 +25,6 @@ class Gear : Object {
             self.weightInGrams = weight
         }
         self.category = category
-        self.consumable = consumable
-        self.wornOnBody = wornOnBody
     }
     
     func weight() -> Double {
