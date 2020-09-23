@@ -154,6 +154,7 @@ class GearListController: UITableViewController, ModalTransitionListener, SwipeT
         
         let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
             self.updateModel(at: indexPath)
+            action.fulfill(with: .delete)
         }
         
         // customize the action appearance

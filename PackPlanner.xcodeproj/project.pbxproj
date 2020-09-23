@@ -12,6 +12,8 @@
 		A93569452518577400542BCC /* Gear.swift in Sources */ = {isa = PBXBuildFile; fileRef = A93569442518577400542BCC /* Gear.swift */; };
 		A935694A251859C300542BCC /* Categories.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9356949251859C300542BCC /* Categories.swift */; };
 		A94788CF251B190F0017F916 /* ModalTransitionListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788CE251B190F0017F916 /* ModalTransitionListener.swift */; };
+		A94788DF251BBF1E0017F916 /* Hike.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788DE251BBF1E0017F916 /* Hike.swift */; };
+		A94788E4251BBF4B0017F916 /* HikeGear.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788E3251BBF4B0017F916 /* HikeGear.swift */; };
 		A95F90132515B94D00A73E40 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95F90122515B94D00A73E40 /* AppDelegate.swift */; };
 		A95F90152515B94D00A73E40 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95F90142515B94D00A73E40 /* SceneDelegate.swift */; };
 		A95F901A2515B94D00A73E40 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A95F90182515B94D00A73E40 /* Main.storyboard */; };
@@ -57,6 +59,8 @@
 		A93569442518577400542BCC /* Gear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gear.swift; sourceTree = "<group>"; };
 		A9356949251859C300542BCC /* Categories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Categories.swift; sourceTree = "<group>"; };
 		A94788CE251B190F0017F916 /* ModalTransitionListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalTransitionListener.swift; sourceTree = "<group>"; };
+		A94788DE251BBF1E0017F916 /* Hike.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hike.swift; sourceTree = "<group>"; };
+		A94788E3251BBF4B0017F916 /* HikeGear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeGear.swift; sourceTree = "<group>"; };
 		A95F900F2515B94D00A73E40 /* PackPlanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PackPlanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A95F90122515B94D00A73E40 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A95F90142515B94D00A73E40 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -125,6 +129,8 @@
 				A935693F251854AF00542BCC /* SettingsManager.swift */,
 				A93569442518577400542BCC /* Gear.swift */,
 				A9356949251859C300542BCC /* Categories.swift */,
+				A94788DE251BBF1E0017F916 /* Hike.swift */,
+				A94788E3251BBF4B0017F916 /* HikeGear.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -406,7 +412,9 @@
 				A9FC0F9A2519B293009E6993 /* SampleFormerController.swift in Sources */,
 				A9FC0F9F251AC872009E6993 /* GearTableViewCell.swift in Sources */,
 				A95F90522515D96900A73E40 /* GearListController.swift in Sources */,
+				A94788DF251BBF1E0017F916 /* Hike.swift in Sources */,
 				A9FC0F952519B1B7009E6993 /* TextSelectorViewController.swift in Sources */,
+				A94788E4251BBF4B0017F916 /* HikeGear.swift in Sources */,
 				A94788CF251B190F0017F916 /* ModalTransitionListener.swift in Sources */,
 				A95F90132515B94D00A73E40 /* AppDelegate.swift in Sources */,
 				A9FC0F902519B11D009E6993 /* FormerInputAccessoryView.swift in Sources */,

@@ -13,6 +13,7 @@ class Gear : Object {
     @objc dynamic var desc: String = ""
     @objc dynamic var weightInGrams : Double = 0.0
     @objc dynamic var category: String = "Unknown"
+    var hikeGear = LinkingObjects(fromType: HikeGear.self, property: "gear")
     
     let conversion : Double = 28.34952
     
