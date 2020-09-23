@@ -10,7 +10,7 @@ import RealmSwift
 import ChameleonFramework
 import SwipeCellKit
 
-class GearViewController: UITableViewController, ModalTransitionListener, SwipeTableViewCellDelegate {
+class GearListController: UITableViewController, ModalTransitionListener, SwipeTableViewCellDelegate {
     
     func popoverDismissed() {
         tableView.reloadData()
@@ -29,7 +29,7 @@ class GearViewController: UITableViewController, ModalTransitionListener, SwipeT
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.rowHeight = 100.0
-        searchBar.delegate = self 
+        searchBar.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -192,7 +192,7 @@ class GearViewController: UITableViewController, ModalTransitionListener, SwipeT
 
 //MARK: - Searchbar delegate methods
 
-extension GearViewController: UISearchBarDelegate {
+extension GearListController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         print("searchBar delegate called")
         loadGear(search: searchBar.text!)

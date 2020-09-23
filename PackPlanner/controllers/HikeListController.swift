@@ -7,7 +7,7 @@
 
 import UIKit
 
-class HikeViewController: UITableViewController {
+class HikeListController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()

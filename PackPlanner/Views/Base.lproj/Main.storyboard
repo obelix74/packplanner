@@ -11,7 +11,7 @@
         <!--HikeViewController-->
         <scene sceneID="nF1-MP-doH">
             <objects>
-                <tableViewController id="UMs-OL-pHD" userLabel="HikeViewController" customClass="HikeViewController" customModule="PackPlanner" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="UMs-OL-pHD" userLabel="HikeViewController" customClass="HikeListController" customModule="PackPlanner" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="3AA-cY-5NG">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -170,7 +170,7 @@
         <!--Gear List-->
         <scene sceneID="gW2-Vg-8tU">
             <objects>
-                <tableViewController id="f9g-7o-m0v" customClass="GearViewController" customModule="PackPlanner" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="f9g-7o-m0v" customClass="GearListController" customModule="PackPlanner" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="7Nb-WO-qdh">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
