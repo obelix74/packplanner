@@ -6,8 +6,9 @@
 //
 
 import UIKit
+import SwipeCellKit
 
-class GearTableViewCell: UITableViewCell {
+class GearTableViewCell: SwipeTableViewCell {
 
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var weightLabel: UILabel!

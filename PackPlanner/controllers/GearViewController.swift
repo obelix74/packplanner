@@ -8,8 +8,9 @@
 import UIKit
 import RealmSwift
 import ChameleonFramework
+import SwipeCellKit
 
-class GearViewController: UITableViewController, ModalTransitionListener {
+class GearViewController: UITableViewController, ModalTransitionListener, SwipeTableViewCellDelegate {
     
     func popoverDismissed() {
         tableView.reloadData()
@@ -67,6 +68,8 @@ class GearViewController: UITableViewController, ModalTransitionListener {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "gearCell", for: indexPath) as! GearTableViewCell
+        cell.delegate = self
+        
         if (gears?.count == 0) {
             cell.nameLabel.text = "No gear found"
         } else {
@@ -82,6 +85,7 @@ class GearViewController: UITableViewController, ModalTransitionListener {
                 cell.weightLabel.text = String(format:"%.2f", gear.weight()) + " " + weightUnit
                 cell.accessoryType = .disclosureIndicator;
             }
+            
         }
         return cell
     }
@@ -116,6 +120,15 @@ class GearViewController: UITableViewController, ModalTransitionListener {
         
         categoriesSorted = categoryMap?.keys.sorted()
         tableView.reloadData()
+        
+        if (categoryMap!.isEmpty) {
+            let refreshAlert = UIAlertController(title: "No gear found", message: "Please add some :)", preferredStyle: UIAlertController.Style.alert)
+            
+            refreshAlert.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: { (action: UIAlertAction!) in
+            }))
+            
+            present(refreshAlert, animated: true, completion: nil)
+        }
     }
     
     //MARK: - Tableview delegate methods
@@ -130,5 +143,47 @@ class GearViewController: UITableViewController, ModalTransitionListener {
                 destinationVC.existingGear = gears?[indexPath.row]
             }
         }
+    }
+    
+    //MARK: Swipe
+    
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
+        guard orientation == .right else { return nil }
+        
+        let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
+            self.updateModel(at: indexPath)
+        }
+        
+        // customize the action appearance
+        deleteAction.image = UIImage(named: "delete-icon")
+        
+        return [deleteAction]
+    }
+    
+    func updateModel(at indexPath: IndexPath) {
+        print("UpdateModel called")
+        let refreshAlert = UIAlertController(title: "Refresh", message: "Are you sure you want to delete? This gear will be removed from all hikes.", preferredStyle: UIAlertController.Style.alert)
+        
+        refreshAlert.addAction(UIAlertAction(title: "Delete", style: .default, handler: { (action: UIAlertAction!) in
+            let section = indexPath.section
+            if let category = self.categoriesSorted?[section] {
+                if let gears = self.categoryMap?[category] {
+                    do {
+                        try self.realm.write {
+                            self.realm.delete(gears[indexPath.row])
+                            self.loadGear()
+                        }
+                    }catch {
+                        print("Error deleting gear \(error)")
+                    }
+                }
+            }
+        }))
+        
+        refreshAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action: UIAlertAction!) in
+            self.tableView.reloadData()
+        }))
+        
+        present(refreshAlert, animated: true, completion: nil)
     }
 }
