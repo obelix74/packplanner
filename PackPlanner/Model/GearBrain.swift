@@ -38,4 +38,38 @@ class GearBrain {
         return gearBrain
     }
     
+    func getGear(indexPath: IndexPath) -> Gear? {
+        let section = indexPath.section
+        let category = self.categoriesSorted?[section]
+        if (category != nil) {
+            let gearsInSection = self.categoryMap![category!]
+            return gearsInSection![indexPath.row]
+        }
+        return nil
+    }
+    
+    func getCategory(section: Int) -> String? {
+        return self.categoriesSorted?[section]
+    }
+    
+    func getGearsForSection(section: Int) -> [Gear]? {
+        let category = getCategory(section: section)
+        return self.categoryMap![category!]
+    }
+    
+    func deleteGear(gear: Gear) {
+        do {
+            try self.realm.write {
+                self.realm.delete(gear)
+            }
+        }catch {
+            print("Error deleting gear \(error)")
+        }
+    }
+    
+    func deleteGearAt(indexPath: IndexPath) {
+        if let gear = getGear(indexPath: indexPath) {
+            deleteGear(gear: gear)
+        }
+    }
 }

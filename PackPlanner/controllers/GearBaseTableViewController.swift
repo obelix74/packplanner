@@ -40,12 +40,11 @@ class GearBaseTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return self.gearBrain?.categoriesSorted?[section]
+        return self.gearBrain?.getCategory(section: section)
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let category = self.gearBrain?.categoriesSorted?[section]
-        return self.gearBrain?.categoryMap?[category!]?.count ?? 0
+        return self.gearBrain?.getGearsForSection(section: section)?.count ?? 0
     }
     
     

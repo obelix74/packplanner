@@ -38,13 +38,7 @@ class AddGearToHikeTableViewController: GearBaseTableViewController {
         if (gearBrain?.gears?.count == 0) {
             cell.textLabel?.text = "No gears found"
         } else {
-            let section = indexPath.section
-            let category = gearBrain?.categoriesSorted?[section]
-            if (category != nil) {
-                let gearsInSection = gearBrain?.categoryMap![category!]
-                let gear = gearsInSection![indexPath.row]
-                cell.gear = gear
-            }
+            cell.gear = gearBrain?.getGear(indexPath: indexPath)
         }
         return cell
     }

@@ -37,15 +37,8 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
         if (gearBrain?.gears?.count == 0) {
             cell.nameLabel.text = "No gear found"
         } else {
-            let section = indexPath.section
-            let category = gearBrain?.categoriesSorted?[section]
-            if (category != nil) {
-                let gearsInSection = gearBrain?.categoryMap![category!]
-                let gear = gearsInSection![indexPath.row]
-                cell.existingGear = gear
-                cell.accessoryType = .disclosureIndicator;
-            }
-            
+            cell.existingGear = gearBrain?.getGear(indexPath: indexPath)
+            cell.accessoryType = .disclosureIndicator;
         }
         return cell
     }
@@ -60,7 +53,7 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         performSegue(withIdentifier: "showAddGear", sender: self)
     }
-        
+    
     //MARK: - Tableview delegate methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "showAddGear", sender: self)
@@ -70,14 +63,7 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
         if (segue.identifier == "showAddGear" && tableView.indexPathForSelectedRow != nil) {
             let destinationVC = segue.destination as! AddGearViewController
             if let indexPath = tableView.indexPathForSelectedRow {
-                
-                let section = indexPath.section
-                let category = gearBrain?.categoriesSorted?[section]
-                if (category != nil) {
-                    let gearsInSection = gearBrain?.categoryMap![category!]
-                    let gear = gearsInSection![indexPath.row]
-                    destinationVC.existingGear = gear
-                }
+                destinationVC.existingGear = gearBrain?.getGear(indexPath: indexPath)
             }
         }
     }
@@ -103,19 +89,8 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
         let refreshAlert = UIAlertController(title: "Refresh", message: "Are you sure you want to delete? This gear will be removed from all hikes.", preferredStyle: UIAlertController.Style.alert)
         
         refreshAlert.addAction(UIAlertAction(title: "Delete", style: .default, handler: { (action: UIAlertAction!) in
-            let section = indexPath.section
-            if let category = self.gearBrain?.categoriesSorted?[section] {
-                if let gears = self.gearBrain?.categoryMap?[category] {
-                    do {
-                        try self.gearBrain?.realm.write {
-                            self.gearBrain?.realm.delete(gears[indexPath.row])
-                            self.loadGear()
-                        }
-                    }catch {
-                        print("Error deleting gear \(error)")
-                    }
-                }
-            }
+            self.gearBrain?.deleteGearAt(indexPath: indexPath)
+            self.loadGear()
         }))
         
         refreshAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action: UIAlertAction!) in
