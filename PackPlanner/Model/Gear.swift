@@ -35,4 +35,11 @@ class Gear : Object {
             return self.weightInGrams
         }
     }
+    
+    func weightString() -> String {
+        let wt = weight()
+        let settings : Settings = SettingsManager.SINGLETON.settings
+        let weightUnit = settings.imperial ? "Oz" : "Grams"
+        return String(format:"%.2f", wt) + " " + weightUnit
+    }
 }

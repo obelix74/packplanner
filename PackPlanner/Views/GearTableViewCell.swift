@@ -13,14 +13,12 @@ class GearTableViewCell: SwipeTableViewCell {
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var weightLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
-    let settings : Settings = SettingsManager.SINGLETON.settings
 
     var existingGear : Gear?  {
         didSet {
-            let weightUnit = self.settings.imperial ? "Oz" : "Grams"
             self.nameLabel.text = existingGear!.name
             self.descriptionLabel.text = existingGear!.desc
-            self.weightLabel.text = String(format:"%.2f", existingGear!.weight()) + " " + weightUnit
+            self.weightLabel.text = existingGear?.weightString()
         }
     }
     

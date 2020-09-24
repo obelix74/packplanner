@@ -9,12 +9,8 @@ import UIKit
 import RealmSwift
 
 class GearBaseTableViewController: UITableViewController {
-
-    let realm = try! Realm()
-    var gears : Results<Gear>?
-    var categoryMap : [String: [Gear]]? = [:]
-    var categoriesSorted : [String]?
     let settings : Settings = SettingsManager.SINGLETON.settings
+    var gearBrain : GearBrain?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,40 +36,25 @@ class GearBaseTableViewController: UITableViewController {
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return categoriesSorted?.count ?? 0
+        return self.gearBrain?.categoriesSorted?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return categoriesSorted?[section]
+        return self.gearBrain?.categoriesSorted?[section]
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let category = categoriesSorted?[section]
-        return categoryMap?[category!]?.count ?? 0
+        let category = self.gearBrain?.categoriesSorted?[section]
+        return self.gearBrain?.categoryMap?[category!]?.count ?? 0
     }
     
     
     func loadGear(search: String = "") {
-        gears = realm.objects(Gear.self)
         
-        if (!search.isEmpty) {
-            gears = gears?.filter("name CONTAINS[cd] %@", search).sorted(byKeyPath: "name", ascending: true)
-        }
-        
-        categoryMap = [:]
-        gears?.forEach({ (gear) in
-            var gearArray = categoryMap?[gear.category]
-            if (gearArray == nil) {
-                gearArray = []
-            }
-            gearArray?.append(gear)
-            categoryMap?[gear.category] = gearArray
-        })
-        
-        categoriesSorted = categoryMap?.keys.sorted()
+        self.gearBrain = GearBrain.getFilteredGears(search: search)
         tableView.reloadData()
         
-        if (categoryMap!.isEmpty) {
+        if (self.gearBrain!.categoryMap!.isEmpty) {
             let refreshAlert = UIAlertController(title: "No gear found", message: "Please add some :)", preferredStyle: UIAlertController.Style.alert)
             
             refreshAlert.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: { (action: UIAlertAction!) in

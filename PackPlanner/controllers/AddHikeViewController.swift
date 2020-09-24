@@ -66,7 +66,7 @@ class AddHikeViewController: BaseViewController {
             _ = navigationController?.popViewController(animated: true)
         }
         else {
-            performSegue(withIdentifier: "showHike", sender: self)
+            performSegue(withIdentifier: "addGearToHike", sender: self)
         }
     }
     
@@ -74,6 +74,10 @@ class AddHikeViewController: BaseViewController {
         if (segue.identifier == "showHike") {
             let destinationVC = segue.destination as! HikeDetailViewController
             destinationVC.existingHike = self.hike 
+        }
+        else if (segue.identifier == "addGearToHike") {
+            let destinationVC = segue.destination as! AddGearToHikeTableViewController
+            destinationVC.hike = self.hike 
         }
     }
     

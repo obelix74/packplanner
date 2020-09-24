@@ -33,21 +33,18 @@ class AddGearToHikeTableViewController: GearBaseTableViewController {
 
     // MARK: - Table view data source
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "gearCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "gearCell", for: indexPath) as! AddGearToHikeTableViewCell
         
-        if (gears?.count == 0) {
+        if (gearBrain?.gears?.count == 0) {
             cell.textLabel?.text = "No gears found"
         } else {
             let section = indexPath.section
-            let category = categoriesSorted?[section]
+            let category = gearBrain?.categoriesSorted?[section]
             if (category != nil) {
-                let gearsInSection = categoryMap![category!]
+                let gearsInSection = gearBrain?.categoryMap![category!]
                 let gear = gearsInSection![indexPath.row]
-//                cell.existingGear = gear
-                cell.textLabel?.text = gear.name
-//                cell.accessoryType = .disclosureIndicator;
+                cell.gear = gear
             }
-            
         }
         return cell
     }

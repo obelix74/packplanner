@@ -28,4 +28,8 @@ class SettingsManager {
             self.settings = results.first!
         }
     }
+    
+    func weightUnitString() -> String {
+        return self.settings.imperial ? "(Oz)" : "(Grams)"
+    }
 }

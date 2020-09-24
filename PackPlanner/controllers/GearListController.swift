@@ -34,13 +34,13 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
         let cell = tableView.dequeueReusableCell(withIdentifier: "gearCell", for: indexPath) as! GearTableViewCell
         cell.delegate = self
         
-        if (gears?.count == 0) {
+        if (gearBrain?.gears?.count == 0) {
             cell.nameLabel.text = "No gear found"
         } else {
             let section = indexPath.section
-            let category = categoriesSorted?[section]
+            let category = gearBrain?.categoriesSorted?[section]
             if (category != nil) {
-                let gearsInSection = categoryMap![category!]
+                let gearsInSection = gearBrain?.categoryMap![category!]
                 let gear = gearsInSection![indexPath.row]
                 cell.existingGear = gear
                 cell.accessoryType = .disclosureIndicator;
@@ -70,7 +70,14 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
         if (segue.identifier == "showAddGear" && tableView.indexPathForSelectedRow != nil) {
             let destinationVC = segue.destination as! AddGearViewController
             if let indexPath = tableView.indexPathForSelectedRow {
-                destinationVC.existingGear = gears?[indexPath.row]
+                
+                let section = indexPath.section
+                let category = gearBrain?.categoriesSorted?[section]
+                if (category != nil) {
+                    let gearsInSection = gearBrain?.categoryMap![category!]
+                    let gear = gearsInSection![indexPath.row]
+                    destinationVC.existingGear = gear
+                }
             }
         }
     }
@@ -97,11 +104,11 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
         
         refreshAlert.addAction(UIAlertAction(title: "Delete", style: .default, handler: { (action: UIAlertAction!) in
             let section = indexPath.section
-            if let category = self.categoriesSorted?[section] {
-                if let gears = self.categoryMap?[category] {
+            if let category = self.gearBrain?.categoriesSorted?[section] {
+                if let gears = self.gearBrain?.categoryMap?[category] {
                     do {
-                        try self.realm.write {
-                            self.realm.delete(gears[indexPath.row])
+                        try self.gearBrain?.realm.write {
+                            self.gearBrain?.realm.delete(gears[indexPath.row])
                             self.loadGear()
                         }
                     }catch {

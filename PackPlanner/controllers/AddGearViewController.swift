@@ -12,7 +12,6 @@ import RealmSwift
 
 class AddGearViewController: FormViewController {
     
-    let settings : Settings = SettingsManager.SINGLETON.settings
     @IBOutlet weak var saveButton: UIButton!
     
     var name : String?
@@ -124,7 +123,7 @@ class AddGearViewController: FormViewController {
         
         // Custom Input Accessory View Example
         
-        let weightUnit = self.settings.imperial ? "(Oz)" : "(Grams)"
+        let weightUnit = SettingsManager.SINGLETON.weightUnitString()
         
         let nameTextField = createTextField("Name", text: existingGear?.name, placeHolder: "Enter the name of this gear", number: false) { (text) in
             self.name = text
