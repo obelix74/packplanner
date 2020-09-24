@@ -34,7 +34,7 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
         let cell = tableView.dequeueReusableCell(withIdentifier: "gearCell", for: indexPath) as! GearTableViewCell
         cell.delegate = self
         
-        if (gearBrain?.gears?.count == 0) {
+        if (gearBrain!.isEmpty()) {
             cell.nameLabel.text = "No gear found"
         } else {
             cell.existingGear = gearBrain?.getGear(indexPath: indexPath)

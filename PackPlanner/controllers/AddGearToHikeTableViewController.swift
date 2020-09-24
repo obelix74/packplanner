@@ -10,8 +10,8 @@ import ChameleonFramework
 import RealmSwift
 
 class AddGearToHikeTableViewController: GearBaseTableViewController {
-
-    @IBOutlet weak var searchBar: UISearchBar!
+    
+    @IBOutlet weak var saveButton: UIBarButtonItem!
     
     var hike : Hike? {
         didSet {
@@ -20,7 +20,7 @@ class AddGearToHikeTableViewController: GearBaseTableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        searchBar.delegate = self
+        tableView.allowsMultipleSelection = true
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -28,18 +28,57 @@ class AddGearToHikeTableViewController: GearBaseTableViewController {
         if (hike != nil) {
             self.title = "Adding gear to \(hike!.name)"
         }
+        saveButton.tintColor = .flatWhite()
     }
     
-
+    @IBAction func saveButtonSelected(_ sender: UIBarButtonItem) {
+        let selectedRows = tableView.indexPathsForSelectedRows
+        selectedRows?.forEach({ (indexPath) in
+            let gear = gearBrain?.getGear(indexPath: indexPath)
+            print("Adding gear \(gear!.name)")
+            GearBrain.createHikeGear(gear: gear!, hike: hike!)
+        })
+        
+        performSegue(withIdentifier: "showHikeDetail", sender: self)
+    }
+    
+    override func getGearBrain(_ search: String) -> GearBrain{
+        return GearBrain.getFilteredGearsForExistingHike(hike: hike!)
+    }
+    
+    override func getNoGearMessage() -> [String:String]{
+        var dict : [String:String] = [:]
+        dict["title"] = "No gear found"
+        dict["message"] = "Did you already add all existing gear to this hike?"
+        return dict
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if (segue.identifier == "showHikeDetail") {
+            let destinationVC = segue.destination as! HikeDetailViewController
+            destinationVC.existingHike = hike
+        }
+    }
+    
     // MARK: - Table view data source
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "gearCell", for: indexPath) as! AddGearToHikeTableViewCell
         
-        if (gearBrain?.gears?.count == 0) {
+        if (gearBrain!.isEmpty()) {
             cell.textLabel?.text = "No gears found"
         } else {
             cell.gear = gearBrain?.getGear(indexPath: indexPath)
         }
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cell = tableView.cellForRow(at: indexPath)!
+        cell.accessoryType = .checkmark
+    }
+    
+    override func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        let cell = tableView.cellForRow(at: indexPath)!
+        cell.accessoryType = .none
     }
 }

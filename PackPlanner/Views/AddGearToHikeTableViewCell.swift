@@ -12,7 +12,7 @@ class AddGearToHikeTableViewCell: UITableViewCell {
     var gear: Gear? {
         didSet {
             self.nameLabel.text = gear!.name
-            self.weightLabel.text = String(format:"%.2f", gear!.weight())
+            self.weightLabel.text = gear!.weightString()
         }
     }
     

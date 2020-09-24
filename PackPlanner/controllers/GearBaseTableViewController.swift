@@ -47,20 +47,30 @@ class GearBaseTableViewController: UITableViewController {
         return self.gearBrain?.getGearsForSection(section: section)?.count ?? 0
     }
     
+    func getGearBrain(_ search: String) -> GearBrain{
+        return GearBrain.getFilteredGears(search: search)
+    }
     
     func loadGear(search: String = "") {
-        
-        self.gearBrain = GearBrain.getFilteredGears(search: search)
+        self.gearBrain = getGearBrain(search)
         tableView.reloadData()
         
-        if (self.gearBrain!.categoryMap!.isEmpty) {
-            let refreshAlert = UIAlertController(title: "No gear found", message: "Please add some :)", preferredStyle: UIAlertController.Style.alert)
-            
+        if (self.gearBrain!.isEmpty()) {
+            let dict = getNoGearMessage()
+            let refreshAlert = UIAlertController(title: dict["title"], message: dict["message"], preferredStyle: UIAlertController.Style.alert)
+
             refreshAlert.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: { (action: UIAlertAction!) in
             }))
             
             present(refreshAlert, animated: true, completion: nil)
         }
+    }
+    
+    func getNoGearMessage() -> [String:String]{
+        var dict : [String:String] = [:]
+        dict["title"] = "No gear found"
+        dict["message"] = "Please add new gear"
+        return dict
     }
     
     override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
