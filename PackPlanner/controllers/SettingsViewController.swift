@@ -11,7 +11,7 @@ import RealmSwift
 
 class SettingsViewController: UIViewController {
     
-    @IBOutlet weak var saveButton: UIButton!
+    @IBOutlet weak var dismissButton: UIButton!
     let realm = try! Realm()
     var settings: Settings = SettingsManager.SINGLETON.settings
     @IBOutlet weak var unitOfWeight: UISegmentedControl!
@@ -19,9 +19,9 @@ class SettingsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         let backgroundColor = UIColor.flatRedDark()
-        saveButton.backgroundColor = backgroundColor
-        saveButton.layer.cornerRadius = 25.0
-        saveButton.tintColor = ContrastColorOf(backgroundColor, returnFlat: true)
+        dismissButton.backgroundColor = backgroundColor
+        dismissButton.layer.cornerRadius = 25.0
+        dismissButton.tintColor = ContrastColorOf(backgroundColor, returnFlat: true)
         
         if(settings.imperial) {
             unitOfWeight.selectedSegmentIndex = 0
@@ -48,8 +48,8 @@ class SettingsViewController: UIViewController {
             }
         }
     }
-    
-    @IBAction func doneButtonSelected(_ sender: Any) {
+
+    @IBAction func dismissButtonPressed(_ sender: Any) {
         dismiss(animated: true, completion: nil)
         ModalTransitionMediator.instance.sendPopoverDismissed(modelChanged: true)
     }
