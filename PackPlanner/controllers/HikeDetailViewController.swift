@@ -7,10 +7,7 @@
 
 import UIKit
 
-class HikeDetailViewController: BaseViewController {
-    
-    @IBOutlet weak var nameLabel: UILabel!
-    @IBOutlet weak var descriptionLabel: UILabel!
+class HikeDetailViewController: UITableViewController {
     
     var existingHike : Hike?{
         didSet {
@@ -18,30 +15,35 @@ class HikeDetailViewController: BaseViewController {
         }
     }
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         if let hike = existingHike {
-            self.nameLabel.text = hike.name
-            self.descriptionLabel.text = hike.desc
             self.title = hike.name
         }
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        if let hike = existingHike {
-            self.nameLabel.text = hike.name
-            self.descriptionLabel.text = hike.desc
-            self.title = hike.name
+        guard let navBar = navigationController?.navigationBar else { fatalError("Navigation controller does not exist.")
         }
+        let navBarAppearance = UINavigationBarAppearance()
+        navBarAppearance.configureWithOpaqueBackground()
+        navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        navBarAppearance.backgroundColor = .flatRedDark()
+        
+        navBar.standardAppearance = navBarAppearance
+        navBar.scrollEdgeAppearance = navBarAppearance
+        
+        navBar.tintColor = .flatWhite()
     }
+    
+    //MARK: - button actions
     
     @IBAction func editHikeButtonSelected(_ sender: UIBarButtonItem) {
         performSegue(withIdentifier: "editHike", sender: self)
     }
-    
     
     @IBAction func addGearButtonSelected(_ sender: UIBarButtonItem) {
         performSegue(withIdentifier: "addGearToHike", sender: self)
@@ -57,4 +59,8 @@ class HikeDetailViewController: BaseViewController {
             destinationVC.hike = self.existingHike
         }
     }
+    
+    //MARK: - Table data source
+    
+    //MARK: - Table delegate
 }

@@ -103,17 +103,4 @@ class GearBrain {
             deleteGear(gear: gear)
         }
     }
-    
-    static func createHikeGear(gear: Gear, hike: Hike) {
-        do {
-        try GearBrain.realm.write {
-            let hikeGear = HikeGear()
-            hikeGear.gearList.append(gear)
-            realm.add(hikeGear)
-            hike.hikeGears.append(hikeGear)
-        }
-        } catch {
-            print("Error adding hikeGear \(error)")
-        }
-    }
 }

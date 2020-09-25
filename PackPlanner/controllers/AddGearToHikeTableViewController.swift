@@ -36,7 +36,7 @@ class AddGearToHikeTableViewController: GearBaseTableViewController {
         selectedRows?.forEach({ (indexPath) in
             let gear = gearBrain?.getGear(indexPath: indexPath)
             print("Adding gear \(gear!.name)")
-            GearBrain.createHikeGear(gear: gear!, hike: hike!)
+            HikeBrain.createHikeGear(gear: gear!, hike: hike!)
         })
         
         performSegue(withIdentifier: "showHikeDetail", sender: self)

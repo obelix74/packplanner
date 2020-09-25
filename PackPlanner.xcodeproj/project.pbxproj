@@ -22,6 +22,7 @@
 		A9478905251C28600017F916 /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9478904251C28600017F916 /* BaseViewController.swift */; };
 		A9478915251C6E2E0017F916 /* AddGearToHikeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9478914251C6E2E0017F916 /* AddGearToHikeTableViewCell.swift */; };
 		A947891B251D0BA80017F916 /* GearBrain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A947891A251D0BA80017F916 /* GearBrain.swift */; };
+		A9478923251E55AA0017F916 /* HikeBrain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9478922251E55AA0017F916 /* HikeBrain.swift */; };
 		A95F90132515B94D00A73E40 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95F90122515B94D00A73E40 /* AppDelegate.swift */; };
 		A95F90152515B94D00A73E40 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95F90142515B94D00A73E40 /* SceneDelegate.swift */; };
 		A95F901A2515B94D00A73E40 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A95F90182515B94D00A73E40 /* Main.storyboard */; };
@@ -76,6 +77,7 @@
 		A9478904251C28600017F916 /* BaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
 		A9478914251C6E2E0017F916 /* AddGearToHikeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGearToHikeTableViewCell.swift; sourceTree = "<group>"; };
 		A947891A251D0BA80017F916 /* GearBrain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GearBrain.swift; sourceTree = "<group>"; };
+		A9478922251E55AA0017F916 /* HikeBrain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeBrain.swift; sourceTree = "<group>"; };
 		A95F900F2515B94D00A73E40 /* PackPlanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PackPlanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A95F90122515B94D00A73E40 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A95F90142515B94D00A73E40 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -146,6 +148,7 @@
 				A94788DE251BBF1E0017F916 /* Hike.swift */,
 				A94788E3251BBF4B0017F916 /* HikeGear.swift */,
 				A947891A251D0BA80017F916 /* GearBrain.swift */,
+				A9478922251E55AA0017F916 /* HikeBrain.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -446,6 +449,7 @@
 				A9356940251854AF00542BCC /* SettingsManager.swift in Sources */,
 				A94788F1251C11840017F916 /* AddHikeViewController.swift in Sources */,
 				A93569452518577400542BCC /* Gear.swift in Sources */,
+				A9478923251E55AA0017F916 /* HikeBrain.swift in Sources */,
 				A935694A251859C300542BCC /* Categories.swift in Sources */,
 				A9478905251C28600017F916 /* BaseViewController.swift in Sources */,
 				A9FC0F7025198A02009E6993 /* AddGearViewController.swift in Sources */,

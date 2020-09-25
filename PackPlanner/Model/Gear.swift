@@ -16,13 +16,13 @@ class Gear : Object {
     @objc dynamic var uuid : String = ""
     var hikeGear = LinkingObjects(fromType: HikeGear.self, property: "gearList")
     
-    let conversion : Double = 28.34952
+    static let conversion : Double = 28.34952
     
     func setValues(name:String, desc: String, weight: Double, category: String)  {
         self.name = name
         self.desc = desc
         if (SettingsManager.SINGLETON.settings.imperial) {
-            self.weightInGrams = weight * conversion
+            self.weightInGrams = weight * Gear.conversion
         } else {
             self.weightInGrams = weight
         }
@@ -30,17 +30,32 @@ class Gear : Object {
         self.uuid = UUID().uuidString
     }
     
+//    Returns weight based on settings
     func weight() -> Double {
         if (SettingsManager.SINGLETON.settings.imperial) {
-            return self.weightInGrams / conversion
+            return self.weightInGrams / Gear.conversion
         } else {
             return self.weightInGrams
         }
     }
     
+//    Returns weight based on settings with weight unit
     func weightString() -> String {
         let wt = weight()
         let settings : Settings = SettingsManager.SINGLETON.settings
+        let weightUnit = settings.imperial ? "Oz" : "Grams"
+        return String(format:"%.2f", wt) + " " + weightUnit
+    }
+    
+//    Given a weight in grams, convert it to oz
+    static func convertWeightToImperial(weightInGrams : Double) -> Double {
+        return Double(weightInGrams) / Double (conversion)
+    }
+    
+//    Given a weight, format it and return it as a string
+    static func getWeightString(weight : Double) -> String {
+        let settings : Settings = SettingsManager.SINGLETON.settings
+        let wt = settings.imperial ? Gear.convertWeightToImperial(weightInGrams: weight) : weight
         let weightUnit = settings.imperial ? "Oz" : "Grams"
         return String(format:"%.2f", wt) + " " + weightUnit
     }
