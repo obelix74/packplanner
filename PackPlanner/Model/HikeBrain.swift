@@ -107,8 +107,16 @@ class HikeBrain {
         return self.categoriesSorted?[section - 1]
     }
     
+    func getNumberSections() -> Int {
+        return self.categoryMap.count
+    }
+    
+    func getNumberOfRowsInSection(section: Int) -> Int {
+        return getHikeGearsForSection(section: section)!.count
+    }
+    
     func getHikeGearsForSection(section: Int) -> [HikeGear]? {
-        let category = getCategory(section: section - 1)
+        let category = getCategory(section: section)
         return self.categoryMap[category!]
     }
     
