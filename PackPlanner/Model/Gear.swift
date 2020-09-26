@@ -55,8 +55,33 @@ class Gear : Object {
 //    Given a weight, format it and return it as a string
     static func getWeightString(weight : Double) -> String {
         let settings : Settings = SettingsManager.SINGLETON.settings
-        let wt = settings.imperial ? Gear.convertWeightToImperial(weightInGrams: weight) : weight
-        let weightUnit = settings.imperial ? "Oz" : "Grams"
-        return String(format:"%.2f", wt) + " " + weightUnit
+        
+        let weightUnit = WeightUnit(weight, settings.imperial)
+        let minor = weightUnit.minor
+        let minorString = String(format:"%.1f", minor)
+        return String("\(weightUnit.major) \(weightUnit.majorUnit) \(minorString) \(weightUnit.minorUnit)")
+    }
+}
+
+struct WeightUnit {
+    var major: Int
+    var minor: Double
+    var majorUnit: String
+    var minorUnit: String
+    
+    init(_ weightInGrams: Double, _ imperial: Bool) {
+        if (imperial) {
+            self.majorUnit = "Lb"
+            self.minorUnit = "Oz"
+            let weightInImperial = Gear.convertWeightToImperial(weightInGrams: weightInGrams)
+            self.minor = weightInImperial.truncatingRemainder(dividingBy: 16)
+            self.major = Int((weightInImperial / 16).rounded(.towardZero))
+        }
+        else {
+            self.majorUnit = "Kg"
+            self.minorUnit = "Grams"
+            self.minor = weightInGrams.truncatingRemainder(dividingBy: 1000)
+            self.major = Int((weightInGrams / 1000).rounded(.towardZero))
+        }
     }
 }
