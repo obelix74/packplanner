@@ -62,7 +62,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "hikeCell", for: indexPath) as! HikeGeneralTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "hikeCell", for: indexPath) as! HikeListTableViewCell
         cell.delegate = self
         
         if (self.hikes?.count == 0) {

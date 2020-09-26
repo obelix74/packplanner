@@ -8,7 +8,7 @@
 import UIKit
 import SwipeCellKit
 
-class HikeGeneralTableViewCell: SwipeTableViewCell {
+class HikeListTableViewCell: SwipeTableViewCell {
 
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!

@@ -9,9 +9,11 @@ import UIKit
 
 class HikeDetailViewController: UITableViewController {
     
+    var hikeBrain : HikeBrain?
+    
     var existingHike : Hike?{
         didSet {
-            
+            self.hikeBrain = HikeBrain(existingHike!)
         }
     }
     
@@ -61,6 +63,34 @@ class HikeDetailViewController: UITableViewController {
     }
     
     //MARK: - Table data source
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+        //TODO: Add categories here.
+    }
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+        //TODO: Add categories
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return "Hike detail"
+        //TODO: Add categories
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "titlePrototypeCell", for: indexPath) as! HikeDetailTableViewCell
+        cell.hikeBrain = self.hikeBrain
+        cell.selectionStyle = .none
+        cell.contentView.backgroundColor = .flatGrayDark()
+        return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        view.tintColor = UIColor.flatPlumDark()
+        let header = view as! UITableViewHeaderFooterView
+        header.textLabel?.textColor = UIColor.white
+    }
     
     //MARK: - Table delegate
 }

@@ -14,7 +14,7 @@
 		A94788CF251B190F0017F916 /* ModalTransitionListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788CE251B190F0017F916 /* ModalTransitionListener.swift */; };
 		A94788DF251BBF1E0017F916 /* Hike.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788DE251BBF1E0017F916 /* Hike.swift */; };
 		A94788E4251BBF4B0017F916 /* HikeGear.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788E3251BBF4B0017F916 /* HikeGear.swift */; };
-		A94788E9251BF7E60017F916 /* HikeGeneralTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788E8251BF7E60017F916 /* HikeGeneralTableViewCell.swift */; };
+		A94788E9251BF7E60017F916 /* HikeListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788E8251BF7E60017F916 /* HikeListTableViewCell.swift */; };
 		A94788F1251C11840017F916 /* AddHikeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788F0251C11840017F916 /* AddHikeViewController.swift */; };
 		A94788F6251C1BE50017F916 /* AddGearToHikeTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788F5251C1BE50017F916 /* AddGearToHikeTableViewController.swift */; };
 		A94788FB251C21490017F916 /* GearBaseTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788FA251C21490017F916 /* GearBaseTableViewController.swift */; };
@@ -33,6 +33,7 @@
 		A95F90522515D96900A73E40 /* GearListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95F90512515D96900A73E40 /* GearListController.swift */; };
 		A95F90572515D99400A73E40 /* HikeListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95F90562515D99400A73E40 /* HikeListController.swift */; };
 		A95F905C2515D9A800A73E40 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95F905B2515D9A800A73E40 /* SettingsViewController.swift */; };
+		A97F82BC251EEFC70083FADE /* HikeDetailTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97F82BB251EEFC70083FADE /* HikeDetailTableViewCell.swift */; };
 		A9FC0F7025198A02009E6993 /* AddGearViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9FC0F6F25198A02009E6993 /* AddGearViewController.swift */; };
 		A9FC0F852519B07D009E6993 /* StringExt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9FC0F842519B07D009E6993 /* StringExt.swift */; };
 		A9FC0F8A2519B095009E6993 /* UIColorExt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9FC0F892519B095009E6993 /* UIColorExt.swift */; };
@@ -69,7 +70,7 @@
 		A94788CE251B190F0017F916 /* ModalTransitionListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalTransitionListener.swift; sourceTree = "<group>"; };
 		A94788DE251BBF1E0017F916 /* Hike.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hike.swift; sourceTree = "<group>"; };
 		A94788E3251BBF4B0017F916 /* HikeGear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeGear.swift; sourceTree = "<group>"; };
-		A94788E8251BF7E60017F916 /* HikeGeneralTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeGeneralTableViewCell.swift; sourceTree = "<group>"; };
+		A94788E8251BF7E60017F916 /* HikeListTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeListTableViewCell.swift; sourceTree = "<group>"; };
 		A94788F0251C11840017F916 /* AddHikeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddHikeViewController.swift; sourceTree = "<group>"; };
 		A94788F5251C1BE50017F916 /* AddGearToHikeTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGearToHikeTableViewController.swift; sourceTree = "<group>"; };
 		A94788FA251C21490017F916 /* GearBaseTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GearBaseTableViewController.swift; sourceTree = "<group>"; };
@@ -94,6 +95,7 @@
 		A95F90512515D96900A73E40 /* GearListController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GearListController.swift; sourceTree = "<group>"; };
 		A95F90562515D99400A73E40 /* HikeListController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeListController.swift; sourceTree = "<group>"; };
 		A95F905B2515D9A800A73E40 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		A97F82BB251EEFC70083FADE /* HikeDetailTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeDetailTableViewCell.swift; sourceTree = "<group>"; };
 		A9FC0F6F25198A02009E6993 /* AddGearViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGearViewController.swift; sourceTree = "<group>"; };
 		A9FC0F842519B07D009E6993 /* StringExt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExt.swift; sourceTree = "<group>"; };
 		A9FC0F892519B095009E6993 /* UIColorExt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColorExt.swift; sourceTree = "<group>"; };
@@ -242,8 +244,9 @@
 				A9FC0F8F2519B11D009E6993 /* FormerInputAccessoryView.swift */,
 				A9FC0F9E251AC872009E6993 /* GearTableViewCell.swift */,
 				A94788CE251B190F0017F916 /* ModalTransitionListener.swift */,
-				A94788E8251BF7E60017F916 /* HikeGeneralTableViewCell.swift */,
+				A94788E8251BF7E60017F916 /* HikeListTableViewCell.swift */,
 				A9478914251C6E2E0017F916 /* AddGearToHikeTableViewCell.swift */,
+				A97F82BB251EEFC70083FADE /* HikeDetailTableViewCell.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -432,7 +435,7 @@
 			files = (
 				A95F90572515D99400A73E40 /* HikeListController.swift in Sources */,
 				A9FC0F8A2519B095009E6993 /* UIColorExt.swift in Sources */,
-				A94788E9251BF7E60017F916 /* HikeGeneralTableViewCell.swift in Sources */,
+				A94788E9251BF7E60017F916 /* HikeListTableViewCell.swift in Sources */,
 				A9FC0F852519B07D009E6993 /* StringExt.swift in Sources */,
 				A9478900251C27EE0017F916 /* HikeDetailViewController.swift in Sources */,
 				A9FC0F9F251AC872009E6993 /* GearTableViewCell.swift in Sources */,
@@ -457,6 +460,7 @@
 				A9356938251838E800542BCC /* Settings.swift in Sources */,
 				A95F90152515B94D00A73E40 /* SceneDelegate.swift in Sources */,
 				A95F905C2515D9A800A73E40 /* SettingsViewController.swift in Sources */,
+				A97F82BC251EEFC70083FADE /* HikeDetailTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

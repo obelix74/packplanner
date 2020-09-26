@@ -29,7 +29,6 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
     
     
     // MARK: - Table view data source
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "gearCell", for: indexPath) as! GearTableViewCell
         cell.delegate = self
@@ -43,18 +42,16 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
         return cell
     }
     
-    
+    //MARK: - Tableview delegate methods
     @IBAction func showSettings(_ sender: UIBarButtonItem) {
         ModalTransitionMediator.instance.setListener(listener: self)
-        performSegue(withIdentifier: "showSettings", sender: self)
-        
+        performSegue(withIdentifier: "showSettings", sender: self)        
     }
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         performSegue(withIdentifier: "showAddGear", sender: self)
     }
     
-    //MARK: - Tableview delegate methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "showAddGear", sender: self)
     }

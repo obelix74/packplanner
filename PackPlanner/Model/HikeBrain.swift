@@ -24,14 +24,22 @@ class HikeBrain {
 //  Total weight worn on body
     var wornWeightInGrams : Double = 0.0
     
-    var hikeGears : List<HikeGear>
+    var hikeGears : List<HikeGear> = List()
     var categoryMap : [String: [HikeGear]] = [:]
     var categoriesSorted : [String]?
 
-    
     init (_ hike : Hike) {
         self.hike = hike
+        initializeHike(hike)
+    }
+    
+    func initializeHike(_ hike: Hike) {
         self.hikeGears = hike.hikeGears
+        self.totalWeightInGrams = 0.0
+        self.unwornWeightInGrams = 0.0
+        self.dryWeightInGrams = 0.0
+        self.wornWeightInGrams = 0.0
+        self.categoryMap = [:]
         
         hikeGears.forEach { (hikeGear) in
             let gearList = hikeGear.gearList
@@ -63,7 +71,6 @@ class HikeBrain {
             self.categoryMap[gear.category] = gearArray
         })
         self.categoriesSorted = self.categoryMap.keys.sorted()
-
     }
     
     func getTotalWeight() -> String {
