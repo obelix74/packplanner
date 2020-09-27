@@ -17,7 +17,9 @@ class GearTableViewCell: SwipeTableViewCell {
     var existingGear : Gear?  {
         didSet {
             self.nameLabel.text = existingGear!.name
-            self.descriptionLabel.text = existingGear!.desc
+            if (self.descriptionLabel != nil) {
+                self.descriptionLabel.text = existingGear!.desc
+            }
             self.weightLabel.text = existingGear?.weightString()
             print("\(existingGear!.name): \(existingGear!.uuid)")
         }
