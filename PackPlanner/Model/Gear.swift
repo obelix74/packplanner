@@ -41,10 +41,7 @@ class Gear : Object {
     
 //    Returns weight based on settings with weight unit
     func weightString() -> String {
-        let wt = weight()
-        let settings : Settings = SettingsManager.SINGLETON.settings
-        let weightUnit = settings.imperial ? "Oz" : "Grams"
-        return String(format:"%.2f", wt) + " " + weightUnit
+        return Gear.getWeightString(weight: weightInGrams)
     }
     
 //    Given a weight in grams, convert it to oz

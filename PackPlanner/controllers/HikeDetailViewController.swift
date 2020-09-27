@@ -6,8 +6,9 @@
 //
 
 import UIKit
+import SwipeCellKit
 
-class HikeDetailViewController: UITableViewController {
+class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegate, RefreshGeneralProtocol {
     
     var hikeBrain : HikeBrain?
     
@@ -95,7 +96,12 @@ class HikeDetailViewController: UITableViewController {
             return cell
         }
         else {
-          return UITableViewCell()
+            let cell = tableView.dequeueReusableCell(withIdentifier: "gearPrototypeCell", for: indexPath) as! HikeGearTableViewCell
+            cell.hikeGear = self.hikeBrain?.getHikeGear(indexPath: indexPath)
+            cell.hikeBrain = self.hikeBrain!
+            cell.delegate = self
+            cell.refreshGeneralDelegate = self
+            return cell
         }
     }
     
@@ -106,4 +112,39 @@ class HikeDetailViewController: UITableViewController {
     }
     
     //MARK: - Table delegate
+    
+    func refreshGeneralSection() {
+        let indexPath: IndexPath = IndexPath(row: 0, section: 0)
+        tableView.reloadRows(at: [indexPath], with: .automatic)
+    }
+    
+    //MARK: Swipe cell actions
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
+            guard orientation == .right else { return nil }
+            
+            let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
+               self.updateModel(at: indexPath)
+               action.fulfill(with: .delete)
+                self.refreshGeneralSection()
+            }
+            
+            // customize the action appearance
+            deleteAction.image = UIImage(named: "delete-icon")
+            
+            return [deleteAction]
+    }
+    
+    func updateModel(at indexPath: IndexPath) {
+        print("UpdateModel called")
+        let refreshAlert = UIAlertController(title: "Refresh", message: "Are you sure you want to delete? ", preferredStyle: UIAlertController.Style.alert)
+        
+        refreshAlert.addAction(UIAlertAction(title: "Delete", style: .default, handler: { (action: UIAlertAction!) in
+            self.hikeBrain?.deleteHikeGearAt(indexPath: indexPath)
+        }))
+        
+        refreshAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action: UIAlertAction!) in
+        }))
+        
+        present(refreshAlert, animated: true, completion: nil)
+    }
 }

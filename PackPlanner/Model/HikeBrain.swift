@@ -30,11 +30,11 @@ class HikeBrain {
 
     init (_ hike : Hike) {
         self.hike = hike
-        initializeHike(hike)
+        initializeHike()
     }
     
-    func initializeHike(_ hike: Hike) {
-        self.hikeGears = hike.hikeGears
+    func initializeHike() {
+        self.hikeGears = self.hike.hikeGears
         self.totalWeightInGrams = 0.0
         self.unwornWeightInGrams = 0.0
         self.dryWeightInGrams = 0.0
@@ -71,6 +71,19 @@ class HikeBrain {
             self.categoryMap[gear.category] = gearArray
         })
         self.categoriesSorted = self.categoryMap.keys.sorted()
+    }
+    
+    func deleteHikeGearAt(indexPath: IndexPath) {
+        if let hikeGear = getHikeGear(indexPath: indexPath) {
+            do {
+                try HikeBrain.realm.write {
+                    HikeBrain.realm.delete(hikeGear)
+                    initializeHike()
+                }
+            }catch {
+                print("Error deleting hike \(error)")
+            }
+        }
     }
     
     func getTotalWeight() -> String {
@@ -119,26 +132,10 @@ class HikeBrain {
         let category = getCategory(section: section)
         return self.categoryMap[category!]
     }
-    
-    func deleteHikeGear(gear: HikeGear) {
-        do {
-            try HikeBrain.realm.write {
-                HikeBrain.realm.delete(gear)
-            }
-        }catch {
-            print("Error deleting hikegear \(error)")
-        }
-    }
-    
-    func deleteHikeGearAt(indexPath: IndexPath) {
-        if let gear = getHikeGear(indexPath: indexPath) {
-            deleteHikeGear(gear: gear)
-        }
-    }
-    
+
     static func createHikeGear(gear: Gear, hike: Hike) {
         do {
-        try GearBrain.realm.write {
+        try HikeBrain.realm.write {
             let hikeGear = HikeGear()
             hikeGear.gearList.append(gear)
             realm.add(hikeGear)
@@ -146,6 +143,61 @@ class HikeBrain {
         }
         } catch {
             print("Error adding hikeGear \(error)")
+        }
+    }
+    
+    func updateWornToggle(hikeGear: HikeGear) {
+        do {
+            try HikeBrain.realm.write {
+                hikeGear.worn = !hikeGear.worn
+                initializeHike()
+            }
+        } catch {
+            print("Error updating hikeGear \(error)")
+        }
+    }
+    
+    func updateConsumableToggle(hikeGear: HikeGear) {
+        do {
+            try HikeBrain.realm.write {
+                hikeGear.consumable = !hikeGear.consumable
+                initializeHike()
+            }
+        } catch {
+            print("Error updating hikeGear \(error)")
+        }
+    }
+    
+    func incrementNumber(hikeGear: HikeGear) {
+        do {
+            try HikeBrain.realm.write {
+                hikeGear.numberUnits = hikeGear.numberUnits + 1
+            }
+        } catch {
+            print("Error updating hikeGear \(error)")
+        }
+    }
+    
+    func decrementNumber(hikeGear: HikeGear) {
+        do {
+            try HikeBrain.realm.write {
+                if (hikeGear.numberUnits > 1) {
+                    hikeGear.numberUnits = hikeGear.numberUnits - 1
+                }
+            }
+
+        } catch {
+            print("Error updating hikeGear \(error)")
+        }
+    }
+    
+    func updateVerifiedToggle(hikeGear: HikeGear) {
+        do {
+            try HikeBrain.realm.write {
+                hikeGear.verified = !hikeGear.verified
+            }
+        } catch {
+            print("Error updating hikeGear \(error)")
         }
     }
 }
