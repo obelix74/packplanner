@@ -41,9 +41,9 @@ class HikeDetailTableViewCell: UITableViewCell {
         self.descriptionLabel.text = hike.desc
         
         self.totalWeightLabel.text = hikeBrain?.getTotalWeight()
-        self.baseWeightLabel.text = hikeBrain?.getDryWeight()
+        self.baseWeightLabel.text = hikeBrain?.getBaseWeight()
         self.wornWeightLabel.text = hikeBrain?.getWornWeight()
-        self.packWeightLabel.text = hikeBrain?.getUnwornWeight()
+        self.packWeightLabel.text = hikeBrain?.getConsumableWeight()
     }
     
     override func awakeFromNib() {

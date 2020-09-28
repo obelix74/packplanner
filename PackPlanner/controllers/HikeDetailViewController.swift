@@ -8,7 +8,7 @@
 import UIKit
 import SwipeCellKit
 
-class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegate, RefreshGeneralProtocol {
+class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegate, RefreshProtocol {
     
     var hikeBrain : HikeBrain?
     
@@ -65,6 +65,8 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
             let destinationVC = segue.destination as! EditHikeGearController
             if let indexPath = tableView.indexPathForSelectedRow {
                 destinationVC.hikeGear = self.hikeBrain?.getHikeGear(indexPath: indexPath)
+                destinationVC.delegate = self
+                destinationVC.indexPath = indexPath
             }
         }
     }
@@ -106,7 +108,6 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
             cell.hikeGear = self.hikeBrain?.getHikeGear(indexPath: indexPath)
             cell.hikeBrain = self.hikeBrain!
             cell.delegate = self
-            cell.refreshGeneralDelegate = self
             cell.accessoryType = .disclosureIndicator
             return cell
         }
@@ -120,9 +121,9 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
     
     //MARK: - Table delegate
     
-    func refreshGeneralSection() {
-        let indexPath: IndexPath = IndexPath(row: 0, section: 0)
-        tableView.reloadRows(at: [indexPath], with: .automatic)
+    func refresh(at indexPath: IndexPath) {
+        let generalSection: IndexPath = IndexPath(row: 0, section: 0)
+        tableView.reloadRows(at: [indexPath, generalSection], with: .fade)
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -131,19 +132,35 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
     
     //MARK: Swipe cell actions
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
-            guard orientation == .right else { return nil }
-            
-            let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
-               self.updateModel(at: indexPath)
-               action.fulfill(with: .delete)
-                self.refreshGeneralSection()
-            }
-            
-            // customize the action appearance
-            deleteAction.image = UIImage(named: "delete-icon")
-            
-            return [deleteAction]
-    }
+         if (orientation == .right) {
+             let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
+                 self.updateModel(at: indexPath)
+                 action.fulfill(with: .delete)
+                 self.refresh(at: indexPath)
+             }
+             
+             // customize the action appearance
+             deleteAction.image = UIImage(named: "delete-icon")
+             
+             return [deleteAction]
+         }
+         else {
+             let hikeGear = self.hikeBrain!.getHikeGear(indexPath: indexPath)
+             let verified = hikeGear!.verified
+             let title = verified ? "Unverify" : "Verify"
+             let verifyImage = verified ? "checkmark.seal" : "checkmark.seal.fill"
+             let verifiedAction = SwipeAction(style: .default, title: title) { action, indexPath in
+                 self.hikeBrain!.updateVerifiedToggle(hikeGear: hikeGear!)
+                 self.refresh(at: indexPath)
+             }
+             
+             // customize the action appearance
+             verifiedAction.image = UIImage(named: verifyImage)
+             
+             return [verifiedAction]
+         }
+     }
+
     
     func updateModel(at indexPath: IndexPath) {
         print("UpdateModel called")

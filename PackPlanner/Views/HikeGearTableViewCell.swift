@@ -29,9 +29,7 @@ class HikeGearTableViewCell: SwipeTableViewCell {
     @IBOutlet weak var verifiedImage: UIImageView!
     @IBOutlet weak var consumableImage: UIImageView!
     @IBOutlet weak var wornImage: UIImageView!
-    
-    var refreshGeneralDelegate : RefreshGeneralProtocol?
-    
+        
     func updateLabels() {
         let gear = hikeGear!.gearList.first
         self.nameLabel.text = gear!.name
@@ -42,13 +40,7 @@ class HikeGearTableViewCell: SwipeTableViewCell {
         self.verifiedImage.isHighlighted = hikeGear!.verified
         self.wornImage.isHighlighted = hikeGear!.worn
     }
-    
-    func refreshParent() {
-        if let delegate = refreshGeneralDelegate {
-            delegate.refreshGeneralSection()
-        }
-    }
-    
+     
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code

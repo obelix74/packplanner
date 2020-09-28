@@ -7,6 +7,6 @@
 
 import Foundation
 
-protocol RefreshGeneralProtocol {
-    func refreshGeneralSection()
+protocol RefreshProtocol {
+    func refresh(at indexPath: IndexPath)
 }

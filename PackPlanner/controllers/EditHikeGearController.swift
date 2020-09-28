@@ -22,6 +22,9 @@ class EditHikeGearController: UIViewController {
         // Do any additional setup after loading the view.
     }
     
+    var delegate: RefreshProtocol?
+    var indexPath: IndexPath?
+    
 
     /*
     // MARK: - Navigation
@@ -35,5 +38,8 @@ class EditHikeGearController: UIViewController {
 
     @IBAction func doneButtonPressed(_ sender: UIBarButtonItem) {
         _ = navigationController?.popViewController(animated: true)
+        if (self.delegate != nil) {
+            delegate?.refresh(at: self.indexPath!)
+        }
     }
 }

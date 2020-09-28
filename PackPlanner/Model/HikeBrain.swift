@@ -16,10 +16,10 @@ class HikeBrain {
     var totalWeightInGrams : Double = 0.0
     
 //  Total weight of all gear except worn
-    var unwornWeightInGrams : Double = 0.0
+    var consumableWeightInGrams : Double = 0.0
     
 //  Weight of items except consumables and worn
-    var dryWeightInGrams : Double = 0.0
+    var baseWeightInGrams : Double = 0.0
     
 //  Total weight worn on body
     var wornWeightInGrams : Double = 0.0
@@ -36,8 +36,8 @@ class HikeBrain {
     func initializeHike() {
         self.hikeGears = self.hike.hikeGears
         self.totalWeightInGrams = 0.0
-        self.unwornWeightInGrams = 0.0
-        self.dryWeightInGrams = 0.0
+        self.consumableWeightInGrams = 0.0
+        self.baseWeightInGrams = 0.0
         self.wornWeightInGrams = 0.0
         self.categoryMap = [:]
         
@@ -52,12 +52,13 @@ class HikeBrain {
             if (hikeGear.worn) {
                 self.wornWeightInGrams += gearWeight
             }
-            else {
-                self.unwornWeightInGrams += gearWeight
+            
+            if (hikeGear.consumable) {
+                self.consumableWeightInGrams += gearWeight
             }
             
             if (!hikeGear.worn && !hikeGear.consumable) {
-                self.dryWeightInGrams += gearWeight
+                self.baseWeightInGrams += gearWeight
             }
         }
         
@@ -90,16 +91,16 @@ class HikeBrain {
         return Gear.getWeightString(weight: self.totalWeightInGrams)
     }
     
-    func getDryWeight() -> String {
-        return Gear.getWeightString(weight: self.dryWeightInGrams)
+    func getBaseWeight() -> String {
+        return Gear.getWeightString(weight: self.baseWeightInGrams)
     }
     
     func getWornWeight() -> String {
         return Gear.getWeightString(weight: self.wornWeightInGrams)
     }
     
-    func getUnwornWeight() -> String {
-        return Gear.getWeightString(weight: self.unwornWeightInGrams)
+    func getConsumableWeight() -> String {
+        return Gear.getWeightString(weight: self.consumableWeightInGrams)
     }
     
     func isEmpty() -> Bool {

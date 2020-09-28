@@ -41,7 +41,7 @@
 		A9FC0F952519B1B7009E6993 /* TextSelectorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9FC0F942519B1B7009E6993 /* TextSelectorViewController.swift */; };
 		A9FC0F9F251AC872009E6993 /* GearTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9FC0F9E251AC872009E6993 /* GearTableViewCell.swift */; };
 		A9FCE9A125205119006585C6 /* HikeGearTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9FCE9A025205119006585C6 /* HikeGearTableViewCell.swift */; };
-		A9FCE9A625205612006585C6 /* RefreshGeneralProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9FCE9A525205612006585C6 /* RefreshGeneralProtocol.swift */; };
+		A9FCE9A625205612006585C6 /* RefreshProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9FCE9A525205612006585C6 /* RefreshProtocol.swift */; };
 		C5DB5115B5B47EF3DDE6E282 /* Pods_PackPlanner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2784779AF26B04B41F4F0244 /* Pods_PackPlanner.framework */; };
 /* End PBXBuildFile section */
 
@@ -105,7 +105,7 @@
 		A9FC0F942519B1B7009E6993 /* TextSelectorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextSelectorViewController.swift; sourceTree = "<group>"; };
 		A9FC0F9E251AC872009E6993 /* GearTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GearTableViewCell.swift; sourceTree = "<group>"; };
 		A9FCE9A025205119006585C6 /* HikeGearTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeGearTableViewCell.swift; sourceTree = "<group>"; };
-		A9FCE9A525205612006585C6 /* RefreshGeneralProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshGeneralProtocol.swift; sourceTree = "<group>"; };
+		A9FCE9A525205612006585C6 /* RefreshProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshProtocol.swift; sourceTree = "<group>"; };
 		F760AE0B70BE54AE6D3F6E4E /* Pods-PackPlanner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PackPlanner.debug.xcconfig"; path = "Target Support Files/Pods-PackPlanner/Pods-PackPlanner.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -252,7 +252,7 @@
 				A94788E8251BF7E60017F916 /* HikeListTableViewCell.swift */,
 				A97F82BB251EEFC70083FADE /* HikeDetailTableViewCell.swift */,
 				A9FCE9A025205119006585C6 /* HikeGearTableViewCell.swift */,
-				A9FCE9A525205612006585C6 /* RefreshGeneralProtocol.swift */,
+				A9FCE9A525205612006585C6 /* RefreshProtocol.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -451,7 +451,7 @@
 				A9FC0F952519B1B7009E6993 /* TextSelectorViewController.swift in Sources */,
 				A94788E4251BBF4B0017F916 /* HikeGear.swift in Sources */,
 				A94788FB251C21490017F916 /* GearBaseTableViewController.swift in Sources */,
-				A9FCE9A625205612006585C6 /* RefreshGeneralProtocol.swift in Sources */,
+				A9FCE9A625205612006585C6 /* RefreshProtocol.swift in Sources */,
 				A94788F6251C1BE50017F916 /* AddGearToHikeTableViewController.swift in Sources */,
 				A9FCE9A125205119006585C6 /* HikeGearTableViewCell.swift in Sources */,
 				A94788CF251B190F0017F916 /* ModalTransitionListener.swift in Sources */,
