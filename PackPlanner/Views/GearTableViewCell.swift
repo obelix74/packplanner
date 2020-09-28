@@ -27,6 +27,10 @@ class GearTableViewCell: SwipeTableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        self.nameLabel.lineBreakMode = .byWordWrapping
+        if (self.descriptionLabel != nil) {
+            self.descriptionLabel.lineBreakMode = .byWordWrapping
+        }
         // Initialization code
     }
 

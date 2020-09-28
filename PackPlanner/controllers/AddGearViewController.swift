@@ -169,12 +169,12 @@ class AddGearViewController: FormViewController {
     }
     
     @IBAction func saveButtonPressed(_ sender: UIButton) {
-        if (self.name!.isEmpty) {
+        if (self.name == nil || self.name!.isEmpty) {
             showAlert(name: "Name")
             return
         }
         
-        if (self.weight! <= 0.0) {
+        if (self.weight == nil) {
             showAlert(name: "Weight")
             return
         }
@@ -186,7 +186,8 @@ class AddGearViewController: FormViewController {
                     
                 } else {
                     let gear = Gear()
-                    gear.setValues(name: self.name!, desc: self.desc!, weight: self.weight!, category: self.category!)
+                    let desc = self.desc ?? ""
+                    gear.setValues(name: self.name!, desc: desc, weight: self.weight!, category: self.category!)
                     realm.add(gear)
                 }
             }

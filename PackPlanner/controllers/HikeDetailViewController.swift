@@ -110,7 +110,7 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
             let cell = tableView.dequeueReusableCell(withIdentifier: "titlePrototypeCell", for: indexPath) as! HikeDetailTableViewCell
             cell.hikeBrain = self.hikeBrain
             cell.selectionStyle = .none
-            cell.contentView.backgroundColor = .flatGrayDark()
+            cell.contentView.backgroundColor = .flatBlueDark()
             return cell
         }
         else {
@@ -137,7 +137,9 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: "editHikeGear", sender: self)
+        if (indexPath.section != 0) {
+            performSegue(withIdentifier: "editHikeGear", sender: self)
+        }
     }
     
     //MARK: Swipe cell actions

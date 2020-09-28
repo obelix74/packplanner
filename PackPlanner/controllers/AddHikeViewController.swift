@@ -14,6 +14,12 @@ class AddHikeViewController: BaseViewController {
     @IBOutlet weak var nameField: UITextField!
     @IBOutlet weak var descriptionField: UITextField!
     @IBOutlet weak var saveButton: UIBarButtonItem!
+    @IBOutlet weak var completedSwitch: UISwitch!
+    @IBOutlet weak var locationField: UITextField!
+    @IBOutlet weak var distanceField: UITextField!
+    @IBOutlet weak var url1Field: UITextField!
+    @IBOutlet weak var url2Field: UITextField!
+    @IBOutlet weak var url3Field: UITextField!
     
     let realm = try! Realm()
     var hike : Hike?
@@ -31,12 +37,24 @@ class AddHikeViewController: BaseViewController {
         if (self.hike != nil) {
             self.nameField.text = self.hike?.name
             self.descriptionField.text = self.hike?.desc
+            self.completedSwitch.isOn = self.hike!.completed
+            self.locationField.text = self.hike?.location
+            self.distanceField.text = self.hike?.distance
+            self.url1Field.text = self.hike?.externalLink1
+            self.url2Field.text = self.hike?.externalLink2
+            self.url3Field.text = self.hike?.externalLink3
         }
     }
 
     @IBAction func saveButtonPressed(_ sender: UIBarButtonItem) {
         let name = nameField.text
         let desc = descriptionField.text
+        let completed = self.completedSwitch.isOn
+        let location = self.locationField.text
+        let distance = self.distanceField.text
+        let url1 = self.url1Field.text
+        let url2 = self.url2Field.text
+        let url3 = self.url3Field.text
         
         if (name!.isEmpty) {
             showAlert(name: "Name")
@@ -47,13 +65,19 @@ class AddHikeViewController: BaseViewController {
         
         do {
             try realm.write {
-                if (self.hike != nil) {
-                    self.hike!.name = name!
-                    self.hike!.desc = desc!
-                } else {
+                if (self.hike == nil) {
                     self.hike = Hike()
-                    self.hike!.name = name!
-                    self.hike!.desc = desc!
+                }
+                self.hike!.name = name!
+                self.hike!.desc = desc ?? ""
+                self.hike!.completed = completed
+                self.hike!.location = location ?? ""
+                self.hike!.distance = distance ?? ""
+                self.hike!.externalLink1 = url1 ?? ""
+                self.hike!.externalLink2 = url2 ?? ""
+                self.hike!.externalLink3 = url3 ?? ""
+                
+                if (!existing) {
                     self.realm.add(hike!)
                 }
             }
