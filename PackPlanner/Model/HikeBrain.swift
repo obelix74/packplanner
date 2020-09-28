@@ -14,15 +14,19 @@ class HikeBrain {
     var hike : Hike
 //  Total weight of all gear
     var totalWeightInGrams : Double = 0.0
+    var totalWeightDistribution : [String:Double] = [:]
     
 //  Total weight of all gear except worn
     var consumableWeightInGrams : Double = 0.0
+    var consumableWeightDistribution : [String:Double] = [:]
     
 //  Weight of items except consumables and worn
     var baseWeightInGrams : Double = 0.0
+    var baseWeightDistribution : [String: Double] = [:]
     
 //  Total weight worn on body
     var wornWeightInGrams : Double = 0.0
+    var wornWeightDistribution : [String: Double] = [:]
     
     var hikeGears : List<HikeGear> = List()
     var categoryMap : [String: [HikeGear]] = [:]
@@ -33,6 +37,15 @@ class HikeBrain {
         initializeHike()
     }
     
+    fileprivate func updateCategoryWeight(_ dict: inout [String : Double], _ category: String, _ gearWeight: Double) {
+        var totalWeightInCategory = dict[category]
+        if (totalWeightInCategory == nil) {
+            totalWeightInCategory = 0.0
+        }
+        totalWeightInCategory! += gearWeight
+        dict[category] = totalWeightInCategory
+    }
+    
     func initializeHike() {
         self.hikeGears = self.hike.hikeGears
         self.totalWeightInGrams = 0.0
@@ -40,6 +53,10 @@ class HikeBrain {
         self.baseWeightInGrams = 0.0
         self.wornWeightInGrams = 0.0
         self.categoryMap = [:]
+        self.totalWeightDistribution = [:]
+        self.baseWeightDistribution = [:]
+        self.consumableWeightDistribution = [:]
+        self.wornWeightDistribution = [:]
         
         hikeGears.forEach { (hikeGear) in
             let gearList = hikeGear.gearList
@@ -47,18 +64,25 @@ class HikeBrain {
             let number = hikeGear.numberUnits
             let gearWeight = Double(gear.weightInGrams) * Double(number)
             
+            let category = gear.category
             self.totalWeightInGrams += gearWeight
+                    
+            updateCategoryWeight(&self.totalWeightDistribution, category, gearWeight)
+            
             
             if (hikeGear.worn) {
                 self.wornWeightInGrams += gearWeight
+                updateCategoryWeight(&self.wornWeightDistribution, category, gearWeight)
             }
             
             if (hikeGear.consumable) {
                 self.consumableWeightInGrams += gearWeight
+                updateCategoryWeight(&self.consumableWeightDistribution, category, gearWeight)
             }
             
             if (!hikeGear.worn && !hikeGear.consumable) {
                 self.baseWeightInGrams += gearWeight
+                updateCategoryWeight(&self.baseWeightDistribution, category, gearWeight)
             }
         }
         

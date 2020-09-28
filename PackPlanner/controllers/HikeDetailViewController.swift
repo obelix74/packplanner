@@ -52,6 +52,11 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
         performSegue(withIdentifier: "addGearToHike", sender: self)
     }
     
+    @IBAction func reportsButtonSelected(_ sender: UIBarButtonItem) {
+        performSegue(withIdentifier: "showReport", sender: self)
+    }
+    
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "editHike") {
             let destinationVC = segue.destination as! AddHikeViewController
@@ -69,6 +74,10 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
                 destinationVC.indexPath = indexPath
                 destinationVC.hikeBrain = self.hikeBrain
             }
+        }
+        else if (segue.identifier == "showReport") {
+            let destinationVC = segue.destination as! HikeReportController
+            destinationVC.hikeBrain = self.hikeBrain
         }
     }
     
