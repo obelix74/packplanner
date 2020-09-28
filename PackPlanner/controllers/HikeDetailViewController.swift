@@ -61,6 +61,12 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
             let destinationVC = segue.destination as! AddGearToHikeTableViewController
             destinationVC.hike = self.existingHike
         }
+        else if (segue.identifier == "editHikeGear" && tableView.indexPathForSelectedRow != nil) {
+            let destinationVC = segue.destination as! EditHikeGearController
+            if let indexPath = tableView.indexPathForSelectedRow {
+                destinationVC.hikeGear = self.hikeBrain?.getHikeGear(indexPath: indexPath)
+            }
+        }
     }
     
     //MARK: - Table data source
@@ -101,6 +107,7 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
             cell.hikeBrain = self.hikeBrain!
             cell.delegate = self
             cell.refreshGeneralDelegate = self
+            cell.accessoryType = .disclosureIndicator
             return cell
         }
     }
@@ -116,6 +123,10 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
     func refreshGeneralSection() {
         let indexPath: IndexPath = IndexPath(row: 0, section: 0)
         tableView.reloadRows(at: [indexPath], with: .automatic)
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        performSegue(withIdentifier: "editHikeGear", sender: self)
     }
     
     //MARK: Swipe cell actions

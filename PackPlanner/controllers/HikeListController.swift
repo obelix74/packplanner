@@ -72,7 +72,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
         } else {
             let hike = self.hikes![indexPath.row]
             cell.existingHike = hike
-            cell.accessoryType = .disclosureIndicator;
+            cell.accessoryType = .disclosureIndicator
         }
         return cell
     }
