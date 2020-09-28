@@ -6,35 +6,43 @@
 //
 
 import UIKit
+import ChameleonFramework
 
 class EditHikeGearController: UIViewController {
 
     @IBOutlet weak var doneButton: UIBarButtonItem!
+    
+    var gear : Gear?
     var hikeGear : HikeGear? {
         didSet {
-            
+            self.gear = hikeGear!.gearList.first
         }
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        self.doneButton.tintColor = .flatWhite()
+        
+        guard let navBar = navigationController?.navigationBar else { fatalError("Navigation controller does not exist.")
+        }
+        let navBarAppearance = UINavigationBarAppearance()
+        navBarAppearance.configureWithOpaqueBackground()
+        navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        navBarAppearance.backgroundColor = .flatRedDark()
+        
+        navBar.standardAppearance = navBarAppearance
+        navBar.scrollEdgeAppearance = navBarAppearance
+        
+        navBar.tintColor = .flatWhite()
+        
+        self.title = self.gear?.name
     }
     
     var delegate: RefreshProtocol?
     var indexPath: IndexPath?
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
     @IBAction func doneButtonPressed(_ sender: UIBarButtonItem) {
         _ = navigationController?.popViewController(animated: true)

@@ -168,6 +168,7 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
         
         refreshAlert.addAction(UIAlertAction(title: "Delete", style: .default, handler: { (action: UIAlertAction!) in
             self.hikeBrain?.deleteHikeGearAt(indexPath: indexPath)
+            self.tableView.reloadData()
         }))
         
         refreshAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action: UIAlertAction!) in
