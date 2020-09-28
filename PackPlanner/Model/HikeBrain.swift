@@ -169,24 +169,12 @@ class HikeBrain {
         }
     }
     
-    func incrementNumber(hikeGear: HikeGear) {
+    func setNumber(hikeGear: HikeGear, number: Int) {
         do {
             try HikeBrain.realm.write {
-                hikeGear.numberUnits = hikeGear.numberUnits + 1
+                hikeGear.numberUnits = number
+                initializeHike()
             }
-        } catch {
-            print("Error updating hikeGear \(error)")
-        }
-    }
-    
-    func decrementNumber(hikeGear: HikeGear) {
-        do {
-            try HikeBrain.realm.write {
-                if (hikeGear.numberUnits > 1) {
-                    hikeGear.numberUnits = hikeGear.numberUnits - 1
-                }
-            }
-
         } catch {
             print("Error updating hikeGear \(error)")
         }
@@ -196,6 +184,7 @@ class HikeBrain {
         do {
             try HikeBrain.realm.write {
                 hikeGear.verified = !hikeGear.verified
+                initializeHike()
             }
         } catch {
             print("Error updating hikeGear \(error)")

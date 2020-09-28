@@ -67,6 +67,7 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
                 destinationVC.hikeGear = self.hikeBrain?.getHikeGear(indexPath: indexPath)
                 destinationVC.delegate = self
                 destinationVC.indexPath = indexPath
+                destinationVC.hikeBrain = self.hikeBrain
             }
         }
     }
