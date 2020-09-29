@@ -13,12 +13,14 @@ class HikeListTableViewCell: SwipeTableViewCell {
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var noItemsLabel: UILabel!
+    @IBOutlet weak var completedImage: UIImageView!
     
     var existingHike : Hike?  {
         didSet {
             self.nameLabel.text = existingHike!.name
             self.descriptionLabel.text = existingHike!.desc
             self.noItemsLabel.text = String("\(existingHike!.hikeGears.count) gear")
+            self.completedImage.isHighlighted = existingHike!.completed
         }
     }
     

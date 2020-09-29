@@ -61,6 +61,7 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
         if (segue.identifier == "editHike") {
             let destinationVC = segue.destination as! AddHikeViewController
             destinationVC.hike = self.existingHike
+            destinationVC.delegate = self 
         }
         else if (segue.identifier == "addGearToHike") {
             let destinationVC = segue.destination as! AddGearToHikeTableViewController
