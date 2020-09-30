@@ -169,6 +169,49 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
                 try! csv.write(field: hike.externalLink3!)
             }
             csv.beginNewRow()
+            try! csv.write(field: "")
+            csv.beginNewRow()
+            try! csv.write(field:"Name")
+            try! csv.write(field:"Description")
+            try! csv.write(field:"Category")
+            try! csv.write(field:"Weight (each)")
+            try! csv.write(field:"Quantity")
+            try! csv.write(field:"Consumable")
+            try! csv.write(field:"Worn")
+            try! csv.write(field:"Verified")
+
+            let hikeGears = hike.hikeGears
+            hikeGears.forEach { (hikeGear) in
+                if let gear = hikeGear.gearList.first {
+                    csv.beginNewRow()
+                    try! csv.write(field: gear.name)
+                    try! csv.write(field: gear.desc)
+                    try! csv.write(field: gear.category)
+                    try! csv.write(field: gear.weightString())
+                    try! csv.write(field: String(hikeGear.numberUnits))
+                    try! csv.write(field: String(hikeGear.consumable))
+                    try! csv.write(field: String(hikeGear.worn))
+                    try! csv.write(field: String(hikeGear.verified))
+                }
+            }
+            
+            let hikeBrain = HikeBrain(hike)
+            csv.beginNewRow()
+            try! csv.write(field: "")
+            csv.beginNewRow()
+            try! csv.write(field: "Total weight")
+            try! csv.write(field: hikeBrain.getTotalWeight())
+            csv.beginNewRow()
+            try! csv.write(field: "Base weight")
+            try! csv.write(field: hikeBrain.getBaseWeight())
+            csv.beginNewRow()
+            try! csv.write(field: "Consumable weight")
+            try! csv.write(field: hikeBrain.getConsumableWeight())
+            csv.beginNewRow()
+            try! csv.write(field: "Worn weight")
+            try! csv.write(field: hikeBrain.getWornWeight())
+
+            
             csv.stream.close()
             
             // Create the Array which includes the files you want to share
