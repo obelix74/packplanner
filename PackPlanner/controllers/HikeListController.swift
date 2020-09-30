@@ -116,9 +116,9 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
         }
         else {
             let exportAction = SwipeAction(style: .default, title: "Export") { action, indexPath in
-                action.fulfill(with: .reset)
                 self.exportHikeAt(at: indexPath)
             }
+            exportAction.hidesWhenSelected = true
             exportAction.image = UIImage(systemName: "square.and.arrow.up")
             return [exportAction]
         }
