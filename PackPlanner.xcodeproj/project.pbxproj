@@ -25,6 +25,7 @@
 		A952DE0D252163BD0007934F /* EditHikeGearController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A952DE0C252163BD0007934F /* EditHikeGearController.swift */; };
 		A952DE26252287A20007934F /* HikeReportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A952DE25252287A20007934F /* HikeReportController.swift */; };
 		A952DE2E25228CC50007934F /* ReportTableCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A952DE2D25228CC50007934F /* ReportTableCell.swift */; };
+		A952DE3E25240A820007934F /* TemporaryFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A952DE3D25240A820007934F /* TemporaryFile.swift */; };
 		A95F90132515B94D00A73E40 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95F90122515B94D00A73E40 /* AppDelegate.swift */; };
 		A95F90152515B94D00A73E40 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A95F90142515B94D00A73E40 /* SceneDelegate.swift */; };
 		A95F901A2515B94D00A73E40 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A95F90182515B94D00A73E40 /* Main.storyboard */; };
@@ -85,6 +86,7 @@
 		A952DE0C252163BD0007934F /* EditHikeGearController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditHikeGearController.swift; sourceTree = "<group>"; };
 		A952DE25252287A20007934F /* HikeReportController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeReportController.swift; sourceTree = "<group>"; };
 		A952DE2D25228CC50007934F /* ReportTableCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportTableCell.swift; sourceTree = "<group>"; };
+		A952DE3D25240A820007934F /* TemporaryFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemporaryFile.swift; sourceTree = "<group>"; };
 		A95F900F2515B94D00A73E40 /* PackPlanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PackPlanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A95F90122515B94D00A73E40 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A95F90142515B94D00A73E40 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -243,6 +245,7 @@
 			children = (
 				A9FC0F842519B07D009E6993 /* StringExt.swift */,
 				A9FC0F892519B095009E6993 /* UIColorExt.swift */,
+				A952DE3D25240A820007934F /* TemporaryFile.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -464,6 +467,7 @@
 				A94788CF251B190F0017F916 /* ModalTransitionListener.swift in Sources */,
 				A95F90132515B94D00A73E40 /* AppDelegate.swift in Sources */,
 				A9FC0F902519B11D009E6993 /* FormerInputAccessoryView.swift in Sources */,
+				A952DE3E25240A820007934F /* TemporaryFile.swift in Sources */,
 				A9356940251854AF00542BCC /* SettingsManager.swift in Sources */,
 				A952DE2E25228CC50007934F /* ReportTableCell.swift in Sources */,
 				A94788F1251C11840017F916 /* AddHikeViewController.swift in Sources */,

@@ -56,7 +56,6 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
         performSegue(withIdentifier: "showReport", sender: self)
     }
     
-    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "editHike") {
             let destinationVC = segue.destination as! AddHikeViewController
@@ -153,8 +152,8 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
              }
              
              // customize the action appearance
-             deleteAction.image = UIImage(named: "delete-icon")
-             
+            deleteAction.image = UIImage(systemName: "trash")
+
              return [deleteAction]
          }
          else {
@@ -168,7 +167,7 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
              }
              
              // customize the action appearance
-             verifiedAction.image = UIImage(named: verifyImage)
+             verifiedAction.image = UIImage(systemName: verifyImage)
              
              return [verifiedAction]
          }

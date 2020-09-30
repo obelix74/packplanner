@@ -9,6 +9,7 @@ import UIKit
 import RealmSwift
 import ChameleonFramework
 import SwipeCellKit
+import CSV
 
 class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     
@@ -103,17 +104,88 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     
     // MARK: Swipe table
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
-        guard orientation == .right else { return nil }
         
-        let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
-           self.updateModel(at: indexPath)
-           action.fulfill(with: .delete)
+        if (orientation == .right) {
+            let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
+                self.updateModel(at: indexPath)
+                action.fulfill(with: .delete)
+            }
+            // customize the action appearance
+            deleteAction.image = UIImage(systemName: "trash")
+            return [deleteAction]
         }
-        
-        // customize the action appearance
-        deleteAction.image = UIImage(named: "delete-icon")
-        
-        return [deleteAction]
+        else {
+            let exportAction = SwipeAction(style: .default, title: "Export") { action, indexPath in
+                action.fulfill(with: .reset)
+                self.exportHikeAt(at: indexPath)
+            }
+            exportAction.image = UIImage(systemName: "square.and.arrow.up")
+            return [exportAction]
+        }
+    }
+    
+    func exportHikeAt(at indexPath: IndexPath) {
+        let hike = self.hikes![indexPath.row]
+        do {
+            let fileURL = try TemporaryFile(creatingTempDirectoryForFilename: "\(hike.name.replacingOccurrences(of: " ", with: "_")).csv").fileURL
+            let fileName = fileURL.path
+            print("Writing CSV to file \(fileName)")
+            let stream = OutputStream(toFileAtPath: fileName, append: false)!
+            let csv = try! CSVWriter(stream: stream)
+            
+            // Write fields separately
+            csv.beginNewRow()
+            try! csv.write(field: "Name")
+            try! csv.write(field: hike.name)
+            
+            csv.beginNewRow()
+            try! csv.write(field: "Description")
+            try! csv.write(field: hike.desc)
+            
+            csv.beginNewRow()
+            try! csv.write(field: "Distance")
+            try! csv.write(field: hike.distance)
+            
+            csv.beginNewRow()
+            try! csv.write(field: "Location")
+            try! csv.write(field: hike.location)
+            
+            csv.beginNewRow()
+            try! csv.write(field: "Completed")
+            try! csv.write(field: String(hike.completed))
+            if (hike.externalLink1 != nil) {
+                csv.beginNewRow()
+                try! csv.write(field: "URL1")
+                try! csv.write(field: hike.externalLink1!)
+            }
+            if (hike.externalLink2 != nil) {
+                csv.beginNewRow()
+                try! csv.write(field: "URL2")
+                try! csv.write(field: hike.externalLink2!)
+            }
+            if (hike.externalLink3 != nil) {
+                csv.beginNewRow()
+                try! csv.write(field: "URL3")
+                try! csv.write(field: hike.externalLink3!)
+            }
+            csv.beginNewRow()
+            csv.stream.close()
+            
+            // Create the Array which includes the files you want to share
+            var filesToShare = [Any]()
+
+            // Add the path of the file to the Array
+            filesToShare.append(fileURL)
+
+            // Make the activityViewContoller which shows the share-view
+            let activityViewController = UIActivityViewController(activityItems: filesToShare, applicationActivities: nil)
+
+            // Show the share-view
+            self.present(activityViewController, animated: true, completion: nil)
+        }
+        catch {
+            print("Error writing CSV \(error)")
+        }
     }
     
     func updateModel(at indexPath: IndexPath) {

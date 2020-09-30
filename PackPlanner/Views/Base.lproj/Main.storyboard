@@ -463,31 +463,31 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <stackView opaque="NO" contentMode="scaleToFill" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="WWs-wv-LUU" userLabel="Overall Stack">
-                                            <rect key="frame" x="10" y="21" width="394" height="103"/>
+                                            <rect key="frame" x="10" y="3" width="394" height="121"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="q1K-Ug-PMR">
-                                                    <rect key="frame" x="0.0" y="0.0" width="394" height="103"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="394" height="121"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ifD-s7-yS3">
-                                                            <rect key="frame" x="0.0" y="0.0" width="55" height="26"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="55" height="30.5"/>
                                                             <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Description" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0GA-gC-vrm">
-                                                            <rect key="frame" x="0.0" y="26" width="87.5" height="25.5"/>
+                                                            <rect key="frame" x="0.0" y="30.5" width="87.5" height="30"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No of Gear" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ro7-Fy-pfl">
-                                                            <rect key="frame" x="0.0" y="51.5" width="82.5" height="26"/>
+                                                            <rect key="frame" x="0.0" y="60.5" width="82.5" height="30.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="totalWeight" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="E84-SG-Am6">
-                                                            <rect key="frame" x="0.0" y="77.5" width="87.5" height="25.5"/>
+                                                            <rect key="frame" x="0.0" y="91" width="87.5" height="30"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
@@ -498,8 +498,8 @@
                                         </stackView>
                                     </subviews>
                                     <constraints>
+                                        <constraint firstItem="WWs-wv-LUU" firstAttribute="top" secondItem="ssq-rM-tIm" secondAttribute="top" constant="3" id="1K6-BO-BLh"/>
                                         <constraint firstAttribute="bottom" secondItem="WWs-wv-LUU" secondAttribute="bottom" constant="10" id="Lxo-N5-RWa"/>
-                                        <constraint firstItem="WWs-wv-LUU" firstAttribute="top" secondItem="ssq-rM-tIm" secondAttribute="topMargin" constant="10" id="cXO-g3-OND"/>
                                         <constraint firstItem="WWs-wv-LUU" firstAttribute="leading" secondItem="ssq-rM-tIm" secondAttribute="leading" constant="10" id="lbH-VJ-BDZ"/>
                                         <constraint firstAttribute="trailing" secondItem="WWs-wv-LUU" secondAttribute="trailing" constant="10" id="z2m-8E-bt5"/>
                                     </constraints>
@@ -608,6 +608,7 @@
                             <outlet property="delegate" destination="cDZ-eB-pba" id="wES-5y-OnX"/>
                         </connections>
                     </tableView>
+                    <toolbarItems/>
                     <navigationItem key="navigationItem" id="XE8-dJ-RUu">
                         <rightBarButtonItems>
                             <barButtonItem image="pencil" catalog="system" id="AwE-ze-aLn" userLabel="Edit button item">
@@ -627,6 +628,7 @@
                             </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <segue destination="OEz-rE-C2R" kind="show" identifier="addGearToHike" id="Jcz-cM-f23"/>
                         <segue destination="fGv-OC-fy8" kind="show" identifier="editHike" id="ZOV-io-LOr"/>
@@ -1077,7 +1079,7 @@
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="Jcz-cM-f23"/>
-        <segue reference="NHK-NW-D5m"/>
+        <segue reference="ZOV-io-LOr"/>
         <segue reference="oQq-iD-xNR"/>
         <segue reference="cZu-FW-gml"/>
     </inferredMetricsTieBreakers>

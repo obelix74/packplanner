@@ -12,5 +12,6 @@ target 'PackPlanner' do
   pod 'ChameleonFramework/Swift', :git => 'https://github.com/wowansm/Chameleon.git', :branch => 'swift5'
   pod 'IQKeyboardManagerSwift'
   pod 'Former'
+  pod 'CSV.swift', '~> 2.4.3'
 end
 

@@ -76,7 +76,7 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
         }
         
         // customize the action appearance
-        deleteAction.image = UIImage(named: "delete-icon")
+        deleteAction.image = UIImage(systemName: "trash")
         
         return [deleteAction]
     }
