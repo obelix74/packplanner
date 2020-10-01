@@ -55,26 +55,28 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     // MARK: - Table view data source
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
         if (self.hikes!.isEmpty) {
-            return 1
-        } else {
-            return self.hikes!.count
+            let refreshAlert = UIAlertController(title: "No hikes found", message: "Please add a new hike", preferredStyle: UIAlertController.Style.alert)
+
+            refreshAlert.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: { (action: UIAlertAction!) in
+            }))
+            
+            present(refreshAlert, animated: true, completion: nil)
+
         }
+        return self.hikes!.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "hikeCell", for: indexPath) as! HikeListTableViewCell
         cell.delegate = self
         
-        if (self.hikes?.count == 0) {
-            cell.nameLabel.text = "No hikes found, please add"
-            cell.descriptionLabel.text = ""
-            cell.noItemsLabel.text = ""
-        } else {
-            let hike = self.hikes![indexPath.row]
-            cell.existingHike = hike
-            cell.accessoryType = .disclosureIndicator
-        }
+        
+        let hike = self.hikes![indexPath.row]
+        cell.existingHike = hike
+        cell.accessoryType = .disclosureIndicator
+        
         return cell
     }
     
@@ -179,7 +181,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
             try! csv.write(field:"Consumable")
             try! csv.write(field:"Worn")
             try! csv.write(field:"Verified")
-
+            
             let hikeGears = hike.hikeGears
             hikeGears.forEach { (hikeGear) in
                 if let gear = hikeGear.gearList.first {
@@ -210,19 +212,19 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
             csv.beginNewRow()
             try! csv.write(field: "Worn weight")
             try! csv.write(field: hikeBrain.getWornWeight())
-
+            
             
             csv.stream.close()
             
             // Create the Array which includes the files you want to share
             var filesToShare = [Any]()
-
+            
             // Add the path of the file to the Array
             filesToShare.append(fileURL)
-
+            
             // Make the activityViewContoller which shows the share-view
             let activityViewController = UIActivityViewController(activityItems: filesToShare, applicationActivities: nil)
-
+            
             // Show the share-view
             self.present(activityViewController, animated: true, completion: nil)
         }

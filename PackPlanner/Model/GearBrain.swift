@@ -91,6 +91,10 @@ class GearBrain {
     func deleteGear(gear: Gear) {
         do {
             try GearBrain.realm.write {
+                let hikeGears = gear.hikeGear
+                hikeGears.forEach { (hikeGear) in
+                    GearBrain.realm.delete(hikeGear)
+                }
                 GearBrain.realm.delete(gear)
             }
         }catch {
