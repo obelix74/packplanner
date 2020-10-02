@@ -13,10 +13,9 @@ class AddGearToHikeTableViewController: GearBaseTableViewController {
     
     @IBOutlet weak var saveButton: UIBarButtonItem!
     
-    var hike : Hike? {
-        didSet {
-        }
-    }
+    var hike : Hike?
+    
+    var gearSelected : [Gear:Bool] = [:]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,7 +42,11 @@ class AddGearToHikeTableViewController: GearBaseTableViewController {
     }
     
     override func getGearBrain(_ search: String) -> GearBrain{
-        return GearBrain.getFilteredGearsForExistingHike(hike: hike!)
+        let gearBrain = GearBrain.getFilteredGearsForExistingHike(hike: hike!)
+        gearBrain.gears.forEach { (gear) in
+            self.gearSelected[gear] = false 
+        }
+        return gearBrain
     }
     
     override func getNoGearMessage() -> [String:String]{
@@ -68,17 +71,27 @@ class AddGearToHikeTableViewController: GearBaseTableViewController {
             cell.textLabel?.text = "No gears found"
         } else {
             cell.existingGear = gearBrain?.getGear(indexPath: indexPath)
+            if (self.gearSelected[cell.existingGear!]!) {
+                cell.accessoryType = .checkmark
+            }
+            else {
+                cell.accessoryType = .none
+            }
         }
         return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cell = tableView.cellForRow(at: indexPath)!
+        let gear = self.gearBrain!.getGear(indexPath: indexPath)
+        self.gearSelected[gear!] = true
         cell.accessoryType = .checkmark
     }
     
     override func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         let cell = tableView.cellForRow(at: indexPath)!
+        let gear = self.gearBrain!.getGear(indexPath: indexPath)
+        self.gearSelected[gear!] = false
         cell.accessoryType = .none
     }
 }
