@@ -17,7 +17,7 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.rowHeight = 60.0
+        tableView.rowHeight = 65
         searchBar.delegate = self
     }
     

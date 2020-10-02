@@ -227,6 +227,8 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
             
             // Show the share-view
             self.present(activityViewController, animated: true, completion: nil)
+            
+            self.tableView.reloadData()
         }
         catch {
             print("Error writing CSV \(error)")
