@@ -19,7 +19,7 @@ class HikeListTableViewCell: SwipeTableViewCell {
         didSet {
             self.nameLabel.text = existingHike!.name
             self.descriptionLabel.text = existingHike!.desc
-            self.noItemsLabel.text = String("\(existingHike!.hikeGears.count) gear")
+            self.noItemsLabel.text = String("(\(existingHike!.hikeGears.count))")
             self.completedImage.isHighlighted = existingHike!.completed
         }
     }
