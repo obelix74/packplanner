@@ -61,7 +61,9 @@ class EditHikeGearController: UIViewController {
         self.quantityStepper.value = Double(self.hikeGear!.numberUnits)
         self.quantityLabel.text = String(format: "%.0f", self.quantityStepper.value)
         self.consumableImage.isHighlighted = self.hikeGear!.consumable
+        self.consumableSwitch.isOn = self.hikeGear!.consumable
         self.wornImage.isHighlighted = self.hikeGear!.worn
+        self.wornSwitch.isOn = self.hikeGear!.worn
     }
     
     

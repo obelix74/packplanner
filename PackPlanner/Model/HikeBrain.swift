@@ -132,7 +132,7 @@ class HikeBrain {
     }
     
     func getHikeGear(indexPath: IndexPath) -> HikeGear? {
-        let section = indexPath.section - 1
+        let section = indexPath.section
         let category = self.categoriesSorted?[section]
         if (category != nil) {
             let gearsInSection = self.categoryMap[category!]
@@ -142,7 +142,7 @@ class HikeBrain {
     }
     
     func getCategory(section: Int) -> String? {
-        return self.categoriesSorted?[section - 1]
+        return self.categoriesSorted?[section]
     }
     
     func getNumberSections() -> Int {

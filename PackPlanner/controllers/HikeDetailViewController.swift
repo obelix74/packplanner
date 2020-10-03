@@ -8,14 +8,26 @@
 import UIKit
 import SwipeCellKit
 
-class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegate, RefreshProtocol {
+class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, RefreshProtocol, UITableViewDelegate, UITableViewDataSource {
     
     var hikeBrain : HikeBrain?
+    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var nameLabel: UILabel!
+    @IBOutlet weak var descriptionLabel: UILabel!
+    @IBOutlet weak var noGearLabel: UILabel!
+    @IBOutlet weak var totalWeightLabel: UILabel!
     
     var existingHike : Hike?{
         didSet {
             self.hikeBrain = HikeBrain(existingHike!)
-        }
+    }
+    }
+    
+    fileprivate func updateSummaryLabels() {
+        self.nameLabel.text = existingHike?.name
+        self.descriptionLabel.text = existingHike?.desc
+        self.noGearLabel.text = String("Gear: \(self.existingHike!.hikeGears.count)")
+        self.totalWeightLabel.text = self.hikeBrain?.getTotalWeight()
     }
     
     override func viewDidLoad() {
@@ -24,6 +36,10 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
         if let hike = existingHike {
             self.title = hike.name
         }
+        
+        self.tableView.delegate = self
+        self.tableView.dataSource = self
+        updateSummaryLabels()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -82,48 +98,28 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
     }
     
     //MARK: - Table data source
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        return self.hikeBrain!.getNumberSections() + 1
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return self.hikeBrain!.getNumberSections()
     }
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if (section == 0) {
-            return 1
-        }
-        else {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
             return self.hikeBrain!.getNumberOfRowsInSection(section: section)
-        }
     }
     
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        if (section == 0) {
-            return "Hike detail"
-        }
-        else {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
             return self.hikeBrain!.getCategory(section: section)
-        }
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let section = indexPath.section
-        if (section == 0) {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "titlePrototypeCell", for: indexPath) as! HikeDetailTableViewCell
-            cell.hikeBrain = self.hikeBrain
-            cell.selectionStyle = .none
-            cell.contentView.backgroundColor = .flatBlueDark()
-            return cell
-        }
-        else {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             let cell = tableView.dequeueReusableCell(withIdentifier: "gearPrototypeCell", for: indexPath) as! HikeGearTableViewCell
             cell.hikeGear = self.hikeBrain?.getHikeGear(indexPath: indexPath)
             cell.hikeBrain = self.hikeBrain!
             cell.delegate = self
             cell.accessoryType = .disclosureIndicator
             return cell
-        }
     }
     
-    override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         view.tintColor = UIColor.flatPlumDark()
         let header = view as! UITableViewHeaderFooterView
         header.textLabel?.textColor = UIColor.white
@@ -132,14 +128,12 @@ class HikeDetailViewController: UITableViewController, SwipeTableViewCellDelegat
     //MARK: - Table delegate
     
     func refresh(at indexPath: IndexPath) {
-        let generalSection: IndexPath = IndexPath(row: 0, section: 0)
-        tableView.reloadRows(at: [indexPath, generalSection], with: .fade)
+        updateSummaryLabels()
+        tableView.reloadRows(at: [indexPath], with: .fade)
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if (indexPath.section != 0) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
             performSegue(withIdentifier: "editHikeGear", sender: self)
-        }
     }
     
     //MARK: Swipe cell actions
