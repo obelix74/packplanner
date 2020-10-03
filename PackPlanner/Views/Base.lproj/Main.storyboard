@@ -496,13 +496,13 @@
                                         </constraints>
                                     </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="uLl-mO-tpf" userLabel="Pending Stack View">
-                                        <rect key="frame" x="137.5" y="148" width="139" height="31"/>
+                                        <rect key="frame" x="63.5" y="148" width="287" height="31"/>
                                         <subviews>
                                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="1eJ-AZ-wRE">
-                                                <rect key="frame" x="0.0" y="0.0" width="139" height="32"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="287" height="32"/>
                                                 <segments>
                                                     <segment title="All"/>
-                                                    <segment title="Pending"/>
+                                                    <segment title="Pending Verification"/>
                                                 </segments>
                                                 <connections>
                                                     <action selector="pendingSwitchToggled:" destination="9ui-z1-Jan" eventType="valueChanged" id="HD6-X8-b8h"/>
@@ -1109,7 +1109,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="FbW-yb-Noe"/>
+        <segue reference="hcP-Lc-oa4"/>
         <segue reference="vM4-Rk-TX2"/>
         <segue reference="I4T-as-IkO"/>
         <segue reference="cZu-FW-gml"/>

@@ -69,10 +69,7 @@ class EditHikeGearController: UIViewController {
     
     @IBAction func doneButtonPressed(_ sender: UIBarButtonItem) {
         _ = navigationController?.popViewController(animated: true)
-        if (self.hikeBrain != nil) {
-            self.hikeBrain?.initializeHike()
-        }
-        
+
         if (self.delegate != nil) {
             delegate?.refresh(at: self.indexPath!)
         }
