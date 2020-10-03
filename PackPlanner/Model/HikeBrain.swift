@@ -32,8 +32,11 @@ class HikeBrain {
     var categoryMap : [String: [HikeGear]] = [:]
     var categoriesSorted : [String]?
 
-    init (_ hike : Hike) {
+    var pendingOnly : Bool
+    
+    init (_ hike : Hike, _ pendingOnly : Bool) {
         self.hike = hike
+        self.pendingOnly = pendingOnly
         initializeHike()
     }
     
@@ -47,7 +50,6 @@ class HikeBrain {
     }
     
     func initializeHike() {
-        self.hikeGears = self.hike.hikeGears
         self.totalWeightInGrams = 0.0
         self.consumableWeightInGrams = 0.0
         self.baseWeightInGrams = 0.0
@@ -58,7 +60,7 @@ class HikeBrain {
         self.consumableWeightDistribution = [:]
         self.wornWeightDistribution = [:]
         
-        hikeGears.forEach { (hikeGear) in
+        self.hike.hikeGears.forEach { (hikeGear) in
             let gearList = hikeGear.gearList
             let gear = gearList.first!
             let number = hikeGear.numberUnits
@@ -84,6 +86,18 @@ class HikeBrain {
                 self.baseWeightInGrams += gearWeight
                 updateCategoryWeight(&self.baseWeightDistribution, category, gearWeight)
             }
+        }
+        
+        if (self.pendingOnly) {
+            self.hike.hikeGears.forEach { (hikeGear) in
+                if (!hikeGear.verified) {
+                    self.hikeGears.append(hikeGear)
+                }
+            }
+        }
+        else {
+            // use all gears
+            self.hikeGears = self.hike.hikeGears
         }
         
         self.hikeGears.forEach({ (hikeGear) in

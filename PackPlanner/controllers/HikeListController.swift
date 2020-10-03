@@ -197,7 +197,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
                 }
             }
             
-            let hikeBrain = HikeBrain(hike)
+            let hikeBrain = HikeBrain(hike, false)
             csv.beginNewRow()
             try! csv.write(field: "")
             csv.beginNewRow()

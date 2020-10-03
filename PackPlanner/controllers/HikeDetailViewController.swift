@@ -21,7 +21,7 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     
     var existingHike : Hike?{
         didSet {
-            self.hikeBrain = HikeBrain(existingHike!)
+            self.hikeBrain = HikeBrain(existingHike!, false)
         }
     }
     
@@ -45,6 +45,15 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     }
     
     @IBAction func pendingSwitchToggled(_ sender: UISegmentedControl) {
+        print("Segment selected: \(sender.selectedSegmentIndex)")
+        let selected = sender.selectedSegmentIndex
+        if (selected == 0) {
+            self.hikeBrain = HikeBrain(existingHike!, false);
+        }
+        else {
+            self.hikeBrain = HikeBrain(existingHike!, true);
+        }
+        self.tableView.reloadData()
     }
     
     override func viewDidAppear(_ animated: Bool) {
