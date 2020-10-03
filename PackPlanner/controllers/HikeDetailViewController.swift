@@ -16,11 +16,13 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var noGearLabel: UILabel!
     @IBOutlet weak var totalWeightLabel: UILabel!
+    @IBOutlet weak var pendingSwitchToggled: UISegmentedControl!
+
     
     var existingHike : Hike?{
         didSet {
             self.hikeBrain = HikeBrain(existingHike!)
-    }
+        }
     }
     
     fileprivate func updateSummaryLabels() {
@@ -40,6 +42,9 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
         self.tableView.delegate = self
         self.tableView.dataSource = self
         updateSummaryLabels()
+    }
+    
+    @IBAction func pendingSwitchToggled(_ sender: UISegmentedControl) {
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -103,20 +108,20 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-            return self.hikeBrain!.getNumberOfRowsInSection(section: section)
+        return self.hikeBrain!.getNumberOfRowsInSection(section: section)
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-            return self.hikeBrain!.getCategory(section: section)
+        return self.hikeBrain!.getCategory(section: section)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "gearPrototypeCell", for: indexPath) as! HikeGearTableViewCell
-            cell.hikeGear = self.hikeBrain?.getHikeGear(indexPath: indexPath)
-            cell.hikeBrain = self.hikeBrain!
-            cell.delegate = self
-            cell.accessoryType = .disclosureIndicator
-            return cell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "gearPrototypeCell", for: indexPath) as! HikeGearTableViewCell
+        cell.hikeGear = self.hikeBrain?.getHikeGear(indexPath: indexPath)
+        cell.hikeBrain = self.hikeBrain!
+        cell.delegate = self
+        cell.accessoryType = .disclosureIndicator
+        return cell
     }
     
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
@@ -133,42 +138,42 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-            performSegue(withIdentifier: "editHikeGear", sender: self)
+        performSegue(withIdentifier: "editHikeGear", sender: self)
     }
     
     //MARK: Swipe cell actions
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
-         if (orientation == .right) {
-             let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
-                 self.updateModel(at: indexPath)
-                 action.fulfill(with: .delete)
-                 self.refresh(at: indexPath)
-             }
-             
-             // customize the action appearance
+        if (orientation == .right) {
+            let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
+                self.deleteGear(at: indexPath)
+                action.fulfill(with: .delete)
+                self.refresh(at: indexPath)
+            }
+            
+            // customize the action appearance
             deleteAction.image = UIImage(systemName: "trash")
-
-             return [deleteAction]
-         }
-         else {
-             let hikeGear = self.hikeBrain!.getHikeGear(indexPath: indexPath)
-             let verified = hikeGear!.verified
-             let title = verified ? "Unverify" : "Verify"
-             let verifyImage = verified ? "checkmark.seal" : "checkmark.seal.fill"
-             let verifiedAction = SwipeAction(style: .default, title: title) { action, indexPath in
-                 self.hikeBrain!.updateVerifiedToggle(hikeGear: hikeGear!)
-                 self.refresh(at: indexPath)
-             }
-             
-             // customize the action appearance
-             verifiedAction.image = UIImage(systemName: verifyImage)
-             
-             return [verifiedAction]
-         }
-     }
-
+            
+            return [deleteAction]
+        }
+        else {
+            let hikeGear = self.hikeBrain!.getHikeGear(indexPath: indexPath)
+            let verified = hikeGear!.verified
+            let title = verified ? "Unverify" : "Verify"
+            let verifyImage = verified ? "checkmark.seal" : "checkmark.seal.fill"
+            let verifiedAction = SwipeAction(style: .default, title: title) { action, indexPath in
+                self.hikeBrain!.updateVerifiedToggle(hikeGear: hikeGear!)
+                self.refresh(at: indexPath)
+            }
+            
+            // customize the action appearance
+            verifiedAction.image = UIImage(systemName: verifyImage)
+            
+            return [verifiedAction]
+        }
+    }
     
-    func updateModel(at indexPath: IndexPath) {
+    
+    func deleteGear(at indexPath: IndexPath) {
         print("UpdateModel called")
         let refreshAlert = UIAlertController(title: "Refresh", message: "Are you sure you want to delete? ", preferredStyle: UIAlertController.Style.alert)
         
