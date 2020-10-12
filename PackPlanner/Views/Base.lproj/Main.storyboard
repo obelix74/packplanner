@@ -128,7 +128,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="center" axis="vertical" distribution="equalSpacing" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="BCr-Pj-19G">
-                                <rect key="frame" x="95" y="96" width="223" height="151.5"/>
+                                <rect key="frame" x="90" y="96" width="223" height="205.5"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Unit of weight" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dZa-Sr-2Ue">
                                         <rect key="frame" x="26.5" y="0.0" width="170.5" height="32.5"/>
@@ -157,6 +157,14 @@
                                             <action selector="dismissButtonPressed:" destination="g6F-tN-j1m" eventType="touchUpInside" id="8a6-di-fAu"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rUD-9u-jPt">
+                                        <rect key="frame" x="8.5" y="171.5" width="206" height="34"/>
+                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="18"/>
+                                        <state key="normal" title="Rate and Review the app"/>
+                                        <connections>
+                                            <action selector="reviewButtonSelected:" destination="g6F-tN-j1m" eventType="touchUpInside" id="QkA-oq-qtM"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="fPc-fR-R9Z" firstAttribute="top" secondItem="dZa-Sr-2Ue" secondAttribute="bottom" constant="20" id="K8o-s8-rEB"/>
@@ -166,7 +174,7 @@
                         <viewLayoutGuide key="safeArea" id="uT0-ks-c58"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="BCr-Pj-19G" firstAttribute="leading" secondItem="uT0-ks-c58" secondAttribute="leading" constant="95" id="WiK-9I-02Q"/>
+                            <constraint firstItem="BCr-Pj-19G" firstAttribute="leading" secondItem="uT0-ks-c58" secondAttribute="leading" constant="90" id="WiK-9I-02Q"/>
                             <constraint firstItem="BCr-Pj-19G" firstAttribute="top" secondItem="uT0-ks-c58" secondAttribute="top" constant="96" id="uHz-8u-qsI"/>
                         </constraints>
                     </view>
@@ -174,6 +182,7 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="dismissButton" destination="Ikc-3l-WvI" id="YC0-BW-4y5"/>
+                        <outlet property="reviewButton" destination="rUD-9u-jPt" id="9aA-5B-K1r"/>
                         <outlet property="unitOfWeight" destination="fPc-fR-R9Z" id="p6f-Vj-nSF"/>
                     </connections>
                 </viewController>
@@ -1062,7 +1071,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="FbW-yb-Noe"/>
+        <segue reference="hcP-Lc-oa4"/>
         <segue reference="vM4-Rk-TX2"/>
         <segue reference="I4T-as-IkO"/>
         <segue reference="cZu-FW-gml"/>

@@ -37,7 +37,7 @@ class HikeGearTableViewCell: SwipeTableViewCell {
         self.weightLabel.text = gear!.weightString()
         self.quantityLabel.text = String("Quantity: \(hikeGear!.numberUnits)")
         self.consumableImage.image = hikeGear!.consumable ? UIImage(named: "consumable_highlighted") : UIImage(named: "consumable")
-        let verifyImage = hikeGear!.verified ? "checkmark.seal" : "checkmark.seal.fill"
+        let verifyImage = hikeGear!.verified ? "checkmark.seal.fill" : "checkmark.seal"
         self.verifiedImage.image = UIImage(systemName: verifyImage)
         self.wornImage.image = hikeGear!.worn ? UIImage(named: "worn_highlighted") : UIImage(named: "worn")
     }

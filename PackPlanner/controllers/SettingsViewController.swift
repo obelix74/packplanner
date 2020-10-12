@@ -16,6 +16,8 @@ class SettingsViewController: UIViewController {
     var settings: Settings = SettingsManager.SINGLETON.settings
     @IBOutlet weak var unitOfWeight: UISegmentedControl!
     
+    @IBOutlet weak var reviewButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         let backgroundColor = UIColor.flatRedDark()
@@ -49,6 +51,13 @@ class SettingsViewController: UIViewController {
         }
     }
 
+    @IBAction func reviewButtonSelected(_ sender: UIButton) {
+        let url = "itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?id=1534201357&onlyLatestVersion=true&pageNumber=0&sortOrdering=1&type=Purple+Software"
+        if let url = URL(string: url) {
+            UIApplication.shared.open(url)
+        }
+    }
+    
     @IBAction func dismissButtonPressed(_ sender: Any) {
         dismiss(animated: true, completion: nil)
         ModalTransitionMediator.instance.sendPopoverDismissed(modelChanged: true)
