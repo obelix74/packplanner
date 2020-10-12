@@ -154,8 +154,8 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
         if (orientation == .right) {
             let deleteAction = SwipeAction(style: .destructive, title: "Remove") { action, indexPath in
                 self.removeGear(at: indexPath)
-                action.fulfill(with: .delete)
                 self.refresh(at: indexPath)
+                action.fulfill(with: .delete)
             }
             
             // customize the action appearance
@@ -208,6 +208,7 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
         
         refreshAlert.addAction(UIAlertAction(title: "Delete", style: .default, handler: { (action: UIAlertAction!) in
             self.hikeBrain?.deleteHikeGearAt(indexPath: indexPath)
+            self.updateSummaryLabels()
             self.tableView.reloadData()
         }))
         
