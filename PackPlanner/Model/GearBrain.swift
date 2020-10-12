@@ -29,7 +29,7 @@ class GearBrain {
         self.categoriesSorted = self.categoryMap.keys.sorted()
     }
     
-//    Returns gears filtered by an optional search string
+    //    Returns gears filtered by an optional search string
     static func getFilteredGears(search: String) -> GearBrain {
         var gears = realm.objects(Gear.self)
         if (!search.isEmpty) {
@@ -44,7 +44,7 @@ class GearBrain {
         return gearBrain
     }
     
-//    Given a hike, walk through the list of existing gears in a hike and return only the gears that are not added yet
+    //    Given a hike, walk through the list of existing gears in a hike and return only the gears that are not added yet
     static func getFilteredGearsForExistingHike(hike: Hike) -> GearBrain {
         var existingGears : [String] = []
         hike.hikeGears.forEach { (hikeGear) in
@@ -105,6 +105,22 @@ class GearBrain {
     func deleteGearAt(indexPath: IndexPath) {
         if let gear = getGear(indexPath: indexPath) {
             deleteGear(gear: gear)
+        }
+    }
+    
+    static func copyGear(gear: Gear) {
+        do {
+            try GearBrain.realm.write {
+                let newGear = Gear()
+                newGear.category = gear.category
+                newGear.desc = gear.desc
+                newGear.name = "Copy of " + gear.name
+                newGear.uuid = gear.uuid
+                newGear.weightInGrams = gear.weightInGrams
+                GearBrain.realm.add(newGear)
+            }
+        } catch {
+            print("Error copying gear \(error)")
         }
     }
 }

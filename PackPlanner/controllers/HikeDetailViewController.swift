@@ -198,13 +198,13 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
                 UIImage(named: consumableImage)?.draw(in: CGRect(x: 0, y: 0, width: 30, height: 30))
             }
 
-            return [verifiedAction, wornAction, consumableAction]
+            return [verifiedAction, consumableAction, wornAction]
         }
     }
     
     
     func removeGear(at indexPath: IndexPath) {
-        let refreshAlert = UIAlertController(title: "Refresh", message: "Are you sure you want to delete? ", preferredStyle: UIAlertController.Style.alert)
+        let refreshAlert = UIAlertController(title: "Refresh", message: "Are you sure you want to remove? ", preferredStyle: UIAlertController.Style.alert)
         
         refreshAlert.addAction(UIAlertAction(title: "Delete", style: .default, handler: { (action: UIAlertAction!) in
             self.hikeBrain?.deleteHikeGearAt(indexPath: indexPath)

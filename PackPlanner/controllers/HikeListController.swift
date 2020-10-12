@@ -122,7 +122,16 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
             }
             exportAction.hidesWhenSelected = true
             exportAction.image = UIImage(systemName: "square.and.arrow.up")
-            return [exportAction]
+            
+            let copyAction = SwipeAction(style: .default, title: "Copy") { action, indexPath in
+                let hike = self.hikes![indexPath.row]
+                HikeBrain.copyHike(hike: hike)
+                self.loadHikes()
+            }
+            copyAction.hidesWhenSelected = true
+            copyAction.image = UIImage(systemName: "doc")
+            
+            return [copyAction, exportAction]
         }
     }
     

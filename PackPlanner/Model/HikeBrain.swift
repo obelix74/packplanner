@@ -229,4 +229,38 @@ class HikeBrain {
             print("Error updating hikeGear \(error)")
         }
     }
+    
+    static func copyHike(hike: Hike) {
+        do {
+            try HikeBrain.realm.write {
+                let newHike = Hike()
+                newHike.name = "Copy of " + hike.name
+                newHike.desc = hike.desc
+                newHike.completed = false
+                newHike.distance = hike.distance
+                newHike.location = hike.location
+                newHike.externalLink1 = hike.externalLink1
+                newHike.externalLink2 = hike.externalLink2
+                newHike.externalLink3 = hike.externalLink3
+                
+                hike.hikeGears.forEach { (hikeGear) in
+                    let newHikeGear = HikeGear()
+                    newHikeGear.consumable = hikeGear.consumable
+                    let gear = hikeGear.gearList.first
+                    if (gear != nil) {
+                        newHikeGear.gearList.append(gear!)
+                    }
+                    newHikeGear.notes = hikeGear.notes
+                    newHikeGear.numberUnits = hikeGear.numberUnits
+                    newHikeGear.verified = hikeGear.verified
+                    newHikeGear.worn = hikeGear.worn
+                    newHike.hikeGears.append(newHikeGear)
+                }
+                
+                HikeBrain.realm.add(newHike)
+            }
+        } catch {
+            print("Error copying hike \(error)")
+        }
+    }
 }

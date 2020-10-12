@@ -67,18 +67,29 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
     
     //MARK: Swipe
     
-    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
-        guard orientation == .right else { return nil }
-        
-        let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
-            self.updateModel(at: indexPath)
-            action.fulfill(with: .delete)
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {        
+        if (orientation == .right) {
+            let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
+                self.updateModel(at: indexPath)
+                action.fulfill(with: .delete)
+            }
+            
+            // customize the action appearance
+            deleteAction.image = UIImage(systemName: "trash")
+            
+            return [deleteAction]
         }
-        
-        // customize the action appearance
-        deleteAction.image = UIImage(systemName: "trash")
-        
-        return [deleteAction]
+        else {
+            let copyAction = SwipeAction(style: .default, title: "Copy") { action, indexPath in
+                let gear = self.gearBrain?.getGear(indexPath: indexPath)
+                GearBrain.copyGear(gear: gear!)
+                self.loadGear()
+            }
+            copyAction.hidesWhenSelected = true
+            copyAction.image = UIImage(systemName: "doc")
+            
+            return [copyAction]
+        }
     }
     
     func updateModel(at indexPath: IndexPath) {
