@@ -36,9 +36,10 @@ class HikeGearTableViewCell: SwipeTableViewCell {
         self.descriptionLabel.text = gear!.desc
         self.weightLabel.text = gear!.weightString()
         self.quantityLabel.text = String("Quantity: \(hikeGear!.numberUnits)")
-        self.consumableImage.isHighlighted = hikeGear!.consumable
-        self.verifiedImage.isHighlighted = hikeGear!.verified
-        self.wornImage.isHighlighted = hikeGear!.worn
+        self.consumableImage.image = hikeGear!.consumable ? UIImage(named: "consumable_highlighted") : UIImage(named: "consumable")
+        let verifyImage = hikeGear!.verified ? "checkmark.seal" : "checkmark.seal.fill"
+        self.verifiedImage.image = UIImage(systemName: verifyImage)
+        self.wornImage.image = hikeGear!.worn ? UIImage(named: "worn_highlighted") : UIImage(named: "worn")
     }
      
     override func awakeFromNib() {
