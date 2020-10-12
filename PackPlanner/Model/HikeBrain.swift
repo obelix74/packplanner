@@ -59,6 +59,7 @@ class HikeBrain {
         self.baseWeightDistribution = [:]
         self.consumableWeightDistribution = [:]
         self.wornWeightDistribution = [:]
+        self.hikeGears = List()
         
         self.hike.hikeGears.forEach { (hikeGear) in
             let gearList = hikeGear.gearList

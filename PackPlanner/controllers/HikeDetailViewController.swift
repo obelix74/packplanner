@@ -45,7 +45,6 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     }
     
     @IBAction func pendingSwitchToggled(_ sender: UISegmentedControl) {
-        print("Segment selected: \(sender.selectedSegmentIndex)")
         let selected = sender.selectedSegmentIndex
         if (selected == 0) {
             self.hikeBrain = HikeBrain(existingHike!, false);
@@ -153,8 +152,8 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     //MARK: Swipe cell actions
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
         if (orientation == .right) {
-            let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
-                self.deleteGear(at: indexPath)
+            let deleteAction = SwipeAction(style: .destructive, title: "Remove") { action, indexPath in
+                self.removeGear(at: indexPath)
                 action.fulfill(with: .delete)
                 self.refresh(at: indexPath)
             }
@@ -171,7 +170,7 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
             let verifyImage = verified ? "checkmark.seal" : "checkmark.seal.fill"
             let verifiedAction = SwipeAction(style: .default, title: title) { action, indexPath in
                 self.hikeBrain!.updateVerifiedToggle(hikeGear: hikeGear!)
-                self.refresh(at: indexPath)
+                self.tableView.reloadData()
             }
             
             // customize the action appearance
@@ -182,8 +181,7 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     }
     
     
-    func deleteGear(at indexPath: IndexPath) {
-        print("UpdateModel called")
+    func removeGear(at indexPath: IndexPath) {
         let refreshAlert = UIAlertController(title: "Refresh", message: "Are you sure you want to delete? ", preferredStyle: UIAlertController.Style.alert)
         
         refreshAlert.addAction(UIAlertAction(title: "Delete", style: .default, handler: { (action: UIAlertAction!) in
