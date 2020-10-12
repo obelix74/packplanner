@@ -187,7 +187,18 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
                 UIImage(named: wornImage)?.draw(in: CGRect(x: 0, y: 0, width: 30, height: 30))
             }
             
-            return [verifiedAction, wornAction]
+            let consumable = hikeGear!.consumable
+            let consumableTitle = consumable ? "Not cons" : "Consumable"
+            let consumableImage = consumable ? "consumable" : "consumable_highlighted"
+            let consumableAction = SwipeAction(style: .default, title: consumableTitle) {action, indexPath in
+                self.hikeBrain!.updateConsumableToggle(hikeGear: hikeGear!)
+                self.refresh(at: indexPath)
+            }
+            consumableAction.image = UIGraphicsImageRenderer(size: CGSize(width: 30, height: 30)).image { _ in
+                UIImage(named: consumableImage)?.draw(in: CGRect(x: 0, y: 0, width: 30, height: 30))
+            }
+
+            return [verifiedAction, wornAction, consumableAction]
         }
     }
     
