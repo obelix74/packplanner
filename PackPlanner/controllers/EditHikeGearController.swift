@@ -18,8 +18,6 @@ class EditHikeGearController: UIViewController {
     @IBOutlet weak var quantityStepper: UIStepper!
     @IBOutlet weak var consumableImage: UIImageView!
     @IBOutlet weak var consumableSwitch: UISwitch!
-    @IBOutlet weak var wornImage: UIImageView!
-    @IBOutlet weak var wornSwitch: UISwitch!
     
     var gear : Gear?
     var hikeGear : HikeGear? {
@@ -62,8 +60,6 @@ class EditHikeGearController: UIViewController {
         self.quantityLabel.text = String(format: "%.0f", self.quantityStepper.value)
         self.consumableImage.isHighlighted = self.hikeGear!.consumable
         self.consumableSwitch.isOn = self.hikeGear!.consumable
-        self.wornImage.isHighlighted = self.hikeGear!.worn
-        self.wornSwitch.isOn = self.hikeGear!.worn
     }
     
     
@@ -85,10 +81,4 @@ class EditHikeGearController: UIViewController {
         self.hikeBrain!.updateConsumableToggle(hikeGear: self.hikeGear!)
         self.consumableImage.isHighlighted = hikeGear!.consumable
     }
-    
-    @IBAction func wornSwitchSelected(_ sender: UISwitch) {
-        self.hikeBrain!.updateWornToggle(hikeGear: self.hikeGear!)
-        self.wornImage.isHighlighted = hikeGear!.worn
-    }
-    
 }

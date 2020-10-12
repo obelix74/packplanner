@@ -17,7 +17,7 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     @IBOutlet weak var noGearLabel: UILabel!
     @IBOutlet weak var totalWeightLabel: UILabel!
     @IBOutlet weak var pendingSwitchToggled: UISegmentedControl!
-
+    
     
     var existingHike : Hike?{
         didSet {
@@ -165,6 +165,7 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
         }
         else {
             let hikeGear = self.hikeBrain!.getHikeGear(indexPath: indexPath)
+            
             let verified = hikeGear!.verified
             let title = verified ? "Unverify" : "Verify"
             let verifyImage = verified ? "checkmark.seal" : "checkmark.seal.fill"
@@ -172,11 +173,21 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
                 self.hikeBrain!.updateVerifiedToggle(hikeGear: hikeGear!)
                 self.tableView.reloadData()
             }
-            
             // customize the action appearance
             verifiedAction.image = UIImage(systemName: verifyImage)
             
-            return [verifiedAction]
+            let worn = hikeGear!.worn
+            let wornTitle = worn ? "Not worn" : "Worn"
+            let wornImage = worn ? "worn" : "worn_highlighted"
+            let wornAction = SwipeAction(style: .default, title: wornTitle) {action, indexPath in
+                self.hikeBrain!.updateWornToggle(hikeGear: hikeGear!)
+                self.refresh(at: indexPath)
+            }
+            wornAction.image = UIGraphicsImageRenderer(size: CGSize(width: 30, height: 30)).image { _ in
+                UIImage(named: wornImage)?.draw(in: CGRect(x: 0, y: 0, width: 30, height: 30))
+            }
+            
+            return [verifiedAction, wornAction]
         }
     }
     

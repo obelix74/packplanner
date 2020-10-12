@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zZP-K2-Tzl">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
@@ -312,7 +313,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="ew9-Sc-jj0" userLabel="Overall stack view">
-                                <rect key="frame" x="20" y="93" width="374" height="257"/>
+                                <rect key="frame" x="20" y="93" width="374" height="207"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HM8-8W-ZBB">
                                         <rect key="frame" x="0.0" y="0.0" width="55" height="24"/>
@@ -379,33 +380,8 @@
                                             </switch>
                                         </subviews>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="qVU-Uk-jem">
-                                        <rect key="frame" x="0.0" y="227" width="369" height="30"/>
-                                        <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Worn" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LKE-sy-JaA">
-                                                <rect key="frame" x="0.0" y="0.0" width="242" height="30"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                <nil key="textColor"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="worn" highlightedImage="worn_highlighted" translatesAutoresizingMaskIntoConstraints="NO" id="KJK-U2-BRv">
-                                                <rect key="frame" x="266" y="0.0" width="30" height="30"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="30" id="7ZV-b7-aJp"/>
-                                                    <constraint firstAttribute="height" constant="30" id="oaA-E1-8Q2"/>
-                                                </constraints>
-                                            </imageView>
-                                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="j6W-U3-Yr2">
-                                                <rect key="frame" x="320" y="0.0" width="51" height="30"/>
-                                                <connections>
-                                                    <action selector="wornSwitchSelected:" destination="1Kf-Yt-aLa" eventType="valueChanged" id="QpA-Da-GIZ"/>
-                                                </connections>
-                                            </switch>
-                                        </subviews>
-                                    </stackView>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="qVU-Uk-jem" secondAttribute="trailing" constant="5" id="aDl-QJ-LuJ"/>
                                     <constraint firstAttribute="trailing" secondItem="AIQ-oX-bZF" secondAttribute="trailing" constant="5" id="wvI-Ka-pbn"/>
                                     <constraint firstAttribute="trailing" secondItem="d4l-g6-gLo" secondAttribute="trailing" constant="5" id="y5m-bO-g1P"/>
                                 </constraints>
@@ -437,8 +413,6 @@
                         <outlet property="quantityLabel" destination="8If-St-0qa" id="x3F-dK-iEs"/>
                         <outlet property="quantityStepper" destination="Mbo-a2-fgA" id="F0b-47-WR2"/>
                         <outlet property="weightLabel" destination="DHF-NA-vel" id="pAY-4x-btC"/>
-                        <outlet property="wornImage" destination="KJK-U2-BRv" id="ioL-Tr-tUB"/>
-                        <outlet property="wornSwitch" destination="j6W-U3-Yr2" id="X0v-lD-mWs"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KV4-0G-EwD" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -559,21 +533,21 @@
                                                                         <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="f6g-Dm-H2J">
                                                                             <rect key="frame" x="206.5" y="30.5" width="90" height="30"/>
                                                                             <subviews>
-                                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="verified" highlightedImage="verified_highlight" translatesAutoresizingMaskIntoConstraints="NO" id="hsB-bb-mwn">
+                                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="verified" translatesAutoresizingMaskIntoConstraints="NO" id="hsB-bb-mwn">
                                                                                     <rect key="frame" x="0.0" y="0.0" width="30" height="30"/>
                                                                                     <constraints>
                                                                                         <constraint firstAttribute="height" constant="30" id="1ha-Ry-uk8"/>
                                                                                         <constraint firstAttribute="width" constant="30" id="jtU-lY-agj"/>
                                                                                     </constraints>
                                                                                 </imageView>
-                                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="consumable" highlightedImage="consumable_highlighted" translatesAutoresizingMaskIntoConstraints="NO" id="qNN-Xi-lXG">
+                                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="consumable" translatesAutoresizingMaskIntoConstraints="NO" id="qNN-Xi-lXG">
                                                                                     <rect key="frame" x="30" y="0.0" width="30" height="30"/>
                                                                                     <constraints>
                                                                                         <constraint firstAttribute="height" constant="30" id="49r-MY-KmB"/>
                                                                                         <constraint firstAttribute="width" constant="30" id="GpQ-Uq-UgF"/>
                                                                                     </constraints>
                                                                                 </imageView>
-                                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="worn" highlightedImage="worn_highlighted" translatesAutoresizingMaskIntoConstraints="NO" id="cvC-wb-xlI">
+                                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="worn" translatesAutoresizingMaskIntoConstraints="NO" id="cvC-wb-xlI">
                                                                                     <rect key="frame" x="60" y="0.0" width="30" height="30"/>
                                                                                     <constraints>
                                                                                         <constraint firstAttribute="width" constant="30" id="Ip2-66-XJs"/>
@@ -1119,9 +1093,7 @@
         <image name="plus.square.fill" catalog="system" width="128" height="114"/>
         <image name="settings" width="30" height="30"/>
         <image name="verified" width="100" height="100"/>
-        <image name="verified_highlight" width="100" height="100"/>
         <image name="worn" width="100" height="100"/>
-        <image name="worn_highlighted" width="100" height="100"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
