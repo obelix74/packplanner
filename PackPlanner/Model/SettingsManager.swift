@@ -32,4 +32,14 @@ class SettingsManager {
     func weightUnitString() -> String {
         return self.settings.imperial ? "(Oz)" : "(Grams)"
     }
+    
+    func setFirstTimeUser() {
+        do {
+            try self.realm.write {
+                self.settings.firstTimeUser = false
+            }
+        } catch {
+            print("Error updating first time user \(error)")
+        }
+    }
 }

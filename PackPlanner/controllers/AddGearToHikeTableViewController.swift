@@ -56,6 +56,10 @@ class AddGearToHikeTableViewController: GearBaseTableViewController {
         return dict
     }
     
+    override func shouldShowAlert() -> Bool {
+        return true 
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "showHikeDetail") {
             let destinationVC = segue.destination as! HikeDetailViewController

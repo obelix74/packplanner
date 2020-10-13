@@ -11,4 +11,5 @@ import RealmSwift
 class Settings : Object {
     
     @objc dynamic var imperial : Bool = true
+    @objc dynamic var firstTimeUser : Bool = true 
 }

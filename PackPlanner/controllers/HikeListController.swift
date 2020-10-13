@@ -56,14 +56,14 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        if (self.hikes!.isEmpty) {
-            let refreshAlert = UIAlertController(title: "No hikes found", message: "Please add a new hike", preferredStyle: UIAlertController.Style.alert)
+        if (self.hikes!.isEmpty && SettingsManager.SINGLETON.settings.firstTimeUser) {
+            let refreshAlert = UIAlertController(title: "Welcome, new user!", message: "Please add your gear inventory and a hike.", preferredStyle: UIAlertController.Style.alert)
 
             refreshAlert.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: { (action: UIAlertAction!) in
             }))
             
             present(refreshAlert, animated: true, completion: nil)
-
+            SettingsManager.SINGLETON.setFirstTimeUser()
         }
         return self.hikes!.count
     }

@@ -57,12 +57,15 @@ class GearBaseTableViewController: UITableViewController {
         
         if (self.gearBrain!.isEmpty()) {
             let dict = getNoGearMessage()
-            let refreshAlert = UIAlertController(title: dict["title"], message: dict["message"], preferredStyle: UIAlertController.Style.alert)
-
-            refreshAlert.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: { (action: UIAlertAction!) in
-            }))
             
-            present(refreshAlert, animated: true, completion: nil)
+            if (shouldShowAlert()) {
+                let refreshAlert = UIAlertController(title: dict["title"], message: dict["message"], preferredStyle: UIAlertController.Style.alert)
+
+                refreshAlert.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: { (action: UIAlertAction!) in
+                }))
+                
+                present(refreshAlert, animated: true, completion: nil)
+            }
         }
     }
     
@@ -71,6 +74,10 @@ class GearBaseTableViewController: UITableViewController {
         dict["title"] = "No gear found"
         dict["message"] = "Please add new gear"
         return dict
+    }
+    
+    func shouldShowAlert() -> Bool {
+        return SettingsManager.SINGLETON.settings.firstTimeUser
     }
     
     override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
