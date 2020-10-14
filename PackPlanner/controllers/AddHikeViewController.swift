@@ -90,8 +90,7 @@ class AddHikeViewController: BaseViewController {
         if (existing) {
             _ = navigationController?.popViewController(animated: true)
             if (self.delegate != nil) {
-                let generalSection: IndexPath = IndexPath(row: 0, section: 0)
-                self.delegate?.refresh(at: generalSection)
+                self.delegate?.refresh(at: nil)
             }
         }
         else {

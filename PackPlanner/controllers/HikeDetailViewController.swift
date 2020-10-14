@@ -140,9 +140,11 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     
     //MARK: - Table delegate
     
-    func refresh(at indexPath: IndexPath) {
+    func refresh(at indexPath: IndexPath?) {
         updateSummaryLabels()
-        tableView.reloadRows(at: [indexPath], with: .fade)
+        if (indexPath != nil) {
+            tableView.reloadRows(at: [indexPath!], with: .fade)
+        }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

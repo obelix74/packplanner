@@ -8,5 +8,5 @@
 import Foundation
 
 protocol RefreshProtocol {
-    func refresh(at indexPath: IndexPath)
+    func refresh(at indexPath: IndexPath?)
 }
