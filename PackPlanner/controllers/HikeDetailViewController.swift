@@ -55,8 +55,15 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
         self.tableView.reloadData()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        // Reload data when view appears to ensure it's up to date
+        self.tableView.reloadData()
+        updateSummaryLabels()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         guard let navBar = navigationController?.navigationBar else { fatalError("Navigation controller does not exist.")
         }
         let navBarAppearance = UINavigationBarAppearance()
