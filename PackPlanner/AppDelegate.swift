@@ -14,18 +14,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        // TODO: Re-enable Realm configuration
-        // let config = Realm.Configuration(
-        //      schemaVersion: 1,
-        //         migrationBlock: { migration, oldSchemaVersion in
-        //         if (oldSchemaVersion < 1) {
-        //             // Nothing to do!
-        //             // Realm will automatically detect new properties and removed properties
-        //             // And will update the schema on disk automatically
-        //         }
-        // })
-        // Realm.Configuration.defaultConfiguration = config
-        // _ = try! Realm()
+        // Reset Realm database - delete and start fresh
+        let config = Realm.Configuration(
+             schemaVersion: 1,
+             migrationBlock: { migration, oldSchemaVersion in
+                 // Migration block for future schema changes
+             },
+             deleteRealmIfMigrationNeeded: true
+        )
+        Realm.Configuration.defaultConfiguration = config
         
         _ = SettingsManager.SINGLETON.settings
         

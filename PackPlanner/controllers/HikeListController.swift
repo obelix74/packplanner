@@ -7,7 +7,6 @@
 
 import UIKit
 import RealmSwift
-import ChameleonFramework
 import SwipeCellKit
 // import CSV  // Temporarily disabled for troubleshooting
 import SwiftUI
@@ -34,13 +33,13 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
         navBarAppearance.configureWithOpaqueBackground()
         navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
         navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        navBarAppearance.backgroundColor = .flatRedDark()
+        navBarAppearance.backgroundColor = UIColor.systemRed
         
         navBar.standardAppearance = navBarAppearance
         navBar.scrollEdgeAppearance = navBarAppearance
         
-        navBar.tintColor = .flatWhite()
-        searchBar.barTintColor = .flatWhite()
+        navBar.tintColor = UIColor.white
+        searchBar.barTintColor = UIColor.white
         addButton.tintColor = .white
     }
     
@@ -92,6 +91,9 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
             if let indexPath = tableView.indexPathForSelectedRow {
                 destinationVC.existingHike = hikes?[indexPath.row]
             }
+        } else if segue.identifier == "showAddHike" {
+            // AddHikeViewController doesn't need any special configuration for new hikes
+            // existingHike will be nil by default
         }
     }
     
@@ -103,9 +105,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     }
     
     @IBAction func addButtonSelected(_ sender: UIBarButtonItem) {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let addHikeController = storyboard.instantiateViewController(withIdentifier: "AddHikeViewController")
-        navigationController?.pushViewController(addHikeController, animated: true)
+        performSegue(withIdentifier: "showAddHike", sender: self)
     }
     
     

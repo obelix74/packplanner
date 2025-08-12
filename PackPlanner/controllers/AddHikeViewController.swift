@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import ChameleonFramework
 import RealmSwift
 
 class AddHikeViewController: BaseViewController {
@@ -32,7 +31,7 @@ class AddHikeViewController: BaseViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        saveButton.tintColor = .flatWhite()
+        saveButton.tintColor = UIColor.white
         self.title = self.hike?.name ?? "Add hike"
         
         if (self.hike != nil) {

@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import ChameleonFramework
 
 class HikeReportController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UITableViewDelegate, UITableViewDataSource {
     
@@ -27,10 +26,10 @@ class HikeReportController: UIViewController, UIPickerViewDelegate, UIPickerView
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let backgroundColor = UIColor.flatRedDark()
+        let backgroundColor = UIColor.systemRed
         dismissButton.backgroundColor = backgroundColor
         dismissButton.layer.cornerRadius = 25.0
-        dismissButton.tintColor = ContrastColorOf(backgroundColor, returnFlat: true)
+        dismissButton.tintColor = UIColor.white
         
         self.pickerView.delegate = self
         self.pickerView.dataSource = self

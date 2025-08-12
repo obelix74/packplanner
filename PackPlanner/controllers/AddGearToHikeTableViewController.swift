@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import ChameleonFramework
 import RealmSwift
 
 class AddGearToHikeTableViewController: GearBaseTableViewController {
@@ -27,7 +26,7 @@ class AddGearToHikeTableViewController: GearBaseTableViewController {
         if (hike != nil) {
             self.title = "Adding gear to \(hike!.name)"
         }
-        saveButton.tintColor = .flatWhite()
+        saveButton.tintColor = UIColor.white
     }
     
     @IBAction func saveButtonSelected(_ sender: UIBarButtonItem) {

@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import ChameleonFramework
 
 class EditHikeGearController: UIViewController {
 
@@ -27,10 +26,10 @@ class EditHikeGearController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let backgroundColor = UIColor.flatRedDark()
+        let backgroundColor = UIColor.systemRed
         doneButton.backgroundColor = backgroundColor
         doneButton.layer.cornerRadius = 25.0
-        doneButton.tintColor = ContrastColorOf(backgroundColor, returnFlat: true)
+        doneButton.tintColor = UIColor.white
     }
     
     override func viewWillAppear(_ animated: Bool) {

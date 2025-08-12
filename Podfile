@@ -1,6 +1,8 @@
 # Stable iOS deployment target  
 platform :ios, '15.0'
 
+project 'PackPlanner.xcodeproj'
+
 target 'PackPlanner' do
   use_frameworks!
 

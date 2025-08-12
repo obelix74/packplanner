@@ -7,7 +7,6 @@
 
 import UIKit
 import Former
-import ChameleonFramework
 import RealmSwift
 import SwiftUI
 
@@ -42,10 +41,10 @@ class AddGearViewController: FormViewController {
         super.viewWillAppear(animated)
         former.deselect(animated: true)
         
-        let backgroundColor = UIColor.flatWhite()
+        let backgroundColor = UIColor.systemBackground
         saveButton.backgroundColor = backgroundColor
         saveButton.layer.cornerRadius = 10.0
-        saveButton.tintColor = UIColor.flatRedDark()
+        saveButton.tintColor = UIColor.systemRed
         
         guard let navBar = navigationController?.navigationBar else { fatalError("Navigation controller does not exist.")
         }
@@ -53,12 +52,12 @@ class AddGearViewController: FormViewController {
         navBarAppearance.configureWithOpaqueBackground()
         navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
         navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        navBarAppearance.backgroundColor = .flatRedDark()
+        navBarAppearance.backgroundColor = UIColor.systemRed
         
         navBar.standardAppearance = navBarAppearance
         navBar.scrollEdgeAppearance = navBarAppearance
         
-        navBar.tintColor = .flatWhite()
+        navBar.tintColor = UIColor.white
         
         self.title = existingGear?.name ?? "Add gear"
     }

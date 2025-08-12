@@ -7,7 +7,6 @@
 
 import UIKit
 import RealmSwift
-import ChameleonFramework
 import SwipeCellKit
 import SwiftUI
 
@@ -24,7 +23,7 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        searchBar.barTintColor = .flatWhite()
+        searchBar.barTintColor = UIColor.white
         addButton.tintColor = .white
     }
     
@@ -51,26 +50,23 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
     }
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let addGearController = storyboard.instantiateViewController(withIdentifier: "AddGearViewController")
-        navigationController?.pushViewController(addGearController, animated: true)
+        performSegue(withIdentifier: "showAddGear", sender: self)
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if let gear = gearBrain?.getGear(indexPath: indexPath) {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            let editGearController = storyboard.instantiateViewController(withIdentifier: "AddGearViewController") as! AddGearViewController
-            editGearController.existingGear = gear
-            navigationController?.pushViewController(editGearController, animated: true)
-        }
-        tableView.deselectRow(at: indexPath, animated: true)
+        performSegue(withIdentifier: "showAddGear", sender: self)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if (segue.identifier == "showAddGear" && tableView.indexPathForSelectedRow != nil) {
+        if segue.identifier == "showAddGear" {
             let destinationVC = segue.destination as! AddGearViewController
+            // If there's a selected row, we're editing; otherwise we're adding new
             if let indexPath = tableView.indexPathForSelectedRow {
                 destinationVC.existingGear = gearBrain?.getGear(indexPath: indexPath)
+            }
+            // Clear selection after setting up the destination
+            if let selectedIndexPath = tableView.indexPathForSelectedRow {
+                tableView.deselectRow(at: selectedIndexPath, animated: false)
             }
         }
     }

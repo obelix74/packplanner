@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import ChameleonFramework
 import RealmSwift
 
 class SettingsViewController: UIViewController {
@@ -20,10 +19,10 @@ class SettingsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let backgroundColor = UIColor.flatRedDark()
+        let backgroundColor = UIColor.systemRed
         dismissButton.backgroundColor = backgroundColor
         dismissButton.layer.cornerRadius = 25.0
-        dismissButton.tintColor = ContrastColorOf(backgroundColor, returnFlat: true)
+        dismissButton.tintColor = UIColor.white
         
         if(settings.imperial) {
             unitOfWeight.selectedSegmentIndex = 0

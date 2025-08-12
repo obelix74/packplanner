@@ -25,11 +25,11 @@ class BaseViewController: UIViewController {
         navBarAppearance.configureWithOpaqueBackground()
         navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
         navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        navBarAppearance.backgroundColor = .flatRedDark()
+        navBarAppearance.backgroundColor = UIColor.systemRed
         
         navBar.standardAppearance = navBarAppearance
         navBar.scrollEdgeAppearance = navBarAppearance
         
-        navBar.tintColor = .flatWhite()
+        navBar.tintColor = UIColor.white
     }
 }

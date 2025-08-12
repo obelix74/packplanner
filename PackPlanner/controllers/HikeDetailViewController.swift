@@ -63,12 +63,12 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
         navBarAppearance.configureWithOpaqueBackground()
         navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
         navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        navBarAppearance.backgroundColor = .flatRedDark()
+        navBarAppearance.backgroundColor = UIColor.systemRed
         
         navBar.standardAppearance = navBarAppearance
         navBar.scrollEdgeAppearance = navBarAppearance
         
-        navBar.tintColor = .flatWhite()
+        navBar.tintColor = UIColor.white
     }
     
     //MARK: - button actions
@@ -133,7 +133,7 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     }
     
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        view.tintColor = UIColor.flatPlumDark()
+        view.tintColor = UIColor.systemPurple
         let header = view as! UITableViewHeaderFooterView
         header.textLabel?.textColor = UIColor.white
     }

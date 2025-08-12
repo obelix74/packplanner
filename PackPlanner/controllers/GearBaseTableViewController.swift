@@ -27,12 +27,12 @@ class GearBaseTableViewController: UITableViewController {
         navBarAppearance.configureWithOpaqueBackground()
         navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
         navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        navBarAppearance.backgroundColor = .flatRedDark()
+        navBarAppearance.backgroundColor = UIColor.systemRed
         
         navBar.standardAppearance = navBarAppearance
         navBar.scrollEdgeAppearance = navBarAppearance
         
-        navBar.tintColor = .flatWhite()
+        navBar.tintColor = UIColor.white
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -81,7 +81,7 @@ class GearBaseTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        view.tintColor = UIColor.flatPlumDark()
+        view.tintColor = UIColor.systemPurple
         let header = view as! UITableViewHeaderFooterView
         header.textLabel?.textColor = UIColor.white
     }
