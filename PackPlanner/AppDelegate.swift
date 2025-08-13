@@ -14,16 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        // Reset Realm database - delete and start fresh
-        let config = Realm.Configuration(
-             schemaVersion: 1,
-             migrationBlock: { migration, oldSchemaVersion in
-                 // Migration block for future schema changes
-             },
-             deleteRealmIfMigrationNeeded: true
-        )
-        Realm.Configuration.defaultConfiguration = config
-        
+        // Initialize SettingsManager to trigger early Realm configuration
         _ = SettingsManager.SINGLETON.settings
         
         

@@ -28,10 +28,19 @@ class AddGearViewController: FormViewController {
         }
     }
     
-    let realm = try! Realm()
+    private var realm: Realm!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Initialize Realm safely
+        do {
+            realm = try Realm()
+        } catch {
+            print("Critical: Failed to initialize Realm in AddGearViewController: \(error)")
+            fatalError("Cannot proceed without Realm database")
+        }
+        
         tableView.rowHeight = 80.0
 
         configure()
@@ -46,7 +55,9 @@ class AddGearViewController: FormViewController {
         saveButton.layer.cornerRadius = 10.0
         saveButton.tintColor = UIColor.systemRed
         
-        guard let navBar = navigationController?.navigationBar else { fatalError("Navigation controller does not exist.")
+        guard let navBar = navigationController?.navigationBar else {
+            print("Warning: No navigation controller available for styling")
+            return
         }
         let navBarAppearance = UINavigationBarAppearance()
         navBarAppearance.configureWithOpaqueBackground()

@@ -9,7 +9,7 @@ import UIKit
 import RealmSwift
 
 class GearBaseTableViewController: UITableViewController {
-    let settings : Settings = SettingsManager.SINGLETON.settings
+    lazy var settings : Settings = SettingsManager.SINGLETON.settings
     var gearBrain : GearBrain?
     
     override func viewDidLoad() {
@@ -21,7 +21,9 @@ class GearBaseTableViewController: UITableViewController {
         
         loadGear()
 
-        guard let navBar = navigationController?.navigationBar else { fatalError("Navigation controller does not exist.")
+        guard let navBar = navigationController?.navigationBar else {
+            print("Warning: No navigation controller available for styling")
+            return
         }
         let navBarAppearance = UINavigationBarAppearance()
         navBarAppearance.configureWithOpaqueBackground()

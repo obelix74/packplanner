@@ -19,7 +19,7 @@ class EditHikeGearController: UIViewController {
     var gear : Gear?
     var hikeGear : HikeGear? {
         didSet {
-            self.gear = hikeGear!.gearList.first
+            self.gear = hikeGear!.gear
         }
     }
     var hikeBrain : HikeBrain?

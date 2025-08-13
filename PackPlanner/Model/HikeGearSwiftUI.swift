@@ -56,9 +56,9 @@ extension HikeGearSwiftUI {
         hikeGear.verified = self.verified
         hikeGear.notes = self.notes
         
-        // Add gear to the list if available
+        // Set gear reference if available
         if let gear = self.gear {
-            hikeGear.gearList.append(gear.toLegacyGear())
+            hikeGear.gear = gear.toLegacyGear()
         }
         
         return hikeGear

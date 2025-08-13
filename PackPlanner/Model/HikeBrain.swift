@@ -10,7 +10,35 @@ import RealmSwift
 
 class HikeBrain {
     
-    static let realm = try! Realm()
+    private static var _realm: Realm?
+    static var realm: Realm {
+        if let existingRealm = _realm {
+            return existingRealm
+        }
+        
+        do {
+            // Use the default configuration that should already be set by SettingsManager
+            let newRealm = try Realm()
+            _realm = newRealm
+            return newRealm
+        } catch {
+            print("Critical: Failed to initialize Realm database: \(error)")
+            // Attempt fallback to in-memory realm
+            do {
+                let fallbackConfig = Realm.Configuration(
+                    inMemoryIdentifier: "hikebrain_fallback",
+                    schemaVersion: 1
+                )
+                let fallbackRealm = try Realm(configuration: fallbackConfig)
+                print("HikeBrain using in-memory database fallback")
+                _realm = fallbackRealm
+                return fallbackRealm
+            } catch {
+                fatalError("Fatal: HikeBrain cannot initialize any Realm database. App cannot continue: \(error)")
+            }
+        }
+    }
+    
     var hike : Hike
 //  Total weight of all gear
     var totalWeightInGrams : Double = 0.0
@@ -62,8 +90,10 @@ class HikeBrain {
         self.hikeGears = List()
         
         self.hike.hikeGears.forEach { (hikeGear) in
-            let gearList = hikeGear.gearList
-            let gear = gearList.first!
+            guard let gear = hikeGear.gear else {
+                print("Warning: HikeGear has no associated gear")
+                return
+            }
             let number = hikeGear.numberUnits
             let gearWeight = Double(gear.weightInGrams) * Double(number)
             
@@ -102,7 +132,10 @@ class HikeBrain {
         }
         
         self.hikeGears.forEach({ (hikeGear) in
-            let gear = hikeGear.gearList.first!
+            guard let gear = hikeGear.gear else {
+                print("Warning: HikeGear has no associated gear")
+                return
+            }
             var gearArray = self.categoryMap[gear.category]
             if (gearArray == nil) {
                 gearArray = []
@@ -177,7 +210,7 @@ class HikeBrain {
         do {
         try HikeBrain.realm.write {
             let hikeGear = HikeGear()
-            hikeGear.gearList.append(gear)
+            hikeGear.gear = gear
             HikeBrain.realm.add(hikeGear)
             hike.hikeGears.append(hikeGear)
         }
@@ -246,10 +279,7 @@ class HikeBrain {
                 hike.hikeGears.forEach { (hikeGear) in
                     let newHikeGear = HikeGear()
                     newHikeGear.consumable = hikeGear.consumable
-                    let gear = hikeGear.gearList.first
-                    if (gear != nil) {
-                        newHikeGear.gearList.append(gear!)
-                    }
+                    newHikeGear.gear = hikeGear.gear
                     newHikeGear.notes = hikeGear.notes
                     newHikeGear.numberUnits = hikeGear.numberUnits
                     newHikeGear.verified = hikeGear.verified

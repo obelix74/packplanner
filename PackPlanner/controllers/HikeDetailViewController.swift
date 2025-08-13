@@ -28,7 +28,11 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     fileprivate func updateSummaryLabels() {
         self.nameLabel.text = existingHike?.name
         self.descriptionLabel.text = existingHike?.desc
-        self.noGearLabel.text = String("Gear: \(self.existingHike!.hikeGears.count)")
+        if let hike = existingHike {
+            self.noGearLabel.text = String("Gear: \(hike.hikeGears.count)")
+        } else {
+            self.noGearLabel.text = "Gear: 0"
+        }
         self.totalWeightLabel.text = self.hikeBrain?.getTotalWeight()
     }
     
@@ -64,7 +68,9 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        guard let navBar = navigationController?.navigationBar else { fatalError("Navigation controller does not exist.")
+        guard let navBar = navigationController?.navigationBar else {
+            print("Warning: No navigation controller available for styling")
+            return
         }
         let navBarAppearance = UINavigationBarAppearance()
         navBarAppearance.configureWithOpaqueBackground()
@@ -119,15 +125,15 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     
     //MARK: - Table data source
     func numberOfSections(in tableView: UITableView) -> Int {
-        return self.hikeBrain!.getNumberSections()
+        return self.hikeBrain?.getNumberSections() ?? 0
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.hikeBrain!.getNumberOfRowsInSection(section: section)
+        return self.hikeBrain?.getNumberOfRowsInSection(section: section) ?? 0
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return self.hikeBrain!.getCategory(section: section)
+        return self.hikeBrain?.getCategory(section: section)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

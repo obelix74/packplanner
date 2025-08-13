@@ -9,11 +9,39 @@ import Foundation
 import RealmSwift
 
 class GearBrain {
-    static let realm = try! Realm()
+    private static var _realm: Realm?
+    static var realm: Realm {
+        if let existingRealm = _realm {
+            return existingRealm
+        }
+        
+        do {
+            // Use the default configuration that should already be set by SettingsManager
+            let newRealm = try Realm()
+            _realm = newRealm
+            return newRealm
+        } catch {
+            print("Critical: Failed to initialize Realm database: \(error)")
+            // Attempt fallback to in-memory realm
+            do {
+                let fallbackConfig = Realm.Configuration(
+                    inMemoryIdentifier: "gearbrain_fallback",
+                    schemaVersion: 1
+                )
+                let fallbackRealm = try Realm(configuration: fallbackConfig)
+                print("GearBrain using in-memory database fallback")
+                _realm = fallbackRealm
+                return fallbackRealm
+            } catch {
+                fatalError("Fatal: GearBrain cannot initialize any Realm database. App cannot continue: \(error)")
+            }
+        }
+    }
+    
     var gears : [Gear]
     var categoryMap : [String: [Gear]] = [:]
     var categoriesSorted : [String]?
-    let settings : Settings = SettingsManager.SINGLETON.settings
+    lazy var settings : Settings = SettingsManager.SINGLETON.settings
     
     init(_ gearList : [Gear]) {
         self.gears = gearList
@@ -74,7 +102,7 @@ class GearBrain {
     static func getFilteredGearsForExistingHike(hike: Hike) -> GearBrain {
         var existingGears : [String] = []
         hike.hikeGears.forEach { (hikeGear) in
-            if let gear = hikeGear.gearList.first {
+            if let gear = hikeGear.gear {
                 existingGears.append(gear.uuid)
             }
         }

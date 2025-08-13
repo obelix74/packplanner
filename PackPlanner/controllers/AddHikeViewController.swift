@@ -20,12 +20,21 @@ class AddHikeViewController: BaseViewController {
     @IBOutlet weak var url2Field: UITextField!
     @IBOutlet weak var url3Field: UITextField!
     
-    let realm = try! Realm()
+    private var realm: Realm!
     var hike : Hike?
     var delegate : RefreshProtocol?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Initialize Realm safely
+        do {
+            realm = try Realm()
+        } catch {
+            print("Critical: Failed to initialize Realm in AddHikeViewController: \(error)")
+            fatalError("Cannot proceed without Realm database")
+        }
+        
         // Do any additional setup after loading the view.
     }
     

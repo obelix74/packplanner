@@ -9,8 +9,7 @@ import Foundation
 import RealmSwift
 
 class HikeGear : Object {
-    // We need only one gear, but Realm expects this to be a list.
-    let gearList = List<Gear> ()
+    @objc dynamic var gear: Gear?
     @objc dynamic var consumable: Bool = false
     @objc dynamic var worn: Bool = false
     @objc dynamic var numberUnits: Int = 1

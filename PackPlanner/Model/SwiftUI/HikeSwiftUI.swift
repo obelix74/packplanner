@@ -23,8 +23,16 @@ class HikeSwiftUI: ObservableObject {
     @Published var hikeGears: [HikeGearSwiftUI] = [] {
         didSet {
             setupChildObservation()
+            invalidateWeightCache()
         }
     }
+    
+    // Weight caching properties
+    private var _totalWeight: Double?
+    private var _baseWeight: Double?
+    private var _wornWeight: Double?
+    private var _consumableWeight: Double?
+    private var weightCacheValid = false
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -41,27 +49,55 @@ class HikeSwiftUI: ObservableObject {
     }
     
     var totalWeight: Double {
-        hikeGears.reduce(0) { total, hikeGear in
+        if let cached = _totalWeight, weightCacheValid {
+            return cached
+        }
+        let calculated = hikeGears.reduce(0) { total, hikeGear in
             total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
         }
+        _totalWeight = calculated
+        return calculated
     }
     
     var baseWeight: Double {
-        hikeGears.filter { !$0.worn && !$0.consumable }.reduce(0) { total, hikeGear in
+        if let cached = _baseWeight, weightCacheValid {
+            return cached
+        }
+        let calculated = hikeGears.filter { !$0.worn && !$0.consumable }.reduce(0) { total, hikeGear in
             total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
         }
+        _baseWeight = calculated
+        return calculated
     }
     
     var wornWeight: Double {
-        hikeGears.filter { $0.worn }.reduce(0) { total, hikeGear in
+        if let cached = _wornWeight, weightCacheValid {
+            return cached
+        }
+        let calculated = hikeGears.filter { $0.worn }.reduce(0) { total, hikeGear in
             total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
         }
+        _wornWeight = calculated
+        return calculated
     }
     
     var consumableWeight: Double {
-        hikeGears.filter { $0.consumable }.reduce(0) { total, hikeGear in
+        if let cached = _consumableWeight, weightCacheValid {
+            return cached
+        }
+        let calculated = hikeGears.filter { $0.consumable }.reduce(0) { total, hikeGear in
             total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
         }
+        _consumableWeight = calculated
+        return calculated
+    }
+    
+    private func invalidateWeightCache() {
+        _totalWeight = nil
+        _baseWeight = nil
+        _wornWeight = nil
+        _consumableWeight = nil
+        weightCacheValid = false
     }
     
     private func setupChildObservation() {
@@ -72,6 +108,7 @@ class HikeSwiftUI: ObservableObject {
         for hikeGear in hikeGears {
             hikeGear.objectWillChange
                 .sink { [weak self] _ in
+                    self?.invalidateWeightCache()
                     self?.objectWillChange.send()
                 }
                 .store(in: &cancellables)
@@ -110,7 +147,7 @@ extension HikeSwiftUI {
         
         // Convert HikeGear relationships
         self.hikeGears = hike.hikeGears.compactMap { legacyHikeGear in
-            if let gear = legacyHikeGear.gearList.first {
+            if let gear = legacyHikeGear.gear {
                 let hikeGearSwiftUI = HikeGearSwiftUI(from: legacyHikeGear)
                 hikeGearSwiftUI.gear = GearSwiftUI(from: gear)
                 return hikeGearSwiftUI

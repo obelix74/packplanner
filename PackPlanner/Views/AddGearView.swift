@@ -204,7 +204,7 @@ struct AddGearView: View {
         
         // Create or update gear
         do {
-            let realm = try! Realm()
+            let realm = try Realm()
             try realm.write {
                 if let existingGear = gear {
                     // Find and update existing gear in Realm by uuid

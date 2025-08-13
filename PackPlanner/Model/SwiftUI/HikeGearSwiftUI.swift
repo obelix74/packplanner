@@ -62,14 +62,14 @@ extension HikeGearSwiftUI {
             do {
                 let realm = try Realm()
                 if let existingGear = realm.objects(Gear.self).filter("uuid == %@", gear.id).first {
-                    hikeGear.gearList.append(existingGear)
+                    hikeGear.gear = existingGear
                 } else {
                     // If gear doesn't exist, create it
-                    hikeGear.gearList.append(gear.toLegacyGear())
+                    hikeGear.gear = gear.toLegacyGear()
                 }
             } catch {
                 // Fallback to creating new gear
-                hikeGear.gearList.append(gear.toLegacyGear())
+                hikeGear.gear = gear.toLegacyGear()
             }
         }
         

@@ -11,7 +11,7 @@ import RealmSwift
 class SettingsViewController: UIViewController {
     
     @IBOutlet weak var dismissButton: UIButton!
-    let realm = try! Realm()
+    private var realm: Realm!
     var settings: Settings = SettingsManager.SINGLETON.settings
     @IBOutlet weak var unitOfWeight: UISegmentedControl!
     
@@ -19,6 +19,14 @@ class SettingsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Initialize Realm safely
+        do {
+            realm = try Realm()
+        } catch {
+            print("Critical: Failed to initialize Realm in SettingsViewController: \(error)")
+            fatalError("Cannot proceed without Realm database")
+        }
         let backgroundColor = UIColor.systemRed
         dismissButton.backgroundColor = backgroundColor
         dismissButton.layer.cornerRadius = 25.0

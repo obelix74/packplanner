@@ -31,14 +31,17 @@ class HikeGearTableViewCell: SwipeTableViewCell {
     @IBOutlet weak var wornImage: UIImageView!
         
     func updateLabels() {
-        let gear = hikeGear!.gearList.first
-        self.nameLabel.text = gear!.name
-        self.descriptionLabel.text = gear!.desc
-        self.weightLabel.text = gear!.weightString()
-        self.quantityLabel.text = String("Quantity: \(hikeGear!.numberUnits)")
-        self.consumableImage.image = hikeGear!.consumable ? UIImage(named: "consumable_highlighted") : UIImage(named: "consumable")
-        self.verifiedImage.image = hikeGear!.verified ? UIImage(named: "verified_highlight") : UIImage(named: "verified")
-        self.wornImage.image = hikeGear!.worn ? UIImage(named: "worn_highlighted") : UIImage(named: "worn")
+        guard let hikeGear = hikeGear, let gear = hikeGear.gear else {
+            print("Warning: HikeGear has no associated gear")
+            return
+        }
+        self.nameLabel.text = gear.name
+        self.descriptionLabel.text = gear.desc
+        self.weightLabel.text = gear.weightString()
+        self.quantityLabel.text = String("Quantity: \(hikeGear.numberUnits)")
+        self.consumableImage.image = hikeGear.consumable ? UIImage(named: "consumable_highlighted") : UIImage(named: "consumable")
+        self.verifiedImage.image = hikeGear.verified ? UIImage(named: "verified_highlight") : UIImage(named: "verified")
+        self.wornImage.image = hikeGear.worn ? UIImage(named: "worn_highlighted") : UIImage(named: "worn")
     }
      
     override func awakeFromNib() {

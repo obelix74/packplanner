@@ -83,7 +83,7 @@ extension HikeSwiftUI {
         
         // Convert HikeGear relationships
         self.hikeGears = hike.hikeGears.compactMap { legacyHikeGear in
-            if let gear = legacyHikeGear.gearList.first {
+            if let gear = legacyHikeGear.gear {
                 let hikeGearSwiftUI = HikeGearSwiftUI(from: legacyHikeGear)
                 hikeGearSwiftUI.gear = GearSwiftUI(from: gear)
                 return hikeGearSwiftUI

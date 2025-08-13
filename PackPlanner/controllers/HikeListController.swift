@@ -16,12 +16,22 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var addButton: UIBarButtonItem!
     
-    let realm = try! Realm()
+    private var realm: Realm!
     var hikes : Results<Hike>?
     private var observersAdded = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Initialize Realm safely
+        do {
+            realm = try Realm()
+        } catch {
+            print("Critical: Failed to initialize Realm in HikeListController: \(error)")
+            // This should not happen if AppDelegate set up migration correctly
+            fatalError("Cannot proceed without Realm database")
+        }
+        
         tableView.rowHeight = 100.0
         
         // Listen for notifications from SwiftUI AddHikeView (only add once)
@@ -50,7 +60,9 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     override func viewWillAppear(_ animated: Bool) {
         loadHikes()
         
-        guard let navBar = navigationController?.navigationBar else { fatalError("Navigation controller does not exist.")
+        guard let navBar = navigationController?.navigationBar else {
+            print("Warning: No navigation controller available for styling")
+            return
         }
         let navBarAppearance = UINavigationBarAppearance()
         navBarAppearance.configureWithOpaqueBackground()
@@ -252,7 +264,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
             
             let hikeGears = hike.hikeGears
             hikeGears.forEach { (hikeGear) in
-                if let gear = hikeGear.gearList.first {
+                if let gear = hikeGear.gear {
                     csv.beginNewRow()
                     try! csv.write(field: gear.name)
                     try! csv.write(field: gear.desc)

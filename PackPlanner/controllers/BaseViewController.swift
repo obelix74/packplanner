@@ -19,7 +19,9 @@ class BaseViewController: UIViewController {
         super.viewWillAppear(animated)
 
         
-        guard let navBar = navigationController?.navigationBar else { fatalError("Navigation controller does not exist.")
+        guard let navBar = navigationController?.navigationBar else {
+            print("Warning: No navigation controller available for styling")
+            return
         }
         let navBarAppearance = UINavigationBarAppearance()
         navBarAppearance.configureWithOpaqueBackground()

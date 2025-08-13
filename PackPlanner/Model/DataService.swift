@@ -19,13 +19,25 @@ class DataService: ObservableObject {
     
     private init() {
         do {
+            // Use the default configuration that should already be set by SettingsManager
             self.realm = try Realm()
             // Clean up any database duplicates on startup
             cleanupDatabaseDuplicates()
             // Also clean up gear duplicates
             GearBrain.cleanupDuplicateGears()
         } catch {
-            fatalError("Failed to initialize Realm: \(error)")
+            print("Critical: Failed to initialize Realm database: \(error)")
+            // Attempt fallback to in-memory realm
+            do {
+                let fallbackConfig = Realm.Configuration(
+                    inMemoryIdentifier: "dataservice_fallback",
+                    schemaVersion: 1
+                )
+                self.realm = try Realm(configuration: fallbackConfig)
+                print("DataService using in-memory database fallback")
+            } catch {
+                fatalError("Fatal: DataService cannot initialize any Realm database. App cannot continue: \(error)")
+            }
         }
     }
     
@@ -38,13 +50,21 @@ class DataService: ObservableObject {
     
     private func loadGear() {
         let gearObjects = realm.objects(Gear.self)
-        gearCache = gearObjects.map { GearSwiftUI(from: $0) }
+        let newGearCache = Array(gearObjects.map { GearSwiftUI(from: $0) })
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.gearCache = newGearCache
+        }
     }
     
     private func loadHikes() {
         let hikeObjects = realm.objects(Hike.self)
-        hikeCache = hikeObjects.map { hikeObj in
+        let newHikeCache = Array(hikeObjects.map { hikeObj in
             return HikeSwiftUI(from: hikeObj)
+        })
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.hikeCache = newHikeCache
         }
     }
     
@@ -220,7 +240,7 @@ class DataService: ObservableObject {
                     var duplicatesToRemove: [HikeGear] = []
                     
                     for hikeGear in hikeGearsArray {
-                        if let gear = hikeGear.gearList.first {
+                        if let gear = hikeGear.gear {
                             let gearUUID = gear.uuid
                             if seenGearUUIDs.contains(gearUUID) {
                                 // This is a duplicate
@@ -259,7 +279,7 @@ class DataService: ObservableObject {
                     
                     // Process each hikeGear and keep only the first occurrence of each gear
                     for hikeGear in hike.hikeGears {
-                        if let gear = hikeGear.gearList.first {
+                        if let gear = hikeGear.gear {
                             let gearId = gear.uuid
                             
                             // If we haven't seen this gear ID before, keep this hikeGear
@@ -287,9 +307,7 @@ class DataService: ObservableObject {
                         newHikeGear.notes = uniqueHikeGear.notes
                         
                         // Add the gear reference
-                        if let gear = uniqueHikeGear.gearList.first {
-                            newHikeGear.gearList.append(gear)
-                        }
+                        newHikeGear.gear = uniqueHikeGear.gear
                         
                         // Add to Realm and to the hike
                         realm.add(newHikeGear)
