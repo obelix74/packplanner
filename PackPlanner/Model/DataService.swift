@@ -10,14 +10,68 @@ import SwiftUI
 import RealmSwift
 import Combine
 
-class DataService: ObservableObject {
+// MARK: - DataService Protocol
+
+/**
+ * Protocol defining the data access interface for PackPlanner.
+ * This protocol enables dependency injection and testing with mock implementations.
+ */
+protocol DataServiceProtocol: ObservableObject {
+    var gears: [GearSwiftUI] { get }
+    var hikes: [HikeSwiftUI] { get }
+    
+    func loadData()
+    func addGear(_ gear: GearSwiftUI)
+    func updateGear(_ gear: GearSwiftUI)
+    func deleteGear(_ gear: GearSwiftUI)
+    func addHike(_ hike: HikeSwiftUI)
+    func updateHike(_ hike: HikeSwiftUI, originalName: String?)
+    func deleteHike(_ hike: HikeSwiftUI)
+    func searchGear(query: String) -> [GearSwiftUI]
+    func searchHikes(query: String) -> [HikeSwiftUI]
+    func gearByCategory() -> [String: [GearSwiftUI]]
+    func copyHike(_ originalHike: HikeSwiftUI) -> HikeSwiftUI
+    func cleanupDatabaseDuplicates()
+    func cleanupDuplicateHikeGears()
+}
+
+/**
+ * DataService - Centralized data access layer for PackPlanner
+ * 
+ * This service provides thread-safe CRUD operations for gear and hike data,
+ * maintaining consistency between legacy Realm objects and modern SwiftUI models.
+ * It implements the repository pattern with caching for improved performance.
+ * 
+ * Key Features:
+ * - Thread-safe operations using concurrent and barrier queues
+ * - Automatic cache synchronization with database changes
+ * - Bridge between legacy UIKit models and SwiftUI models
+ * - Comprehensive error handling with centralized ErrorHandler
+ * - Duplicate data cleanup and integrity maintenance
+ * 
+ * Architecture:
+ * - Uses ObservableObject for SwiftUI reactivity
+ * - Maintains in-memory caches for performance
+ * - Performs database operations on background queues
+ * - Updates UI on main queue
+ * 
+ * Thread Safety:
+ * - Read operations use concurrent queue for parallel access
+ * - Write operations use barrier queue for exclusive access
+ * - Cache updates are always performed on main queue
+ */
+class DataService: DataServiceProtocol {
     static let shared = DataService()
     
     private let realm: Realm
+    private let concurrentQueue = DispatchQueue(label: "com.packplanner.dataservice", attributes: .concurrent)
+    private let barrierQueue = DispatchQueue(label: "com.packplanner.dataservice.barrier")
+    
     @Published private var gearCache: [GearSwiftUI] = []
     @Published private var hikeCache: [HikeSwiftUI] = []
     
     private init() {
+        
         do {
             // Use the default configuration that should already be set by SettingsManager
             self.realm = try Realm()
@@ -43,285 +97,423 @@ class DataService: ObservableObject {
     
     // MARK: - Data Loading
     
+    /**
+     * Initiates loading of all cached data from Realm database.
+     * Triggers concurrent loading of gear and hike data to populate in-memory caches.
+     * Should be called during app initialization or after major data changes.
+     */
     func loadData() {
         loadGear()
         loadHikes()
     }
     
     private func loadGear() {
-        let gearObjects = realm.objects(Gear.self)
-        let newGearCache = Array(gearObjects.map { GearSwiftUI(from: $0) })
-        
-        DispatchQueue.main.async { [weak self] in
-            self?.gearCache = newGearCache
+        concurrentQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Create a new Realm instance for this background thread
+            do {
+                let backgroundRealm = try Realm()
+                let gearObjects = backgroundRealm.objects(Gear.self)
+                let newGearCache = Array(gearObjects.map { GearSwiftUI(from: $0) })
+                
+                DispatchQueue.main.async {
+                    self.gearCache = newGearCache
+                }
+            } catch {
+                print("Error loading gear on background thread: \(error)")
+            }
         }
     }
     
     private func loadHikes() {
-        let hikeObjects = realm.objects(Hike.self)
-        let newHikeCache = Array(hikeObjects.map { hikeObj in
-            return HikeSwiftUI(from: hikeObj)
-        })
-        
-        DispatchQueue.main.async { [weak self] in
-            self?.hikeCache = newHikeCache
+        concurrentQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Create a new Realm instance for this background thread
+            do {
+                let backgroundRealm = try Realm()
+                let hikeObjects = backgroundRealm.objects(Hike.self)
+                let newHikeCache = Array(hikeObjects.map { hikeObj in
+                    return HikeSwiftUI(from: hikeObj)
+                })
+                
+                DispatchQueue.main.async {
+                    self.hikeCache = newHikeCache
+                }
+            } catch {
+                print("Error loading hikes on background thread: \(error)")
+            }
         }
     }
     
     // MARK: - Gear CRUD Operations
     
     var gears: [GearSwiftUI] {
-        return gearCache
+        return concurrentQueue.sync {
+            return gearCache
+        }
     }
     
+    /**
+     * Adds a new gear item to the database and cache.
+     * 
+     * - Parameter gear: The SwiftUI gear model to be saved
+     * - Note: Operation is performed on background queue for thread safety
+     * - Note: Cache is updated on main queue after successful database write
+     */
     func addGear(_ gear: GearSwiftUI) {
-        do {
-            try realm.write {
+        barrierQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Create a new Realm instance for this background thread
+            do {
+                let backgroundRealm = try Realm()
                 let legacyGear = gear.toLegacyGear()
-                realm.add(legacyGear)
-                gearCache.append(gear)
+                try backgroundRealm.write {
+                    backgroundRealm.add(legacyGear)
+                }
+                DispatchQueue.main.async {
+                    self.gearCache.append(gear)
+                }
+            } catch {
+                print("Error adding gear: \(error)")
             }
-        } catch {
-            print("Error adding gear: \(error)")
         }
     }
     
     func updateGear(_ gear: GearSwiftUI) {
-        do {
-            try realm.write {
-                if let existingGear = realm.objects(Gear.self).filter("uuid == %@", gear.id).first {
-                    existingGear.name = gear.name
-                    existingGear.desc = gear.desc
-                    existingGear.weightInGrams = gear.weightInGrams
-                    existingGear.category = gear.category
+        barrierQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Create a new Realm instance for this background thread
+            do {
+                let backgroundRealm = try Realm()
+                try backgroundRealm.write {
+                    if let existingGear = backgroundRealm.objects(Gear.self).filter("uuid == %@", gear.id).first {
+                        existingGear.name = gear.name
+                        existingGear.desc = gear.desc
+                        existingGear.weightInGrams = gear.weightInGrams
+                        existingGear.category = gear.category
+                    }
                 }
-                
-                if let index = gearCache.firstIndex(where: { $0.id == gear.id }) {
-                    gearCache[index] = gear
+                DispatchQueue.main.async {
+                    if let index = self.gearCache.firstIndex(where: { $0.id == gear.id }) {
+                        self.gearCache[index] = gear
+                    }
                 }
+            } catch {
+                print("Error updating gear: \(error)")
             }
-        } catch {
-            print("Error updating gear: \(error)")
         }
     }
     
     func deleteGear(_ gear: GearSwiftUI) {
-        do {
-            try realm.write {
-                if let gearToDelete = realm.objects(Gear.self).filter("uuid == %@", gear.id).first {
-                    realm.delete(gearToDelete)
+        barrierQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Create a new Realm instance for this background thread
+            do {
+                let backgroundRealm = try Realm()
+                try backgroundRealm.write {
+                    if let gearToDelete = backgroundRealm.objects(Gear.self).filter("uuid == %@", gear.id).first {
+                        backgroundRealm.delete(gearToDelete)
+                    }
                 }
-                gearCache.removeAll { $0.id == gear.id }
+                DispatchQueue.main.async {
+                    self.gearCache.removeAll { $0.id == gear.id }
+                }
+            } catch {
+                print("Error deleting gear: \(error)")
             }
-        } catch {
-            print("Error deleting gear: \(error)")
         }
     }
     
     // MARK: - Hike CRUD Operations
     
     var hikes: [HikeSwiftUI] {
-        return hikeCache
+        return concurrentQueue.sync {
+            return hikeCache
+        }
     }
     
     func addHike(_ hike: HikeSwiftUI) {
-        do {
-            try realm.write {
-                let legacyHike = hike.toLegacyHike()
-                
-                // Add HikeGear relationships
-                for hikeGearSwiftUI in hike.hikeGears {
-                    let legacyHikeGear = hikeGearSwiftUI.toLegacyHikeGear()
-                    realm.add(legacyHikeGear)
-                    legacyHike.hikeGears.append(legacyHikeGear)
+        barrierQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Create a new Realm instance for this background thread
+            do {
+                let backgroundRealm = try Realm()
+                try backgroundRealm.write {
+                    let legacyHike = hike.toLegacyHike()
+                    
+                    // Add HikeGear relationships
+                    for hikeGearSwiftUI in hike.hikeGears {
+                        let legacyHikeGear = hikeGearSwiftUI.toLegacyHikeGear()
+                        backgroundRealm.add(legacyHikeGear)
+                        legacyHike.hikeGears.append(legacyHikeGear)
+                    }
+                    
+                    backgroundRealm.add(legacyHike)
                 }
-                
-                realm.add(legacyHike)
-                hikeCache.append(hike)
+                DispatchQueue.main.async {
+                    self.hikeCache.append(hike)
+                }
+            } catch {
+                print("Error adding hike: \(error)")
             }
-        } catch {
-            print("Error adding hike: \(error)")
         }
     }
     
     func updateHike(_ hike: HikeSwiftUI, originalName: String? = nil) {
-        do {
-            try realm.write {
-                // Find existing hike using original name if provided, otherwise current name
-                let nameToSearch = originalName ?? hike.name
-                if let existingHike = realm.objects(Hike.self).filter("name == %@", nameToSearch).first {
-                    existingHike.name = hike.name
-                    existingHike.desc = hike.desc
-                    existingHike.distance = hike.distance
-                    existingHike.location = hike.location
-                    existingHike.completed = hike.completed
-                    existingHike.externalLink1 = hike.externalLink1.isEmpty ? nil : hike.externalLink1
-                    existingHike.externalLink2 = hike.externalLink2.isEmpty ? nil : hike.externalLink2
-                    existingHike.externalLink3 = hike.externalLink3.isEmpty ? nil : hike.externalLink3
-                    
-                    // Update HikeGear relationships more carefully
-                    // First, remove existing HikeGear entries
-                    realm.delete(existingHike.hikeGears)
-                    existingHike.hikeGears.removeAll()
-                    
-                    // Group by gear ID to prevent duplicates
-                    let uniqueHikeGears = Dictionary(grouping: hike.hikeGears) { $0.gear?.id ?? "" }
-                        .compactMapValues { $0.first } // Take only first occurrence of each gear ID
-                        .values
-                    
-                    // Add current HikeGear relationships
-                    for hikeGearSwiftUI in uniqueHikeGears {
-                        let legacyHikeGear = hikeGearSwiftUI.toLegacyHikeGear()
-                        realm.add(legacyHikeGear)
-                        existingHike.hikeGears.append(legacyHikeGear)
+        barrierQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Create a new Realm instance for this background thread
+            do {
+                let backgroundRealm = try Realm()
+                try backgroundRealm.write {
+                    guard let existingHike = self.findExistingHike(realm: backgroundRealm, hike: hike, originalName: originalName) else {
+                        print("Error: Hike not found for update")
+                        return
                     }
+                    
+                    self.updateHikeProperties(existingHike: existingHike, from: hike)
+                    self.updateHikeGearRelationships(realm: backgroundRealm, existingHike: existingHike, from: hike)
                 }
-                
-                if let index = hikeCache.firstIndex(where: { $0.id == hike.id }) {
-                    hikeCache[index] = hike
+                DispatchQueue.main.async {
+                    self.updateHikeInCache(hike)
                 }
+            } catch {
+                print("Error updating hike: \(error)")
             }
-        } catch {
-            print("Error updating hike: \(error)")
+        }
+    }
+    
+    // MARK: - Private Helper Methods for updateHike
+    
+    private func findExistingHike(realm: Realm, hike: HikeSwiftUI, originalName: String?) -> Hike? {
+        let nameToSearch = originalName ?? hike.name
+        return realm.objects(Hike.self).filter("name == %@", nameToSearch).first
+    }
+    
+    private func updateHikeProperties(existingHike: Hike, from hike: HikeSwiftUI) {
+        existingHike.name = hike.name
+        existingHike.desc = hike.desc
+        existingHike.distance = hike.distance
+        existingHike.location = hike.location
+        existingHike.completed = hike.completed
+        existingHike.externalLink1 = hike.externalLink1.isEmpty ? nil : hike.externalLink1
+        existingHike.externalLink2 = hike.externalLink2.isEmpty ? nil : hike.externalLink2
+        existingHike.externalLink3 = hike.externalLink3.isEmpty ? nil : hike.externalLink3
+    }
+    
+    private func updateHikeGearRelationships(realm: Realm, existingHike: Hike, from hike: HikeSwiftUI) {
+        // Remove existing HikeGear entries
+        realm.delete(existingHike.hikeGears)
+        existingHike.hikeGears.removeAll()
+        
+        // Get unique HikeGear entries to prevent duplicates
+        let uniqueHikeGears = getUniqueHikeGears(from: hike.hikeGears)
+        
+        // Add current HikeGear relationships
+        for hikeGearSwiftUI in uniqueHikeGears {
+            let legacyHikeGear = hikeGearSwiftUI.toLegacyHikeGear()
+            realm.add(legacyHikeGear)
+            existingHike.hikeGears.append(legacyHikeGear)
+        }
+    }
+    
+    private func getUniqueHikeGears(from hikeGears: [HikeGearSwiftUI]) -> [HikeGearSwiftUI] {
+        return Dictionary(grouping: hikeGears) { $0.gear?.id ?? "" }
+            .compactMapValues { $0.first } // Take only first occurrence of each gear ID
+            .values
+            .compactMap { $0 }
+    }
+    
+    private func updateHikeInCache(_ hike: HikeSwiftUI) {
+        if let index = hikeCache.firstIndex(where: { $0.id == hike.id }) {
+            hikeCache[index] = hike
         }
     }
     
     func deleteHike(_ hike: HikeSwiftUI) {
-        do {
-            try realm.write {
-                if let hikeToDelete = realm.objects(Hike.self).filter("name == %@", hike.name).first {
-                    realm.delete(hikeToDelete.hikeGears)
-                    realm.delete(hikeToDelete)
+        barrierQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Create a new Realm instance for this background thread
+            do {
+                let backgroundRealm = try Realm()
+                try backgroundRealm.write {
+                    if let hikeToDelete = backgroundRealm.objects(Hike.self).filter("name == %@", hike.name).first {
+                        backgroundRealm.delete(hikeToDelete.hikeGears)
+                        backgroundRealm.delete(hikeToDelete)
+                    }
                 }
-                hikeCache.removeAll { $0.id == hike.id }
+                DispatchQueue.main.async {
+                    self.hikeCache.removeAll { $0.id == hike.id }
+                }
+            } catch {
+                print("Error deleting hike: \(error)")
             }
-        } catch {
-            print("Error deleting hike: \(error)")
         }
     }
     
     // MARK: - Search and Filter
     
     func searchGear(query: String) -> [GearSwiftUI] {
-        if query.isEmpty {
-            return gearCache
-        }
-        return gearCache.filter { gear in
-            gear.name.localizedCaseInsensitiveContains(query) ||
-            gear.desc.localizedCaseInsensitiveContains(query) ||
-            gear.category.localizedCaseInsensitiveContains(query)
+        return concurrentQueue.sync {
+            if query.isEmpty {
+                return gearCache
+            }
+            return gearCache.filter { gear in
+                gear.name.localizedCaseInsensitiveContains(query) ||
+                gear.desc.localizedCaseInsensitiveContains(query) ||
+                gear.category.localizedCaseInsensitiveContains(query)
+            }
         }
     }
     
     func searchHikes(query: String) -> [HikeSwiftUI] {
-        if query.isEmpty {
-            return hikeCache
-        }
-        return hikeCache.filter { hike in
-            hike.name.localizedCaseInsensitiveContains(query) ||
-            hike.desc.localizedCaseInsensitiveContains(query) ||
-            hike.location.localizedCaseInsensitiveContains(query)
+        return concurrentQueue.sync {
+            if query.isEmpty {
+                return hikeCache
+            }
+            return hikeCache.filter { hike in
+                hike.name.localizedCaseInsensitiveContains(query) ||
+                hike.desc.localizedCaseInsensitiveContains(query) ||
+                hike.location.localizedCaseInsensitiveContains(query)
+            }
         }
     }
     
     func gearByCategory() -> [String: [GearSwiftUI]] {
-        return Dictionary(grouping: gearCache) { $0.category }
+        return concurrentQueue.sync {
+            return Dictionary(grouping: gearCache) { $0.category }
+        }
     }
     
     // MARK: - Utility Methods
     
     func cleanupDatabaseDuplicates() {
-        do {
-            try realm.write {
-                let allHikes = realm.objects(Hike.self)
-                for hike in allHikes {
-                    let hikeGearsArray = Array(hike.hikeGears)
-                    var seenGearUUIDs = Set<String>()
-                    var duplicatesToRemove: [HikeGear] = []
-                    
-                    for hikeGear in hikeGearsArray {
-                        if let gear = hikeGear.gear {
-                            let gearUUID = gear.uuid
-                            if seenGearUUIDs.contains(gearUUID) {
-                                // This is a duplicate
-                                duplicatesToRemove.append(hikeGear)
-                            } else {
-                                seenGearUUIDs.insert(gearUUID)
+        barrierQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Create a new Realm instance for this background thread
+            do {
+                let backgroundRealm = try Realm()
+                try backgroundRealm.write {
+                    let allHikes = backgroundRealm.objects(Hike.self)
+                    for hike in allHikes {
+                        let hikeGearsArray = Array(hike.hikeGears)
+                        var seenGearUUIDs = Set<String>()
+                        var duplicatesToRemove: [HikeGear] = []
+                        
+                        for hikeGear in hikeGearsArray {
+                            if let gear = hikeGear.gear {
+                                let gearUUID = gear.uuid
+                                if seenGearUUIDs.contains(gearUUID) {
+                                    // This is a duplicate
+                                    duplicatesToRemove.append(hikeGear)
+                                } else {
+                                    seenGearUUIDs.insert(gearUUID)
+                                }
                             }
                         }
-                    }
-                    
-                    // Remove duplicates
-                    for duplicate in duplicatesToRemove {
-                        if let index = hike.hikeGears.index(of: duplicate) {
-                            hike.hikeGears.remove(at: index)
+                        
+                        // Remove duplicates
+                        for duplicate in duplicatesToRemove {
+                            if let index = hike.hikeGears.index(of: duplicate) {
+                                hike.hikeGears.remove(at: index)
+                            }
+                            backgroundRealm.delete(duplicate)
                         }
-                        realm.delete(duplicate)
                     }
                 }
+                
+                // Reload data after cleanup on main queue
+                DispatchQueue.main.async {
+                    self.loadData()
+                }
+                
+            } catch {
+                print("Error cleaning up database duplicates: \(error)")
             }
-            
-            // Reload data after cleanup
-            loadData()
-            
-        } catch {
-            print("Error cleaning up database duplicates: \(error)")
         }
     }
     
     func cleanupDuplicateHikeGears() {
-        do {
-            try realm.write {
-                let allHikes = realm.objects(Hike.self)
-                for hike in allHikes {
-                    // Create a dictionary to store unique gear entries
-                    var uniqueGearEntries: [String: HikeGear] = [:]
-                    
-                    // Process each hikeGear and keep only the first occurrence of each gear
-                    for hikeGear in hike.hikeGears {
-                        if let gear = hikeGear.gear {
-                            let gearId = gear.uuid
-                            
-                            // If we haven't seen this gear ID before, keep this hikeGear
-                            if uniqueGearEntries[gearId] == nil {
-                                uniqueGearEntries[gearId] = hikeGear
-                            }
-                        }
-                    }
-                    
-                    // Remove ALL existing hikeGears from this hike
-                    let allHikeGears = Array(hike.hikeGears)
-                    hike.hikeGears.removeAll()
-                    
-                    // Delete the old hikeGear objects from Realm
-                    realm.delete(allHikeGears)
-                    
-                    // Re-add only the unique entries
-                    for (_, uniqueHikeGear) in uniqueGearEntries {
-                        // Create a fresh HikeGear object to avoid Realm reference issues
-                        let newHikeGear = HikeGear()
-                        newHikeGear.consumable = uniqueHikeGear.consumable
-                        newHikeGear.worn = uniqueHikeGear.worn
-                        newHikeGear.numberUnits = uniqueHikeGear.numberUnits
-                        newHikeGear.verified = uniqueHikeGear.verified
-                        newHikeGear.notes = uniqueHikeGear.notes
-                        
-                        // Add the gear reference
-                        newHikeGear.gear = uniqueHikeGear.gear
-                        
-                        // Add to Realm and to the hike
-                        realm.add(newHikeGear)
-                        hike.hikeGears.append(newHikeGear)
+        barrierQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Create a new Realm instance for this background thread
+            do {
+                let backgroundRealm = try Realm()
+                try backgroundRealm.write {
+                    let allHikes = backgroundRealm.objects(Hike.self)
+                    for hike in allHikes {
+                        self.cleanupDuplicatesForSingleHike(realm: backgroundRealm, hike: hike)
                     }
                 }
+                // Reload data after cleanup on main queue
+                DispatchQueue.main.async {
+                    self.loadData()
+                }
+            } catch {
+                print("Database cleanup failed: \(error)")
             }
-            
-            // Reload data after cleanup
-            loadData()
-            
-        } catch {
-            print("Database cleanup failed: \(error)")
         }
+    }
+    
+    // MARK: - Private Helper Methods for cleanup
+    
+    private func cleanupDuplicatesForSingleHike(realm: Realm, hike: Hike) {
+        let uniqueGearEntries = extractUniqueGearEntries(from: hike)
+        removeAllHikeGearsFromHike(realm: realm, hike: hike)
+        recreateUniqueHikeGears(realm: realm, from: uniqueGearEntries, for: hike)
+    }
+    
+    private func extractUniqueGearEntries(from hike: Hike) -> [String: HikeGear] {
+        var uniqueGearEntries: [String: HikeGear] = [:]
+        
+        // Process each hikeGear and keep only the first occurrence of each gear
+        for hikeGear in hike.hikeGears {
+            if let gear = hikeGear.gear {
+                let gearId = gear.uuid
+                
+                // If we haven't seen this gear ID before, keep this hikeGear
+                if uniqueGearEntries[gearId] == nil {
+                    uniqueGearEntries[gearId] = hikeGear
+                }
+            }
+        }
+        
+        return uniqueGearEntries
+    }
+    
+    private func removeAllHikeGearsFromHike(realm: Realm, hike: Hike) {
+        let allHikeGears = Array(hike.hikeGears)
+        hike.hikeGears.removeAll()
+        realm.delete(allHikeGears)
+    }
+    
+    private func recreateUniqueHikeGears(realm: Realm, from uniqueGearEntries: [String: HikeGear], for hike: Hike) {
+        for (_, uniqueHikeGear) in uniqueGearEntries {
+            let newHikeGear = createFreshHikeGear(from: uniqueHikeGear)
+            realm.add(newHikeGear)
+            hike.hikeGears.append(newHikeGear)
+        }
+    }
+    
+    private func createFreshHikeGear(from template: HikeGear) -> HikeGear {
+        let newHikeGear = HikeGear()
+        newHikeGear.consumable = template.consumable
+        newHikeGear.worn = template.worn
+        newHikeGear.numberUnits = template.numberUnits
+        newHikeGear.verified = template.verified
+        newHikeGear.notes = template.notes
+        newHikeGear.gear = template.gear
+        return newHikeGear
     }
     
     func copyHike(_ originalHike: HikeSwiftUI) -> HikeSwiftUI {

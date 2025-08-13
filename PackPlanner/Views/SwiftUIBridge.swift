@@ -17,14 +17,46 @@ import UIKit
 class SwiftUIMigrationHelper {
     static let shared = SwiftUIMigrationHelper()
     
-    // Feature flags for gradual migration
-    private var enableSwiftUIGearList = true
-    private var enableSwiftUIHikeList = true
-    private var enableSwiftUIAddGear = true
-    private var enableSwiftUIAddHike = true
-    private var enableSwiftUISettings = true
+    // Thread-safe access to feature flags
+    private let flagQueue = DispatchQueue(label: "com.packplanner.swiftuiflags", attributes: .concurrent)
     
-    private init() {}
+    // Feature flags for gradual migration
+    private var _enableSwiftUIGearList = true
+    private var _enableSwiftUIHikeList = true
+    private var _enableSwiftUIAddGear = true
+    private var _enableSwiftUIAddHike = true
+    private var _enableSwiftUISettings = true
+    
+    private init() {
+        loadFeatureFlagsFromUserDefaults()
+    }
+    
+    // MARK: - Thread-Safe Feature Flag Properties
+    
+    private var enableSwiftUIGearList: Bool {
+        get { flagQueue.sync { _enableSwiftUIGearList } }
+        set { flagQueue.async(flags: .barrier) { self._enableSwiftUIGearList = newValue } }
+    }
+    
+    private var enableSwiftUIHikeList: Bool {
+        get { flagQueue.sync { _enableSwiftUIHikeList } }
+        set { flagQueue.async(flags: .barrier) { self._enableSwiftUIHikeList = newValue } }
+    }
+    
+    private var enableSwiftUIAddGear: Bool {
+        get { flagQueue.sync { _enableSwiftUIAddGear } }
+        set { flagQueue.async(flags: .barrier) { self._enableSwiftUIAddGear = newValue } }
+    }
+    
+    private var enableSwiftUIAddHike: Bool {
+        get { flagQueue.sync { _enableSwiftUIAddHike } }
+        set { flagQueue.async(flags: .barrier) { self._enableSwiftUIAddHike = newValue } }
+    }
+    
+    private var enableSwiftUISettings: Bool {
+        get { flagQueue.sync { _enableSwiftUISettings } }
+        set { flagQueue.async(flags: .barrier) { self._enableSwiftUISettings = newValue } }
+    }
     
     // MARK: - Factory Methods for Controllers
     
@@ -76,15 +108,19 @@ class SwiftUIMigrationHelper {
     
     func createHikeDetailViewController(hike: Hike) -> UIViewController {
         if enableSwiftUIHikeList {
-            // Use DataService to get consistent hike data instead of creating new instance
+            // Safely access DataService on main queue to avoid race conditions
             let dataService = DataService.shared
-            if let hikeSwiftUI = dataService.hikes.first(where: { $0.name == hike.name }) {
-                return UIHostingController(rootView: HikeDetailView(hike: hikeSwiftUI))
+            
+            // Use a synchronous approach to avoid potential race conditions
+            let hikeSwiftUI: HikeSwiftUI
+            if let cachedHike = dataService.hikes.first(where: { $0.name == hike.name }) {
+                hikeSwiftUI = cachedHike
             } else {
                 // Fallback to creating new instance if not found in cache
-                let hikeSwiftUI = HikeSwiftUI(from: hike)
-                return UIHostingController(rootView: HikeDetailView(hike: hikeSwiftUI))
+                hikeSwiftUI = HikeSwiftUI(from: hike)
             }
+            
+            return UIHostingController(rootView: HikeDetailView(hike: hikeSwiftUI))
         } else {
             // Return legacy UIKit controller
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
@@ -107,33 +143,92 @@ class SwiftUIMigrationHelper {
     // MARK: - Feature Flag Management
     
     func setSwiftUIEnabled(for feature: SwiftUIFeature, enabled: Bool) {
-        switch feature {
-        case .gearList:
-            enableSwiftUIGearList = enabled
-        case .hikeList:
-            enableSwiftUIHikeList = enabled
-        case .addGear:
-            enableSwiftUIAddGear = enabled
-        case .addHike:
-            enableSwiftUIAddHike = enabled
-        case .settings:
-            enableSwiftUISettings = enabled
+        // Ensure thread-safe updates using barrier queue
+        flagQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            switch feature {
+            case .gearList:
+                self._enableSwiftUIGearList = enabled
+            case .hikeList:
+                self._enableSwiftUIHikeList = enabled
+            case .addGear:
+                self._enableSwiftUIAddGear = enabled
+            case .addHike:
+                self._enableSwiftUIAddHike = enabled
+            case .settings:
+                self._enableSwiftUISettings = enabled
+            }
+            // Persist changes to UserDefaults
+            self.saveFeatureFlagsToUserDefaults()
         }
     }
     
     func isSwiftUIEnabled(for feature: SwiftUIFeature) -> Bool {
-        switch feature {
-        case .gearList:
-            return enableSwiftUIGearList
-        case .hikeList:
-            return enableSwiftUIHikeList
-        case .addGear:
-            return enableSwiftUIAddGear
-        case .addHike:
-            return enableSwiftUIAddHike
-        case .settings:
-            return enableSwiftUISettings
+        return flagQueue.sync {
+            switch feature {
+            case .gearList:
+                return _enableSwiftUIGearList
+            case .hikeList:
+                return _enableSwiftUIHikeList
+            case .addGear:
+                return _enableSwiftUIAddGear
+            case .addHike:
+                return _enableSwiftUIAddHike
+            case .settings:
+                return _enableSwiftUISettings
+            }
         }
+    }
+    
+    // MARK: - Persistence
+    
+    private func loadFeatureFlagsFromUserDefaults() {
+        let defaults = UserDefaults.standard
+        _enableSwiftUIGearList = defaults.object(forKey: "SwiftUI.GearList.Enabled") as? Bool ?? true
+        _enableSwiftUIHikeList = defaults.object(forKey: "SwiftUI.HikeList.Enabled") as? Bool ?? true
+        _enableSwiftUIAddGear = defaults.object(forKey: "SwiftUI.AddGear.Enabled") as? Bool ?? true
+        _enableSwiftUIAddHike = defaults.object(forKey: "SwiftUI.AddHike.Enabled") as? Bool ?? true
+        _enableSwiftUISettings = defaults.object(forKey: "SwiftUI.Settings.Enabled") as? Bool ?? true
+    }
+    
+    private func saveFeatureFlagsToUserDefaults() {
+        let defaults = UserDefaults.standard
+        defaults.set(_enableSwiftUIGearList, forKey: "SwiftUI.GearList.Enabled")
+        defaults.set(_enableSwiftUIHikeList, forKey: "SwiftUI.HikeList.Enabled")
+        defaults.set(_enableSwiftUIAddGear, forKey: "SwiftUI.AddGear.Enabled")
+        defaults.set(_enableSwiftUIAddHike, forKey: "SwiftUI.AddHike.Enabled")
+        defaults.set(_enableSwiftUISettings, forKey: "SwiftUI.Settings.Enabled")
+    }
+    
+    /**
+     * Enables or disables all SwiftUI features at once.
+     * Useful for testing or quickly switching between UIKit and SwiftUI modes.
+     */
+    func setAllSwiftUIFeatures(enabled: Bool) {
+        flagQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            self._enableSwiftUIGearList = enabled
+            self._enableSwiftUIHikeList = enabled
+            self._enableSwiftUIAddGear = enabled
+            self._enableSwiftUIAddHike = enabled
+            self._enableSwiftUISettings = enabled
+            self.saveFeatureFlagsToUserDefaults()
+        }
+    }
+    
+    /**
+     * Gets the current migration progress as a percentage.
+     */
+    func getMigrationProgress() -> Double {
+        let enabledFeatures = [
+            _enableSwiftUIGearList,
+            _enableSwiftUIHikeList,
+            _enableSwiftUIAddGear,
+            _enableSwiftUIAddHike,
+            _enableSwiftUISettings
+        ].filter { $0 }
+        
+        return Double(enabledFeatures.count) / 5.0 * 100.0
     }
 }
 

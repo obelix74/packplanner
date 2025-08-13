@@ -28,17 +28,23 @@ class AddGearViewController: FormViewController {
         }
     }
     
-    private var realm: Realm!
+    private var realm: Realm?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Initialize Realm safely
+        // Initialize Realm with proper error handling
         do {
             realm = try Realm()
         } catch {
             print("Critical: Failed to initialize Realm in AddGearViewController: \(error)")
-            fatalError("Cannot proceed without Realm database")
+            // Show user-friendly error
+            let alert = UIAlertController(title: "Database Error", message: "Failed to initialize database. Please restart the app.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            // Disable save functionality if realm is not available
+            saveButton.isEnabled = false
+            return
         }
         
         tableView.rowHeight = 80.0
@@ -180,6 +186,15 @@ class AddGearViewController: FormViewController {
     }
     
     @IBAction func saveButtonPressed(_ sender: UIButton) {
+        // Guard against missing realm
+        guard let realm = realm else {
+            let alert = UIAlertController(title: "Error", message: "Database not available", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            return
+        }
+        
+        // Basic validation
         if (self.name == nil || self.name!.isEmpty) {
             showAlert(name: "Name")
             return
@@ -190,11 +205,11 @@ class AddGearViewController: FormViewController {
             return
         }
         
+        // Save with proper error handling
         do {
             try realm.write {
                 if let gear = existingGear {
-                    gear.setValues(name: self.name!, desc: self.desc!, weight: self.weight!, category: self.category!)
-                    
+                    gear.setValues(name: self.name!, desc: self.desc ?? "", weight: self.weight!, category: self.category!)
                 } else {
                     let gear = Gear()
                     let desc = self.desc ?? ""
@@ -202,11 +217,16 @@ class AddGearViewController: FormViewController {
                     realm.add(gear)
                 }
             }
+            
+            // Success - navigate back
+            _ = navigationController?.popViewController(animated: true)
+            
         } catch {
-            print("Error adding gear \(error)")
+            print("Error saving gear: \(error)")
+            let alert = UIAlertController(title: "Save Error", message: "Failed to save gear. Please try again.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
         }
-        
-        _ = navigationController?.popViewController(animated: true)
     }
     
     // MARK: Private
