@@ -33,7 +33,6 @@ class AddGearToHikeTableViewController: GearBaseTableViewController {
         let selectedRows = tableView.indexPathsForSelectedRows
         selectedRows?.forEach({ (indexPath) in
             let gear = gearBrain?.getGear(indexPath: indexPath)
-            print("Adding gear \(gear!.name)")
             HikeBrain.createHikeGear(gear: gear!, hike: hike!)
         })
         

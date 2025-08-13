@@ -27,7 +27,11 @@ class Gear : Object {
             self.weightInGrams = weight
         }
         self.category = category
-        self.uuid = UUID().uuidString
+        
+        // Only set UUID if it's not already set (for new objects)
+        if (self.uuid.isEmpty) {
+            self.uuid = UUID().uuidString
+        }
     }
     
 //    Returns weight based on settings

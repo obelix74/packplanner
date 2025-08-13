@@ -42,23 +42,18 @@ struct GearListView: View {
             mainContent
                 .navigationTitle("Gear")
                 .navigationBarTitleDisplayMode(.large)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: {
-                            showingSettings = true
-                        }) {
-                            Image(systemName: "gearshape")
-                        }
+                .navigationBarItems(
+                    leading: Button(action: {
+                        showingSettings = true
+                    }) {
+                        Image(systemName: "gearshape")
+                    },
+                    trailing: Button(action: {
+                        showingAddGear = true
+                    }) {
+                        Image(systemName: "plus")
                     }
-                    
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            showingAddGear = true
-                        }) {
-                            Image(systemName: "plus")
-                        }
-                    }
-                }
+                )
                 .onAppear {
                     dataService.loadData()
                 }

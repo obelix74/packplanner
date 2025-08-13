@@ -20,7 +20,10 @@ class DataService: ObservableObject {
     private init() {
         do {
             self.realm = try Realm()
-            loadData()
+            // Clean up any database duplicates on startup
+            cleanupDatabaseDuplicates()
+            // Also clean up gear duplicates
+            GearBrain.cleanupDuplicateGears()
         } catch {
             fatalError("Failed to initialize Realm: \(error)")
         }
@@ -40,7 +43,9 @@ class DataService: ObservableObject {
     
     private func loadHikes() {
         let hikeObjects = realm.objects(Hike.self)
-        hikeCache = hikeObjects.map { HikeSwiftUI(from: $0) }
+        hikeCache = hikeObjects.map { hikeObj in
+            return HikeSwiftUI(from: hikeObj)
+        }
     }
     
     // MARK: - Gear CRUD Operations
@@ -119,11 +124,12 @@ class DataService: ObservableObject {
         }
     }
     
-    func updateHike(_ hike: HikeSwiftUI) {
+    func updateHike(_ hike: HikeSwiftUI, originalName: String? = nil) {
         do {
             try realm.write {
-                // Find and update the existing hike
-                if let existingHike = realm.objects(Hike.self).filter("name == %@", hike.name).first {
+                // Find existing hike using original name if provided, otherwise current name
+                let nameToSearch = originalName ?? hike.name
+                if let existingHike = realm.objects(Hike.self).filter("name == %@", nameToSearch).first {
                     existingHike.name = hike.name
                     existingHike.desc = hike.desc
                     existingHike.distance = hike.distance
@@ -132,6 +138,23 @@ class DataService: ObservableObject {
                     existingHike.externalLink1 = hike.externalLink1.isEmpty ? nil : hike.externalLink1
                     existingHike.externalLink2 = hike.externalLink2.isEmpty ? nil : hike.externalLink2
                     existingHike.externalLink3 = hike.externalLink3.isEmpty ? nil : hike.externalLink3
+                    
+                    // Update HikeGear relationships more carefully
+                    // First, remove existing HikeGear entries
+                    realm.delete(existingHike.hikeGears)
+                    existingHike.hikeGears.removeAll()
+                    
+                    // Group by gear ID to prevent duplicates
+                    let uniqueHikeGears = Dictionary(grouping: hike.hikeGears) { $0.gear?.id ?? "" }
+                        .compactMapValues { $0.first } // Take only first occurrence of each gear ID
+                        .values
+                    
+                    // Add current HikeGear relationships
+                    for hikeGearSwiftUI in uniqueHikeGears {
+                        let legacyHikeGear = hikeGearSwiftUI.toLegacyHikeGear()
+                        realm.add(legacyHikeGear)
+                        existingHike.hikeGears.append(legacyHikeGear)
+                    }
                 }
                 
                 if let index = hikeCache.firstIndex(where: { $0.id == hike.id }) {
@@ -186,6 +209,102 @@ class DataService: ObservableObject {
     }
     
     // MARK: - Utility Methods
+    
+    func cleanupDatabaseDuplicates() {
+        do {
+            try realm.write {
+                let allHikes = realm.objects(Hike.self)
+                for hike in allHikes {
+                    let hikeGearsArray = Array(hike.hikeGears)
+                    var seenGearUUIDs = Set<String>()
+                    var duplicatesToRemove: [HikeGear] = []
+                    
+                    for hikeGear in hikeGearsArray {
+                        if let gear = hikeGear.gearList.first {
+                            let gearUUID = gear.uuid
+                            if seenGearUUIDs.contains(gearUUID) {
+                                // This is a duplicate
+                                duplicatesToRemove.append(hikeGear)
+                            } else {
+                                seenGearUUIDs.insert(gearUUID)
+                            }
+                        }
+                    }
+                    
+                    // Remove duplicates
+                    for duplicate in duplicatesToRemove {
+                        if let index = hike.hikeGears.index(of: duplicate) {
+                            hike.hikeGears.remove(at: index)
+                        }
+                        realm.delete(duplicate)
+                    }
+                }
+            }
+            
+            // Reload data after cleanup
+            loadData()
+            
+        } catch {
+            print("Error cleaning up database duplicates: \(error)")
+        }
+    }
+    
+    func cleanupDuplicateHikeGears() {
+        do {
+            try realm.write {
+                let allHikes = realm.objects(Hike.self)
+                for hike in allHikes {
+                    // Create a dictionary to store unique gear entries
+                    var uniqueGearEntries: [String: HikeGear] = [:]
+                    
+                    // Process each hikeGear and keep only the first occurrence of each gear
+                    for hikeGear in hike.hikeGears {
+                        if let gear = hikeGear.gearList.first {
+                            let gearId = gear.uuid
+                            
+                            // If we haven't seen this gear ID before, keep this hikeGear
+                            if uniqueGearEntries[gearId] == nil {
+                                uniqueGearEntries[gearId] = hikeGear
+                            }
+                        }
+                    }
+                    
+                    // Remove ALL existing hikeGears from this hike
+                    let allHikeGears = Array(hike.hikeGears)
+                    hike.hikeGears.removeAll()
+                    
+                    // Delete the old hikeGear objects from Realm
+                    realm.delete(allHikeGears)
+                    
+                    // Re-add only the unique entries
+                    for (_, uniqueHikeGear) in uniqueGearEntries {
+                        // Create a fresh HikeGear object to avoid Realm reference issues
+                        let newHikeGear = HikeGear()
+                        newHikeGear.consumable = uniqueHikeGear.consumable
+                        newHikeGear.worn = uniqueHikeGear.worn
+                        newHikeGear.numberUnits = uniqueHikeGear.numberUnits
+                        newHikeGear.verified = uniqueHikeGear.verified
+                        newHikeGear.notes = uniqueHikeGear.notes
+                        
+                        // Add the gear reference
+                        if let gear = uniqueHikeGear.gearList.first {
+                            newHikeGear.gearList.append(gear)
+                        }
+                        
+                        // Add to Realm and to the hike
+                        realm.add(newHikeGear)
+                        hike.hikeGears.append(newHikeGear)
+                    }
+                }
+            }
+            
+            // Reload data after cleanup
+            loadData()
+            
+        } catch {
+            print("Database cleanup failed: \(error)")
+        }
+    }
     
     func copyHike(_ originalHike: HikeSwiftUI) -> HikeSwiftUI {
         let copiedHike = HikeSwiftUI()

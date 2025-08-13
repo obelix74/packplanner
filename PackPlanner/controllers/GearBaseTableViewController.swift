@@ -52,6 +52,11 @@ class GearBaseTableViewController: UITableViewController {
     }
     
     func loadGear(search: String = "") {
+        // Clean up duplicates on first load (when no search)
+        if search.isEmpty {
+            GearBrain.cleanupDuplicateGears()
+        }
+        
         self.gearBrain = getGearBrain(search)
         tableView.reloadData()
         
@@ -91,7 +96,6 @@ class GearBaseTableViewController: UITableViewController {
 
 extension GearBaseTableViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        print("searchBar delegate called")
         loadGear(search: searchBar.text!)
     }
     

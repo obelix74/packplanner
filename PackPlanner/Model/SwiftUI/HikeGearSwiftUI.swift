@@ -56,9 +56,21 @@ extension HikeGearSwiftUI {
         hikeGear.verified = self.verified
         hikeGear.notes = self.notes
         
-        // Add gear to the list if available
+        // Reference existing gear instead of creating new one
         if let gear = self.gear {
-            hikeGear.gearList.append(gear.toLegacyGear())
+            // Find existing gear in Realm by UUID
+            do {
+                let realm = try Realm()
+                if let existingGear = realm.objects(Gear.self).filter("uuid == %@", gear.id).first {
+                    hikeGear.gearList.append(existingGear)
+                } else {
+                    // If gear doesn't exist, create it
+                    hikeGear.gearList.append(gear.toLegacyGear())
+                }
+            } catch {
+                // Fallback to creating new gear
+                hikeGear.gearList.append(gear.toLegacyGear())
+            }
         }
         
         return hikeGear

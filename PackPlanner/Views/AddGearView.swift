@@ -10,7 +10,7 @@ import RealmSwift
 
 struct AddGearView: View {
     @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) private var dismiss
     
     // Form data
     @State private var name: String = ""
@@ -29,8 +29,14 @@ struct AddGearView: View {
     // Gear to edit (if any)
     let gear: GearSwiftUI?
     
-    init(gear: GearSwiftUI? = nil) {
+    // Completion handler for UIKit integration
+    let onSave: (() -> Void)?
+    let onCancel: (() -> Void)?
+    
+    init(gear: GearSwiftUI? = nil, onSave: (() -> Void)? = nil, onCancel: (() -> Void)? = nil) {
         self.gear = gear
+        self.onSave = onSave
+        self.onCancel = onCancel
         if let existingGear = gear {
             _name = State(initialValue: existingGear.name)
             _description = State(initialValue: existingGear.desc)
@@ -55,8 +61,7 @@ struct AddGearView: View {
     }
     
     var body: some View {
-        NavigationView {
-            Form {
+        Form {
                 Section(header: Text("Gear Details")) {
                     HStack {
                         Image(systemName: "tag")
@@ -147,29 +152,33 @@ struct AddGearView: View {
                     }
                 }
             }
-            .navigationTitle(gear != nil ? "Edit Gear" : "Add Gear")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        presentationMode.wrappedValue.dismiss()
+        .navigationTitle(gear != nil ? "Edit Gear" : "Add Gear")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(content: {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("Cancel") {
+                    NotificationCenter.default.post(name: NSNotification.Name("GearCancelled"), object: nil)
+                    if let onCancel = onCancel {
+                        onCancel()
+                    } else {
+                        dismiss()
                     }
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        saveGear()
-                    }
-                    .disabled(!isValid)
+            }
+            
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Save") {
+                    saveGear()
                 }
+                .disabled(!isValid)
             }
-            .alert(isPresented: $showAlert) {
-                Alert(
-                    title: Text(alertTitle),
-                    message: Text(alertMessage),
-                    dismissButton: .default(Text("OK"))
-                )
-            }
+        })
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text(alertTitle),
+                message: Text(alertMessage),
+                dismissButton: .default(Text("OK"))
+            )
         }
     }
     
@@ -220,8 +229,15 @@ struct AddGearView: View {
                 }
             }
             
-            // Dismiss the view
-            presentationMode.wrappedValue.dismiss()
+            // Notify UIKit that gear was saved and dismiss
+            NotificationCenter.default.post(name: NSNotification.Name("GearSaved"), object: nil)
+            
+            // Dismiss the view using completion handler or SwiftUI dismiss
+            if let onSave = onSave {
+                onSave()
+            } else {
+                dismiss()
+            }
             
         } catch {
             showValidationAlert(title: "Save Error", message: "Failed to save gear: \(error.localizedDescription)")

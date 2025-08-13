@@ -21,7 +21,6 @@
 		17685E7C2E4B5626006331C3 /* AddGearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17685E6F2E4B5626006331C3 /* AddGearView.swift */; };
 		17685E7D2E4B5626006331C3 /* HikeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17685E732E4B5626006331C3 /* HikeListView.swift */; };
 		17685E7E2E4B5626006331C3 /* HikeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17685E722E4B5626006331C3 /* HikeDetailView.swift */; };
-		17685E7F2E4B5626006331C3 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17685E802E4B5626006331C3 /* SearchBar.swift */; };
 		641C21F3CB19828146965EDA /* Pods_PackPlanner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EDC425ADBD2AEF037A8A8BB8 /* Pods_PackPlanner.framework */; };
 		A9356938251838E800542BCC /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9356937251838E800542BCC /* Settings.swift */; };
 		A9356940251854AF00542BCC /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A935693F251854AF00542BCC /* SettingsManager.swift */; };
@@ -94,7 +93,6 @@
 		17685E742E4B5626006331C3 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		17685E752E4B5626006331C3 /* SwiftUIBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIBridge.swift; sourceTree = "<group>"; };
 		17685E762E4B5626006331C3 /* SwiftUIDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIDemo.swift; sourceTree = "<group>"; };
-		17685E802E4B5626006331C3 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		8844BB9CB52C1CD46C0C149C /* Pods-PackPlanner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PackPlanner.release.xcconfig"; path = "Target Support Files/Pods-PackPlanner/Pods-PackPlanner.release.xcconfig"; sourceTree = "<group>"; };
 		A56C0C89627B5F363E5C4AFB /* Pods-PackPlanner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PackPlanner.debug.xcconfig"; path = "Target Support Files/Pods-PackPlanner/Pods-PackPlanner.debug.xcconfig"; sourceTree = "<group>"; };
 		A9356937251838E800542BCC /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -303,7 +301,6 @@
 				17685E742E4B5626006331C3 /* SettingsView.swift */,
 				17685E752E4B5626006331C3 /* SwiftUIBridge.swift */,
 				17685E762E4B5626006331C3 /* SwiftUIDemo.swift */,
-				17685E802E4B5626006331C3 /* SearchBar.swift */,
 				A95F90182515B94D00A73E40 /* Main.storyboard */,
 				A9FC0F8F2519B11D009E6993 /* FormerInputAccessoryView.swift */,
 				A9FC0F9E251AC872009E6993 /* GearTableViewCell.swift */,
@@ -512,7 +509,6 @@
 				17685E7C2E4B5626006331C3 /* AddGearView.swift in Sources */,
 				17685E7D2E4B5626006331C3 /* HikeListView.swift in Sources */,
 				17685E7E2E4B5626006331C3 /* HikeDetailView.swift in Sources */,
-				17685E7F2E4B5626006331C3 /* SearchBar.swift in Sources */,
 				17685E6C2E4B5612006331C3 /* DataService.swift in Sources */,
 				17685E6D2E4B5612006331C3 /* GearSwiftUI.swift in Sources */,
 				17685E6E2E4B5612006331C3 /* SettingsManagerSwiftUI.swift in Sources */,

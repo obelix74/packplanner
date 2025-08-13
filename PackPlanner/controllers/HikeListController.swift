@@ -18,10 +18,33 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     
     let realm = try! Realm()
     var hikes : Results<Hike>?
+    private var observersAdded = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.rowHeight = 100.0
+        
+        // Listen for notifications from SwiftUI AddHikeView (only add once)
+        if !observersAdded {
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleHikeSaved),
+                name: NSNotification.Name("HikeSaved"),
+                object: nil
+            )
+            
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleHikeCancelled),
+                name: NSNotification.Name("HikeCancelled"),
+                object: nil
+            )
+            observersAdded = true
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -50,6 +73,30 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
             self.hikes = self.hikes?.filter("name CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "name", ascending: true)
         }
         tableView.reloadData()
+    }
+    
+    @objc private func handleHikeSaved() {
+        // Dismiss the presented modal
+        if let presentedController = presentedViewController {
+            presentedController.dismiss(animated: true) { [weak self] in
+                // Refresh the table view after dismissal
+                self?.refreshHikeList()
+            }
+        }
+    }
+    
+    @objc private func handleHikeCancelled() {
+        // Dismiss the presented modal
+        if let presentedController = presentedViewController {
+            presentedController.dismiss(animated: true)
+        }
+    }
+    
+    private func refreshHikeList() {
+        // Refresh the hike data
+        DispatchQueue.main.async { [weak self] in
+            self?.loadHikes()
+        }
     }
     
     // MARK: - Table view data source
@@ -82,9 +129,15 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     
     //MARK: - Tableview delegate methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: "showHikeDetail", sender: self)
+        let selectedHike = hikes![indexPath.row]
+        let hikeDetailController = SwiftUIMigrationHelper.shared.createHikeDetailViewController(hike: selectedHike)
+        navigationController?.pushViewController(hikeDetailController, animated: true)
+        
+        // Clear selection after navigation
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
+    // MARK: - Legacy segue support (can be removed once storyboard segues are eliminated)
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "showHikeDetail" && tableView.indexPathForSelectedRow != nil) {
             let destinationVC = segue.destination as! HikeDetailViewController
@@ -99,12 +152,14 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     
     // MARK: Button actions
     @IBAction func settingsButtonPressed(_ sender: UIBarButtonItem) {
-        let settingsController = UIHostingController(rootView: SettingsView())
+        let settingsController = SwiftUIMigrationHelper.shared.createSettingsViewController()
         present(settingsController, animated: true)
     }
     
     @IBAction func addButtonSelected(_ sender: UIBarButtonItem) {
-        performSegue(withIdentifier: "showAddHike", sender: self)
+        let addHikeController = SwiftUIMigrationHelper.shared.createAddHikeViewController()
+        let navController = UINavigationController(rootViewController: addHikeController)
+        present(navController, animated: true)
     }
     
     
@@ -144,7 +199,6 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
         do {
             let fileURL = try TemporaryFile(creatingTempDirectoryForFilename: "\(hike.name.replacingOccurrences(of: " ", with: "_")).csv").fileURL
             let fileName = fileURL.path
-            print("Writing CSV to file \(fileName)")
             let stream = OutputStream(toFileAtPath: fileName, append: false)!
             // let csv = try! CSVWriter(stream: stream)  // Temporarily disabled
             
@@ -251,7 +305,6 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     }
     
     func updateModel(at indexPath: IndexPath) {
-        print("UpdateModel called")
         let refreshAlert = UIAlertController(title: "Refresh", message: "Are you sure you want to delete? ", preferredStyle: UIAlertController.Style.alert)
         
         refreshAlert.addAction(UIAlertAction(title: "Delete", style: .default, handler: { (action: UIAlertAction!) in

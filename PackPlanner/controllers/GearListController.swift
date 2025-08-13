@@ -14,17 +14,64 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
     
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var addButton: UIBarButtonItem!
+    private var observersAdded = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.rowHeight = 65
         searchBar.delegate = self
+        
+        // Listen for notifications from SwiftUI AddGearView (only add once)
+        if !observersAdded {
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleGearSaved),
+                name: NSNotification.Name("GearSaved"),
+                object: nil
+            )
+            
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleGearCancelled),
+                name: NSNotification.Name("GearCancelled"),
+                object: nil
+            )
+            observersAdded = true
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         searchBar.barTintColor = UIColor.white
         addButton.tintColor = .white
+    }
+    
+    @objc private func handleGearSaved() {
+        // Dismiss the presented modal
+        if let presentedController = presentedViewController {
+            presentedController.dismiss(animated: true) { [weak self] in
+                // Refresh the table view after dismissal
+                self?.refreshGearList()
+            }
+        }
+    }
+    
+    @objc private func handleGearCancelled() {
+        // Dismiss the presented modal
+        if let presentedController = presentedViewController {
+            presentedController.dismiss(animated: true)
+        }
+    }
+    
+    private func refreshGearList() {
+        // Refresh the gear brain data by reloading
+        DispatchQueue.main.async { [weak self] in
+            self?.loadGear()
+        }
     }
     
     
@@ -44,18 +91,27 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
     
     //MARK: - Tableview delegate methods
     @IBAction func showSettings(_ sender: UIBarButtonItem) {
-        let settingsController = UIHostingController(rootView: SettingsView())
+        let settingsController = SwiftUIMigrationHelper.shared.createSettingsViewController()
         present(settingsController, animated: true)
     }
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
-        performSegue(withIdentifier: "showAddGear", sender: self)
+        let addGearController = SwiftUIMigrationHelper.shared.createAddGearViewController()
+        let navController = UINavigationController(rootViewController: addGearController)
+        present(navController, animated: true)
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: "showAddGear", sender: self)
+        let selectedGear = gearBrain?.getGear(indexPath: indexPath)
+        let editGearController = SwiftUIMigrationHelper.shared.createAddGearViewController(gear: selectedGear)
+        let navController = UINavigationController(rootViewController: editGearController)
+        present(navController, animated: true)
+        
+        // Clear selection after navigation
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
+    // MARK: - Legacy segue support (can be removed once storyboard segues are eliminated)
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showAddGear" {
             let destinationVC = segue.destination as! AddGearViewController
@@ -98,7 +154,6 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
     }
     
     func updateModel(at indexPath: IndexPath) {
-        print("UpdateModel called")
         let refreshAlert = UIAlertController(title: "Refresh", message: "Are you sure you want to delete? This gear will be removed from all hikes.", preferredStyle: UIAlertController.Style.alert)
         
         refreshAlert.addAction(UIAlertAction(title: "Delete", style: .default, handler: { (action: UIAlertAction!) in

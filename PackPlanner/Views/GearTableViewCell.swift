@@ -21,7 +21,6 @@ class GearTableViewCell: SwipeTableViewCell {
                 self.descriptionLabel.text = existingGear!.desc
             }
             self.weightLabel.text = existingGear?.weightString()
-            print("\(existingGear!.name): \(existingGear!.uuid)")
         }
     }
     

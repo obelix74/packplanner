@@ -29,6 +29,32 @@ class GearBrain {
         self.categoriesSorted = self.categoryMap.keys.sorted()
     }
     
+    //    Clean up duplicate gear objects in database
+    static func cleanupDuplicateGears() {
+        do {
+            try GearBrain.realm.write {
+                let allGears = GearBrain.realm.objects(Gear.self)
+                var seenUUIDs = Set<String>()
+                var duplicatesToDelete: [Gear] = []
+                
+                for gear in allGears {
+                    if seenUUIDs.contains(gear.uuid) {
+                        duplicatesToDelete.append(gear)
+                    } else {
+                        seenUUIDs.insert(gear.uuid)
+                    }
+                }
+                
+                // Delete the duplicates
+                for duplicate in duplicatesToDelete {
+                    GearBrain.realm.delete(duplicate)
+                }
+            }
+        } catch {
+            // Silent error handling - cleanup is best effort
+        }
+    }
+    
     //    Returns gears filtered by an optional search string
     static func getFilteredGears(search: String) -> GearBrain {
         var gears = GearBrain.realm.objects(Gear.self)
@@ -49,14 +75,12 @@ class GearBrain {
         var existingGears : [String] = []
         hike.hikeGears.forEach { (hikeGear) in
             if let gear = hikeGear.gearList.first {
-                print("In GearBrain existingGears: \(gear.name):\(gear.uuid)")
                 existingGears.append(gear.uuid)
             }
         }
         let allGears : Results<Gear> = GearBrain.realm.objects(Gear.self)
         var gearList : [Gear] = []
         allGears.forEach { (gear) in
-            print("In GearBrain allGears: \(gear.name):\(gear.uuid)")
             if (!existingGears.contains(gear.uuid)) {
                 gearList.append(gear)
             }
@@ -115,7 +139,7 @@ class GearBrain {
                 newGear.category = gear.category
                 newGear.desc = gear.desc
                 newGear.name = "Copy of " + gear.name
-                newGear.uuid = gear.uuid
+                newGear.uuid = UUID().uuidString // Generate new UUID for copy
                 newGear.weightInGrams = gear.weightInGrams
                 GearBrain.realm.add(newGear)
             }

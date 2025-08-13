@@ -9,6 +9,9 @@ import Foundation
 import SwiftUI
 import UIKit
 
+// Import SwiftUI views from SwiftUI folder
+// Note: These views are located in Views/SwiftUI/ folder
+
 // MARK: - Migration Helper
 
 class SwiftUIMigrationHelper {
@@ -73,8 +76,15 @@ class SwiftUIMigrationHelper {
     
     func createHikeDetailViewController(hike: Hike) -> UIViewController {
         if enableSwiftUIHikeList {
-            let hikeSwiftUI = HikeSwiftUI(from: hike)
-            return UIHostingController(rootView: HikeDetailView(hike: hikeSwiftUI))
+            // Use DataService to get consistent hike data instead of creating new instance
+            let dataService = DataService.shared
+            if let hikeSwiftUI = dataService.hikes.first(where: { $0.name == hike.name }) {
+                return UIHostingController(rootView: HikeDetailView(hike: hikeSwiftUI))
+            } else {
+                // Fallback to creating new instance if not found in cache
+                let hikeSwiftUI = HikeSwiftUI(from: hike)
+                return UIHostingController(rootView: HikeDetailView(hike: hikeSwiftUI))
+            }
         } else {
             // Return legacy UIKit controller
             let storyboard = UIStoryboard(name: "Main", bundle: nil)

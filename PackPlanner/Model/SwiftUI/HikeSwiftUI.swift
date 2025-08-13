@@ -20,15 +20,24 @@ class HikeSwiftUI: ObservableObject {
     @Published var externalLink1: String = ""
     @Published var externalLink2: String = ""
     @Published var externalLink3: String = ""
-    @Published var hikeGears: [HikeGearSwiftUI] = []
+    @Published var hikeGears: [HikeGearSwiftUI] = [] {
+        didSet {
+            setupChildObservation()
+        }
+    }
     
-    init() {}
+    private var cancellables = Set<AnyCancellable>()
+    
+    init() {
+        setupChildObservation()
+    }
     
     init(name: String, desc: String = "", distance: String = "", location: String = "") {
         self.name = name
         self.desc = desc
         self.distance = distance
         self.location = location
+        setupChildObservation()
     }
     
     var totalWeight: Double {
@@ -55,12 +64,30 @@ class HikeSwiftUI: ObservableObject {
         }
     }
     
-    func addGear(_ gear: GearSwiftUI, quantity: Int = 1) {
-        let hikeGear = HikeGearSwiftUI()
-        hikeGear.gear = gear
-        hikeGear.numberUnits = quantity
-        hikeGears.append(hikeGear)
+    private func setupChildObservation() {
+        // Clear existing subscriptions
+        cancellables.removeAll()
+        
+        // Subscribe to changes in each child HikeGearSwiftUI object
+        for hikeGear in hikeGears {
+            hikeGear.objectWillChange
+                .sink { [weak self] _ in
+                    self?.objectWillChange.send()
+                }
+                .store(in: &cancellables)
+        }
     }
+    
+    func addGear(_ gear: GearSwiftUI, quantity: Int = 1) {
+        // Check if this gear is already in the hike to prevent duplicates
+        if !hikeGears.contains(where: { $0.gear?.id == gear.id }) {
+            let hikeGear = HikeGearSwiftUI()
+            hikeGear.gear = gear
+            hikeGear.numberUnits = quantity
+            hikeGears.append(hikeGear)
+        }
+    }
+    
     
     func removeGear(at index: Int) {
         guard index < hikeGears.count else { return }
