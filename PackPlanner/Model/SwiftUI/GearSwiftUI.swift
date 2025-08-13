@@ -8,15 +8,15 @@
 import Foundation
 import SwiftUI
 import RealmSwift
+import Combine
 
-@Observable
-class GearSwiftUI {
-    var id: String = UUID().uuidString
-    var name: String = ""
-    var desc: String = ""
-    var weightInGrams: Double = 0.0
-    var category: String = "Uncategorized"
-    var hikeGears: [HikeGearSwiftUI] = []
+class GearSwiftUI: ObservableObject {
+    @Published var id: String = UUID().uuidString
+    @Published var name: String = ""
+    @Published var desc: String = ""
+    @Published var weightInGrams: Double = 0.0
+    @Published var category: String = "Uncategorized"
+    @Published var hikeGears: [HikeGearSwiftUI] = []
     
     static let conversion: Double = 28.34952
     

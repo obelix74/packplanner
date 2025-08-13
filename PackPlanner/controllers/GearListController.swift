@@ -44,8 +44,7 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
     
     //MARK: - Tableview delegate methods
     @IBAction func showSettings(_ sender: UIBarButtonItem) {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let settingsController = storyboard.instantiateViewController(withIdentifier: "SettingsViewController")
+        let settingsController = UIHostingController(rootView: SettingsView())
         present(settingsController, animated: true)
     }
     

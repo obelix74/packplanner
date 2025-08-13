@@ -99,8 +99,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
     
     // MARK: Button actions
     @IBAction func settingsButtonPressed(_ sender: UIBarButtonItem) {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let settingsController = storyboard.instantiateViewController(withIdentifier: "SettingsViewController")
+        let settingsController = UIHostingController(rootView: SettingsView())
         present(settingsController, animated: true)
     }
     

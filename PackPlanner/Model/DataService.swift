@@ -8,14 +8,14 @@
 import Foundation
 import SwiftUI
 import RealmSwift
+import Combine
 
-@Observable
-class DataService {
+class DataService: ObservableObject {
     static let shared = DataService()
     
     private let realm: Realm
-    private var gearCache: [GearSwiftUI] = []
-    private var hikeCache: [HikeSwiftUI] = []
+    @Published private var gearCache: [GearSwiftUI] = []
+    @Published private var hikeCache: [HikeSwiftUI] = []
     
     private init() {
         do {
@@ -28,7 +28,7 @@ class DataService {
     
     // MARK: - Data Loading
     
-    private func loadData() {
+    func loadData() {
         loadGear()
         loadHikes()
     }
