@@ -15,8 +15,11 @@ struct HikeListView: View {
     @State private var selectedHike: HikeSwiftUI?
     @State private var showingHikeDetail = false
     
+    private let hikeLogic = HikeListLogic.shared
+    
     private var filteredHikes: [HikeSwiftUI] {
-        dataService.searchHikes(query: searchText)
+        // Use shared search logic
+        return hikeLogic.performSearch(items: dataService.hikes, query: searchText)
     }
     
     var body: some View {
@@ -40,12 +43,13 @@ struct HikeListView: View {
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button("Delete", role: .destructive) {
-                                        dataService.deleteHike(hike)
+                                        // Use shared hike logic
+                                        hikeLogic.deleteHike(hike) { _ in }
                                     }
                                     
                                     Button("Copy") {
-                                        let copiedHike = dataService.copyHike(hike)
-                                        dataService.addHike(copiedHike)
+                                        // Use shared hike logic
+                                        hikeLogic.copyHike(hike)
                                     }
                                     .tint(.blue)
                                     

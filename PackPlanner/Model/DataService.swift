@@ -11,6 +11,224 @@ import RealmSwift
 import Combine
 import UIKit
 
+// MARK: - Shared View Logic (eliminates UIKit/SwiftUI duplication)
+
+// MARK: - Navigation Styling Protocol
+
+protocol NavigationStyling {
+    func applyStandardNavigationStyling(to navigationBar: UINavigationBar)
+}
+
+extension NavigationStyling {
+    func applyStandardNavigationStyling(to navigationBar: UINavigationBar) {
+        let navBarAppearance = UINavigationBarAppearance()
+        navBarAppearance.configureWithOpaqueBackground()
+        navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        navBarAppearance.backgroundColor = UIColor.systemRed
+        
+        navigationBar.standardAppearance = navBarAppearance
+        navigationBar.scrollEdgeAppearance = navBarAppearance
+        navigationBar.tintColor = UIColor.white
+    }
+}
+
+// MARK: - Search Logic Protocol
+
+protocol SearchLogic {
+    associatedtype SearchableItem
+    func performSearch(items: [SearchableItem], query: String) -> [SearchableItem]
+}
+
+// MARK: - Hike List Logic
+
+class HikeListLogic: NavigationStyling, SearchLogic {
+    typealias SearchableItem = HikeSwiftUI
+    
+    static let shared = HikeListLogic()
+    private init() {}
+    
+    func performSearch(items: [HikeSwiftUI], query: String) -> [HikeSwiftUI] {
+        if query.isEmpty {
+            return items
+        }
+        
+        return items.filter { hike in
+            hike.name.localizedCaseInsensitiveContains(query) ||
+            hike.desc.localizedCaseInsensitiveContains(query) ||
+            hike.location.localizedCaseInsensitiveContains(query)
+        }
+    }
+    
+    func copyHike(_ hike: HikeSwiftUI) {
+        let copiedHike = DataService.shared.copyHike(hike)
+        DataService.shared.addHike(copiedHike)
+    }
+    
+    func deleteHike(_ hike: HikeSwiftUI, completion: @escaping (Bool) -> Void) {
+        DataService.shared.deleteHike(hike)
+        completion(true)
+    }
+    
+    func shouldShowWelcomeMessage(hikeCount: Int) -> Bool {
+        return hikeCount == 0 && SettingsManager.SINGLETON.settings.firstTimeUser
+    }
+    
+    func getWelcomeMessage() -> (title: String, message: String) {
+        return (
+            title: "Welcome, new user!",
+            message: "Please add your gear inventory and a hike."
+        )
+    }
+    
+    func markFirstTimeUserComplete() {
+        SettingsManager.SINGLETON.setFirstTimeUser()
+    }
+}
+
+// MARK: - Gear List Logic
+
+class GearListLogic: NavigationStyling, SearchLogic {
+    typealias SearchableItem = GearSwiftUI
+    
+    static let shared = GearListLogic()
+    private init() {}
+    
+    func performSearch(items: [GearSwiftUI], query: String) -> [GearSwiftUI] {
+        if query.isEmpty {
+            return items
+        }
+        
+        return items.filter { gear in
+            gear.name.localizedCaseInsensitiveContains(query) ||
+            gear.desc.localizedCaseInsensitiveContains(query) ||
+            gear.category.localizedCaseInsensitiveContains(query)
+        }
+    }
+    
+    func groupGearsByCategory(_ gears: [GearSwiftUI]) -> [String: [GearSwiftUI]] {
+        return Dictionary(grouping: gears) { $0.category }
+    }
+    
+    func sortedCategories(from groupedGears: [String: [GearSwiftUI]]) -> [String] {
+        return groupedGears.keys.sorted()
+    }
+    
+    func duplicateGear(_ gear: GearSwiftUI, completion: @escaping (Bool) -> Void) {
+        let settingsManager = SettingsManagerSwiftUI.shared
+        
+        do {
+            let backgroundRealm = try Realm()
+            try backgroundRealm.write {
+                let newGear = Gear()
+                newGear.setValues(
+                    name: "\(gear.name) Copy",
+                    desc: gear.desc,
+                    weight: settingsManager.isImperial ? gear.weight(imperial: true) : gear.weight(imperial: false),
+                    category: gear.category
+                )
+                backgroundRealm.add(newGear)
+            }
+            DispatchQueue.main.async {
+                DataService.shared.loadData()
+                completion(true)
+            }
+        } catch {
+            print("Error duplicating gear: \(error)")
+            completion(false)
+        }
+    }
+    
+    func deleteGear(_ gear: GearSwiftUI, completion: @escaping (Bool) -> Void) {
+        do {
+            let backgroundRealm = try Realm()
+            try backgroundRealm.write {
+                if let realmGear = backgroundRealm.objects(Gear.self).filter("uuid == %@", gear.id).first {
+                    let associatedHikeGears = backgroundRealm.objects(HikeGear.self).filter("ANY gearList.uuid == %@", gear.id)
+                    backgroundRealm.delete(associatedHikeGears)
+                    backgroundRealm.delete(realmGear)
+                }
+            }
+            DispatchQueue.main.async {
+                DataService.shared.loadData()
+                completion(true)
+            }
+        } catch {
+            print("Error deleting gear: \(error)")
+            completion(false)
+        }
+    }
+    
+    func shouldShowWelcomeMessage(gearCount: Int) -> Bool {
+        return gearCount == 0 && SettingsManager.SINGLETON.settings.firstTimeUser
+    }
+    
+    func getWelcomeMessage() -> (title: String, message: String) {
+        return (
+            title: "No gear found",
+            message: "Please add new gear"
+        )
+    }
+}
+
+// MARK: - Alert Logic
+
+class AlertLogic {
+    static let shared = AlertLogic()
+    private init() {}
+    
+    func createDeleteConfirmationAlert(
+        itemName: String,
+        onConfirm: @escaping () -> Void,
+        onCancel: @escaping () -> Void = {}
+    ) -> UIAlertController {
+        let alert = UIAlertController(
+            title: "Delete \(itemName)",
+            message: "Are you sure you want to delete this \(itemName.lowercased())? This action cannot be undone.",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { _ in
+            onConfirm()
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            onCancel()
+        })
+        
+        return alert
+    }
+    
+    func createWelcomeAlert(title: String, message: String) -> UIAlertController {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Dismiss", style: .default))
+        return alert
+    }
+}
+
+// MARK: - Export Logic
+
+class ExportLogic {
+    static let shared = ExportLogic()
+    private init() {}
+    
+    func exportHike(_ hike: Hike, presenter: UIViewController) {
+        do {
+            let fileURL = try TemporaryFile(creatingTempDirectoryForFilename: "\(hike.name.replacingOccurrences(of: " ", with: "_")).csv").fileURL
+            
+            // TODO: Re-enable CSV writing when CSV.swift dependency is resolved
+            let emptyData = Data()
+            try emptyData.write(to: fileURL)
+            
+            let activityViewController = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+            presenter.present(activityViewController, animated: true)
+            
+        } catch {
+            print("Error creating export file: \(error)")
+        }
+    }
+}
+
 // MARK: - DataService Protocol
 
 /**

@@ -17,24 +17,21 @@ struct GearListView: View {
     @State private var selectedGear: GearSwiftUI?
     @State private var showingSettings = false
     
+    private let gearLogic = GearListLogic.shared
+    
     private var filteredGears: [GearSwiftUI] {
-        if searchText.isEmpty {
-            return dataService.gears
-        } else {
-            return dataService.gears.filter { gear in
-                gear.name.localizedCaseInsensitiveContains(searchText) ||
-                gear.desc.localizedCaseInsensitiveContains(searchText) ||
-                gear.category.localizedCaseInsensitiveContains(searchText)
-            }
-        }
+        // Use shared search logic
+        return gearLogic.performSearch(items: dataService.gears, query: searchText)
     }
     
     private var groupedGears: [String: [GearSwiftUI]] {
-        Dictionary(grouping: filteredGears) { $0.category }
+        // Use shared categorization logic
+        return gearLogic.groupGearsByCategory(filteredGears)
     }
     
     private var sortedCategories: [String] {
-        groupedGears.keys.sorted()
+        // Use shared sorting logic
+        return gearLogic.sortedCategories(from: groupedGears)
     }
     
     var body: some View {
@@ -184,40 +181,22 @@ struct GearListView: View {
     }
     
     private func deleteGear(_ gear: GearSwiftUI) {
-        do {
-            let realm = try Realm()
-            try realm.write {
-                if let realmGear = realm.objects(Gear.self).filter("uuid == %@", gear.id).first {
-                    // Delete all associated HikeGear relationships first
-                    let associatedHikeGears = realm.objects(HikeGear.self).filter("ANY gearList.uuid == %@", gear.id)
-                    realm.delete(associatedHikeGears)
-                    
-                    // Then delete the gear itself
-                    realm.delete(realmGear)
-                }
+        // Use shared gear logic
+        gearLogic.deleteGear(gear) { success in
+            if !success {
+                // Could show error alert here if needed
+                print("Failed to delete gear")
             }
-            dataService.loadData() // Refresh the list
-        } catch {
-            print("Error deleting gear: \(error)")
         }
     }
     
     private func duplicateGear(_ gear: GearSwiftUI) {
-        do {
-            let realm = try Realm()
-            try realm.write {
-                let newGear = Gear()
-                newGear.setValues(
-                    name: "\(gear.name) Copy",
-                    desc: gear.desc,
-                    weight: settingsManager.isImperial ? gear.weight(imperial: true) : gear.weight(imperial: false),
-                    category: gear.category
-                )
-                realm.add(newGear)
+        // Use shared gear logic
+        gearLogic.duplicateGear(gear) { success in
+            if !success {
+                // Could show error alert here if needed
+                print("Failed to duplicate gear")
             }
-            dataService.loadData() // Refresh the list
-        } catch {
-            print("Error duplicating gear: \(error)")
         }
     }
 }

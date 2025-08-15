@@ -8,9 +8,11 @@
 import UIKit
 import RealmSwift
 
-class GearBaseTableViewController: UITableViewController {
+class GearBaseTableViewController: UITableViewController, NavigationStyling {
     lazy var settings : Settings = SettingsManager.SINGLETON.settings
     var gearBrain : GearBrain?
+    private let gearLogic = GearListLogic.shared
+    private let alertLogic = AlertLogic.shared
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,16 +27,9 @@ class GearBaseTableViewController: UITableViewController {
             print("Warning: No navigation controller available for styling")
             return
         }
-        let navBarAppearance = UINavigationBarAppearance()
-        navBarAppearance.configureWithOpaqueBackground()
-        navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
-        navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        navBarAppearance.backgroundColor = UIColor.systemRed
         
-        navBar.standardAppearance = navBarAppearance
-        navBar.scrollEdgeAppearance = navBarAppearance
-        
-        navBar.tintColor = UIColor.white
+        // Use shared navigation styling logic
+        applyStandardNavigationStyling(to: navBar)
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -63,28 +58,23 @@ class GearBaseTableViewController: UITableViewController {
         tableView.reloadData()
         
         if (self.gearBrain!.isEmpty()) {
-            let dict = getNoGearMessage()
-            
-            if (shouldShowAlert()) {
-                let refreshAlert = UIAlertController(title: dict["title"], message: dict["message"], preferredStyle: UIAlertController.Style.alert)
-
-                refreshAlert.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: { (action: UIAlertAction!) in
-                }))
-                
-                present(refreshAlert, animated: true, completion: nil)
+            // Use shared gear logic for welcome message
+            if gearLogic.shouldShowWelcomeMessage(gearCount: 0) {
+                let (title, message) = gearLogic.getWelcomeMessage()
+                let welcomeAlert = alertLogic.createWelcomeAlert(title: title, message: message)
+                present(welcomeAlert, animated: true)
             }
         }
     }
     
+    // Legacy methods - now using shared logic but keeping for backward compatibility
     func getNoGearMessage() -> [String:String]{
-        var dict : [String:String] = [:]
-        dict["title"] = "No gear found"
-        dict["message"] = "Please add new gear"
-        return dict
+        let (title, message) = gearLogic.getWelcomeMessage()
+        return ["title": title, "message": message]
     }
     
     func shouldShowAlert() -> Bool {
-        return SettingsManager.SINGLETON.settings.firstTimeUser
+        return gearLogic.shouldShowWelcomeMessage(gearCount: 0)
     }
     
     override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
