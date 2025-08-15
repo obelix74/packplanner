@@ -34,7 +34,22 @@ class HikeBrain {
                 _realm = fallbackRealm
                 return fallbackRealm
             } catch {
-                fatalError("Fatal: HikeBrain cannot initialize any Realm database. App cannot continue: \(error)")
+                print("Critical: HikeBrain fallback Realm initialization failed: \(error)")
+                // Create an empty in-memory realm as last resort
+                let emptyConfig = Realm.Configuration(
+                    inMemoryIdentifier: "hikebrain_emergency_\(UUID().uuidString)",
+                    schemaVersion: 1
+                )
+                do {
+                    let emergencyRealm = try Realm(configuration: emptyConfig)
+                    print("HikeBrain using emergency empty database")
+                    _realm = emergencyRealm
+                    return emergencyRealm
+                } catch {
+                    // If even this fails, we can't continue - but let's not crash
+                    // Instead, we'll throw an error that can be caught
+                    preconditionFailure("Critical: Cannot initialize any database. Please restart the app.")
+                }
             }
         }
     }

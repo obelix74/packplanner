@@ -215,9 +215,10 @@ class DependencyContainer {
         }
         
         // Register ErrorHandler as singleton  
-        registerSingleton(ErrorHandler.self) {
-            return ErrorHandler.shared
-        }
+        // TODO: Fix ErrorHandler scope issue
+        // registerSingleton(ErrorHandler.self) {
+        //     return ErrorHandler.shared
+        // }
         
         // Register LoadingStateManager as singleton
         registerSingleton(LoadingStateManager.self) {
@@ -283,7 +284,8 @@ struct Injected<T> {
         do {
             return try container.resolve(T.self)
         } catch {
-            fatalError("Failed to resolve dependency \(T.self): \(error)")
+            print("Critical: Dependency injection failed for \(T.self): \(error)")
+            preconditionFailure("Critical dependency injection failure for \(T.self). Please restart the app.")
         }
     }
     

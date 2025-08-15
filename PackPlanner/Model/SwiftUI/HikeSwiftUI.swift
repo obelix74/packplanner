@@ -36,6 +36,10 @@ class HikeSwiftUI: ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
+    deinit {
+        cancellables.removeAll()
+    }
+    
     init() {
         setupChildObservation()
     }

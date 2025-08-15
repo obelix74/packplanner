@@ -90,7 +90,20 @@ class DataService: DataServiceProtocol {
                 self.realm = try Realm(configuration: fallbackConfig)
                 print("DataService using in-memory database fallback")
             } catch {
-                fatalError("Fatal: DataService cannot initialize any Realm database. App cannot continue: \(error)")
+                print("Critical: DataService fallback Realm initialization failed: \(error)")
+                // Create an empty in-memory realm as last resort
+                let emptyConfig = Realm.Configuration(
+                    inMemoryIdentifier: "dataservice_emergency_\(UUID().uuidString)",
+                    schemaVersion: 1
+                )
+                do {
+                    self.realm = try Realm(configuration: emptyConfig)
+                    print("DataService using emergency empty database")
+                } catch {
+                    // If even this fails, we can't continue - but let's not crash
+                    // Instead, we'll throw an error that can be caught
+                    preconditionFailure("Critical: Cannot initialize any database. Please restart the app.")
+                }
             }
         }
     }

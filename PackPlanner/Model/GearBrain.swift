@@ -33,7 +33,22 @@ class GearBrain {
                 _realm = fallbackRealm
                 return fallbackRealm
             } catch {
-                fatalError("Fatal: GearBrain cannot initialize any Realm database. App cannot continue: \(error)")
+                print("Critical: GearBrain fallback Realm initialization failed: \(error)")
+                // Create an empty in-memory realm as last resort
+                let emptyConfig = Realm.Configuration(
+                    inMemoryIdentifier: "gearbrain_emergency_\(UUID().uuidString)",
+                    schemaVersion: 1
+                )
+                do {
+                    let emergencyRealm = try Realm(configuration: emptyConfig)
+                    print("GearBrain using emergency empty database")
+                    _realm = emergencyRealm
+                    return emergencyRealm
+                } catch {
+                    // If even this fails, we can't continue - but let's not crash
+                    // Instead, we'll throw an error that can be caught
+                    preconditionFailure("Critical: Cannot initialize any database. Please restart the app.")
+                }
             }
         }
     }

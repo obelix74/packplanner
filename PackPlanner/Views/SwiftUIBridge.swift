@@ -139,15 +139,23 @@ public struct HikeDetailViewBridge: View {
     
     private var doneButton: some View {
         Button("Done") {
+            #if DEBUG
             print("🔵 DEBUG: Done button tapped")
+            #endif
             if let dismissCallback = dismissCallback {
+                #if DEBUG
                 print("🔵 DEBUG: Using dismissCallback")
+                #endif
                 dismissCallback()
             } else {
+                #if DEBUG
                 print("🔵 DEBUG: Trying SwiftUI dismiss")
+                #endif
                 dismiss()
             }
+            #if DEBUG
             print("🔵 DEBUG: Dismiss logic completed")
+            #endif
         }
     }
     
@@ -170,42 +178,56 @@ public struct HikeDetailViewBridge: View {
     }
     
     private func refreshHikeData() {
+        #if DEBUG
         print("🟢 DEBUG: refreshHikeData() called")
         print("🟢 DEBUG: hike.name: \(hike.name)")
         print("🟢 DEBUG: Current hike.hikeGears count: \(hike.hikeGears.count)")
+        #endif
         
         // Add a small delay to ensure any pending database writes complete
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            #if DEBUG
             print("🟢 DEBUG: Delayed refresh starting...")
+            #endif
             
             // Force DataService to reload its data from Realm
             self.dataService.loadData()
             
+            #if DEBUG
             print("🟢 DEBUG: DataService.loadData() completed")
             print("🟢 DEBUG: DataService has \(self.dataService.hikes.count) hikes")
+            #endif
             
             // Wait a bit more for the background loading to complete
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                #if DEBUG
                 print("🟢 DEBUG: Final refresh step...")
+                #endif
                 
                 // Find the updated hike by name (not ID, since IDs are generated per session)
                 if let updatedHike = self.dataService.hikes.first(where: { $0.name == self.hike.name }) {
+                    #if DEBUG
                     print("🟢 DEBUG: Found updated hike in DataService")
                     print("🟢 DEBUG: Updated hike has \(updatedHike.hikeGears.count) hikeGears")
                     
                     for (index, hikeGear) in updatedHike.hikeGears.enumerated() {
                         print("🟢 DEBUG: updatedHike.hikeGear[\(index)]: \(hikeGear.gear?.name ?? "unknown")")
                     }
+                    #endif
                     
                     self.hike.hikeGears = updatedHike.hikeGears
                     
+                    #if DEBUG
                     print("🟢 DEBUG: Hike updated - new hikeGears count: \(self.hike.hikeGears.count)")
+                    #endif
                 } else {
+                    #if DEBUG
                     print("🟢 DEBUG ERROR: Could not find updated hike '\(self.hike.name)' in DataService cache!")
                     print("🟢 DEBUG: Available hikes in cache:")
                     for cachedHike in self.dataService.hikes {
                         print("🟢 DEBUG: - \(cachedHike.name) (hikeGears: \(cachedHike.hikeGears.count))")
                     }
+                    #endif
                 }
             }
         }
@@ -1194,24 +1216,36 @@ class SwiftUIMigrationHelper {
             
             // Create a new view with the dismiss callback that can reference the controller
             let hikeDetailViewWithCallback = HikeDetailViewBridge(hike: hikeSwiftUI, dismissCallback: { [weak hostingController] in
+                #if DEBUG
                 print("🔵 DEBUG: Dismiss callback triggered")
+                #endif
                 guard let hostingController = hostingController else {
+                    #if DEBUG
                     print("🔵 DEBUG: hostingController is nil")
+                    #endif
                     return
                 }
                 
                 // Check if this controller is presented modally or pushed onto navigation stack
                 if hostingController.presentingViewController != nil {
+                    #if DEBUG
                     print("🔵 DEBUG: Controller is presented modally - using dismiss")
+                    #endif
                     hostingController.dismiss(animated: true)
                 } else if let navigationController = hostingController.navigationController {
+                    #if DEBUG
                     print("🔵 DEBUG: Controller is in navigation stack - using popViewController")
+                    #endif
                     navigationController.popViewController(animated: true)
                 } else {
+                    #if DEBUG
                     print("🔵 DEBUG: Fallback - trying dismiss anyway")
+                    #endif
                     hostingController.dismiss(animated: true)
                 }
+                #if DEBUG
                 print("🔵 DEBUG: Dismiss logic completed")
+                #endif
             })
             
             hostingController.rootView = hikeDetailViewWithCallback
@@ -1391,6 +1425,7 @@ class MigrationStatusTracker {
     }
     
     func printMigrationStatus() {
+        #if DEBUG
         print("=== SwiftUI Migration Status ===")
         for (component, completed) in migrationProgress {
             let status = completed ? "✅" : "❌"
@@ -1398,6 +1433,7 @@ class MigrationStatusTracker {
         }
         print("Overall Progress: \(String(format: "%.1f", completionPercentage))%")
         print("==============================")
+        #endif
     }
 }
 
@@ -1414,18 +1450,26 @@ class SwiftUIIntegrationTestHelper {
         // Test DataService initialization
         do {
             let dataService = DataService.shared
+            #if DEBUG
             print("✅ DataService initialized successfully")
+            #endif
         } catch {
+            #if DEBUG
             print("❌ DataService initialization failed: \(error)")
+            #endif
             allTestsPassed = false
         }
         
         // Test SettingsManagerSwiftUI initialization
         do {
             let settingsManager = SettingsManagerSwiftUI.shared
+            #if DEBUG
             print("✅ SettingsManagerSwiftUI initialized successfully")
+            #endif
         } catch {
+            #if DEBUG
             print("❌ SettingsManagerSwiftUI initialization failed")
+            #endif
             allTestsPassed = false
         }
         
@@ -1436,9 +1480,13 @@ class SwiftUIIntegrationTestHelper {
             let _ = AddGearViewBridge(gear: nil)
             let _ = AddHikeViewBridge(hike: nil)
             let _ = SettingsView()
+            #if DEBUG
             print("✅ All SwiftUI Views can be instantiated")
+            #endif
         } catch {
+            #if DEBUG
             print("❌ SwiftUI View instantiation failed: \(error)")
+            #endif
             allTestsPassed = false
         }
         
@@ -1448,9 +1496,13 @@ class SwiftUIIntegrationTestHelper {
             let _ = bridge.createGearListViewController()
             let _ = bridge.createHikeListViewController()
             let _ = bridge.createSettingsViewController()
+            #if DEBUG
             print("✅ SwiftUI Bridge working correctly")
+            #endif
         } catch {
+            #if DEBUG
             print("❌ SwiftUI Bridge failed: \(error)")
+            #endif
             allTestsPassed = false
         }
         

@@ -32,7 +32,17 @@ class AddHikeViewController: BaseViewController {
             realm = try Realm()
         } catch {
             print("Critical: Failed to initialize Realm in AddHikeViewController: \(error)")
-            fatalError("Cannot proceed without Realm database")
+            // Show user-friendly error and disable functionality
+            let alert = UIAlertController(
+                title: "Database Error", 
+                message: "Unable to save hikes. Please restart the app.", 
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            // Disable save functionality if realm is not available
+            saveButton.isEnabled = false
+            return
         }
         
         // Do any additional setup after loading the view.

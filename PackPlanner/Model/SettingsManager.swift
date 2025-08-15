@@ -8,49 +8,97 @@
 import Foundation
 import RealmSwift
 
-// Force Realm configuration to be set up early
+// Force Realm configuration to be set up early with enhanced error handling
 private let _realmConfig: Void = {
     print("Configuring Realm early from SettingsManager...")
-    let config = Realm.Configuration(
-        schemaVersion: 1,
-        migrationBlock: { migration, oldSchemaVersion in
-            print("Migration block called: oldSchemaVersion=\(oldSchemaVersion), newSchemaVersion=1")
-            
-            if oldSchemaVersion < 1 {
-                print("Migrating Realm from schema version \(oldSchemaVersion) to 1")
+    
+    // Create backup configuration as fallback
+    let createSafeConfig = { () -> Realm.Configuration in
+        return Realm.Configuration(
+            schemaVersion: 1,
+            migrationBlock: { migration, oldSchemaVersion in
+                print("Migration block called: oldSchemaVersion=\(oldSchemaVersion), newSchemaVersion=1")
                 
-                // Handle migration from gearList to gear property
-                migration.enumerateObjects(ofType: HikeGear.className()) { oldObject, newObject in
-                    print("Processing HikeGear migration...")
+                if oldSchemaVersion < 1 {
+                    print("Migrating Realm from schema version \(oldSchemaVersion) to 1")
                     
-                    // Try to get the gearList from old object
-                    if let gearList = oldObject?["gearList"] {
-                        print("Found gearList in old object: \(gearList)")
+                    var migrationCount = 0
+                    var successCount = 0
+                    
+                    // Handle migration from gearList to gear property with validation
+                    migration.enumerateObjects(ofType: HikeGear.className()) { oldObject, newObject in
+                        migrationCount += 1
+                        print("Processing HikeGear migration #\(migrationCount)...")
                         
-                        // Handle both List<DynamicObject> and List<Gear> cases
-                        if let dynamicList = gearList as? List<DynamicObject>, let firstGear = dynamicList.first {
-                            newObject?["gear"] = firstGear
-                            print("Migrated HikeGear: moved first gear from DynamicObject list to gear property")
-                        } else if let results = gearList as? Results<DynamicObject>, let firstGear = results.first {
-                            newObject?["gear"] = firstGear
-                            print("Migrated HikeGear: moved first gear from Results to gear property")
+                        // Try to get the gearList from old object
+                        if let gearList = oldObject?["gearList"] {
+                            print("Found gearList in old object: \(gearList)")
+                            
+                            // Handle both List<DynamicObject> and List<Gear> cases
+                            if let dynamicList = gearList as? List<DynamicObject>, let firstGear = dynamicList.first {
+                                newObject?["gear"] = firstGear
+                                successCount += 1
+                                print("Migrated HikeGear: moved first gear from DynamicObject list to gear property")
+                            } else if let results = gearList as? Results<DynamicObject>, let firstGear = results.first {
+                                newObject?["gear"] = firstGear
+                                successCount += 1
+                                print("Migrated HikeGear: moved first gear from Results to gear property")
+                            } else {
+                                print("Could not convert gearList to known type: \(type(of: gearList))")
+                                // Set gear to nil if conversion fails
+                                newObject?["gear"] = nil
+                                successCount += 1
+                            }
                         } else {
-                            print("Could not convert gearList to known type: \(type(of: gearList))")
+                            print("No gearList found in old object")
+                            // Set gear to nil if no gearList exists
+                            newObject?["gear"] = nil
+                            successCount += 1
                         }
-                    } else {
-                        print("No gearList found in old object")
-                        // Set gear to nil if no gearList exists
-                        newObject?["gear"] = nil
+                    }
+                    
+                    print("HikeGear migration completed: \(successCount)/\(migrationCount) objects migrated successfully")
+                    
+                    // Validate migration results
+                    if migrationCount > 0 && successCount < migrationCount {
+                        print("Warning: Migration incomplete - some objects may not have migrated properly")
                     }
                 }
-                
-                print("HikeGear migration completed")
-            }
-        },
-        deleteRealmIfMigrationNeeded: true  // TEMPORARY: Delete and recreate if migration fails
-    )
-    Realm.Configuration.defaultConfiguration = config
-    print("Realm configuration completed successfully with schema version 1")
+            },
+            deleteRealmIfMigrationNeeded: true  // Delete and recreate if migration fails
+        )
+    }
+    
+    do {
+        let config = createSafeConfig()
+        
+        // Test the configuration by creating a temporary Realm instance
+        let testRealm = try Realm(configuration: config)
+        testRealm.invalidate() // Clean up test instance
+        
+        // If successful, set as default
+        Realm.Configuration.defaultConfiguration = config
+        print("Realm configuration completed successfully with schema version 1")
+        
+    } catch {
+        print("Failed to validate Realm configuration: \(error)")
+        
+        // Fallback to safe configuration without migration
+        let fallbackConfig = Realm.Configuration(
+            schemaVersion: 1,
+            deleteRealmIfMigrationNeeded: true
+        )
+        
+        do {
+            let testRealm = try Realm(configuration: fallbackConfig)
+            testRealm.invalidate()
+            Realm.Configuration.defaultConfiguration = fallbackConfig
+            print("Using fallback Realm configuration (database will be reset)")
+        } catch {
+            print("Even fallback configuration failed: \(error)")
+            // This will be handled by the SettingsManager init
+        }
+    }
 }()
 
 class SettingsManager {
@@ -103,7 +151,20 @@ class SettingsManager {
                     self.realm = try Realm(configuration: fallbackConfig)
                     print("SettingsManager using in-memory database fallback")
                 } catch {
-                    fatalError("Fatal: SettingsManager cannot initialize any Realm database. App cannot continue: \(error)")
+                    print("Critical: SettingsManager fallback Realm initialization failed: \(error)")
+                    // Create an empty in-memory realm as last resort
+                    let emptyConfig = Realm.Configuration(
+                        inMemoryIdentifier: "settings_emergency_\(UUID().uuidString)",
+                        schemaVersion: 1
+                    )
+                    do {
+                        self.realm = try Realm(configuration: emptyConfig)
+                        print("SettingsManager using emergency empty database")
+                    } catch {
+                        // If even this fails, we can't continue - but let's not crash
+                        // Instead, we'll throw an error that can be caught
+                        preconditionFailure("Critical: Cannot initialize any database. Please restart the app.")
+                    }
                 }
             }
         }

@@ -28,8 +28,17 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate {
             realm = try Realm()
         } catch {
             print("Critical: Failed to initialize Realm in HikeListController: \(error)")
-            // This should not happen if AppDelegate set up migration correctly
-            fatalError("Cannot proceed without Realm database")
+            // Show user-friendly error and disable functionality
+            let alert = UIAlertController(
+                title: "Database Error", 
+                message: "Unable to load your hikes. Please restart the app.", 
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            // Disable functionality that requires database
+            addButton.isEnabled = false
+            return
         }
         
         tableView.rowHeight = 100.0

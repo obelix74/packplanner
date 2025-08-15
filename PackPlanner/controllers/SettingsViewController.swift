@@ -25,7 +25,17 @@ class SettingsViewController: UIViewController {
             realm = try Realm()
         } catch {
             print("Critical: Failed to initialize Realm in SettingsViewController: \(error)")
-            fatalError("Cannot proceed without Realm database")
+            // Show user-friendly error and disable functionality
+            let alert = UIAlertController(
+                title: "Database Error", 
+                message: "Unable to save settings. Please restart the app.", 
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            // Disable functionality that requires database
+            unitOfWeight.isEnabled = false
+            return
         }
         let backgroundColor = UIColor.systemRed
         dismissButton.backgroundColor = backgroundColor
