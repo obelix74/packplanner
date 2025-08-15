@@ -61,13 +61,13 @@ struct GearListView: View {
                     dataService.loadData()
                 }
                 .sheet(isPresented: $showingAddGear) {
-                    AddGearView()
+                    AddGearViewBridge()
                         .onDisappear {
                             dataService.loadData()
                         }
                 }
                 .sheet(item: $selectedGear) { gear in
-                    AddGearView(gear: gear)
+                    AddGearViewBridge(gear: gear)
                         .onDisappear {
                             dataService.loadData()
                         }

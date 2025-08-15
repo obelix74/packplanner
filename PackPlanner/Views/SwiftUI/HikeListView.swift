@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct HikeListView: View {
-    @State private var dataService = DataService.shared
-    @State private var settingsManager = SettingsManagerSwiftUI.shared
+    @StateObject private var dataService = DataService.shared
+    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
     @State private var searchText = ""
     @State private var showingAddHike = false
     @State private var selectedHike: HikeSwiftUI?
@@ -70,11 +70,20 @@ struct HikeListView: View {
             }
             .sheet(isPresented: $showingAddHike) {
                 AddHikeView(hike: selectedHike)
+                    .onDisappear {
+                        dataService.loadData()
+                    }
             }
             .sheet(isPresented: $showingHikeDetail) {
                 if let hike = selectedHike {
                     HikeDetailView(hike: hike)
                 }
+            }
+            .onAppear {
+                dataService.loadData()
+            }
+            .refreshable {
+                dataService.loadData()
             }
         }
     }
@@ -82,7 +91,7 @@ struct HikeListView: View {
 
 struct HikeRowView: View {
     let hike: HikeSwiftUI
-    @State private var settingsManager = SettingsManagerSwiftUI.shared
+    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {

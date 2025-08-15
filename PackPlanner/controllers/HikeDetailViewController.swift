@@ -87,15 +87,21 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     //MARK: - button actions
     
     @IBAction func editHikeButtonSelected(_ sender: UIBarButtonItem) {
-        performSegue(withIdentifier: "editHike", sender: self)
+        guard let hike = existingHike else { return }
+        let editHikeController = SwiftUIMigrationHelper.shared.createAddHikeViewController(hike: hike)
+        present(editHikeController, animated: true)
     }
     
     @IBAction func addGearButtonSelected(_ sender: UIBarButtonItem) {
-        performSegue(withIdentifier: "addGearToHike", sender: self)
+        guard let hike = existingHike else { return }
+        let addGearController = SwiftUIMigrationHelper.shared.createAddGearToHikeViewController(hike: hike)
+        present(addGearController, animated: true)
     }
     
     @IBAction func reportsButtonSelected(_ sender: UIBarButtonItem) {
-        performSegue(withIdentifier: "showReport", sender: self)
+        guard let hike = existingHike else { return }
+        let reportController = SwiftUIMigrationHelper.shared.createHikeReportViewController(hike: hike)
+        present(reportController, animated: true)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -161,7 +167,13 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: "editHikeGear", sender: self)
+        guard let hikeGear = hikeBrain?.getHikeGear(indexPath: indexPath),
+              let hike = existingHike else { return }
+        
+        let editHikeGearController = SwiftUIMigrationHelper.shared.createEditHikeGearViewController(hikeGear: hikeGear, hike: hike)
+        present(editHikeGearController, animated: true)
+        
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     //MARK: Swipe cell actions

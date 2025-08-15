@@ -114,6 +114,27 @@ class DataService: DataServiceProtocol {
             // Create a new Realm instance for this background thread
             do {
                 let backgroundRealm = try Realm()
+                
+                // Clean up duplicates first using the background realm
+                try backgroundRealm.write {
+                    let allGears = backgroundRealm.objects(Gear.self)
+                    var seenUUIDs = Set<String>()
+                    var duplicatesToDelete: [Gear] = []
+                    
+                    for gear in allGears {
+                        if seenUUIDs.contains(gear.uuid) {
+                            duplicatesToDelete.append(gear)
+                        } else {
+                            seenUUIDs.insert(gear.uuid)
+                        }
+                    }
+                    
+                    // Delete the duplicates
+                    for duplicate in duplicatesToDelete {
+                        backgroundRealm.delete(duplicate)
+                    }
+                }
+                
                 let gearObjects = backgroundRealm.objects(Gear.self)
                 let newGearCache = Array(gearObjects.map { GearSwiftUI(from: $0) })
                 
@@ -127,22 +148,31 @@ class DataService: DataServiceProtocol {
     }
     
     private func loadHikes() {
+        print("🔴 DEBUG: loadHikes() called")
         concurrentQueue.async { [weak self] in
             guard let self = self else { return }
+            
+            print("🔴 DEBUG: loadHikes() background thread started")
             
             // Create a new Realm instance for this background thread
             do {
                 let backgroundRealm = try Realm()
                 let hikeObjects = backgroundRealm.objects(Hike.self)
+                print("🔴 DEBUG: Found \(hikeObjects.count) hikes in Realm")
+                
                 let newHikeCache = Array(hikeObjects.map { hikeObj in
-                    return HikeSwiftUI(from: hikeObj)
+                    let hikeSwiftUI = HikeSwiftUI(from: hikeObj)
+                    print("🔴 DEBUG: Loaded hike '\(hikeSwiftUI.name)' with \(hikeSwiftUI.hikeGears.count) hikeGears")
+                    return hikeSwiftUI
                 })
                 
                 DispatchQueue.main.async {
+                    print("🔴 DEBUG: Updating hikeCache on main thread with \(newHikeCache.count) hikes")
                     self.hikeCache = newHikeCache
+                    print("🔴 DEBUG: hikeCache updated")
                 }
             } catch {
-                print("Error loading hikes on background thread: \(error)")
+                print("🔴 DEBUG ERROR: Error loading hikes on background thread: \(error)")
             }
         }
     }
@@ -175,6 +205,7 @@ class DataService: DataServiceProtocol {
                 }
                 DispatchQueue.main.async {
                     self.gearCache.append(gear)
+                    self.objectWillChange.send()
                 }
             } catch {
                 print("Error adding gear: \(error)")
@@ -200,6 +231,7 @@ class DataService: DataServiceProtocol {
                 DispatchQueue.main.async {
                     if let index = self.gearCache.firstIndex(where: { $0.id == gear.id }) {
                         self.gearCache[index] = gear
+                        self.objectWillChange.send()
                     }
                 }
             } catch {
@@ -258,6 +290,7 @@ class DataService: DataServiceProtocol {
                 }
                 DispatchQueue.main.async {
                     self.hikeCache.append(hike)
+                    self.objectWillChange.send()
                 }
             } catch {
                 print("Error adding hike: \(error)")
@@ -265,29 +298,56 @@ class DataService: DataServiceProtocol {
         }
     }
     
-    func updateHike(_ hike: HikeSwiftUI, originalName: String? = nil) {
+    func updateHike(_ hike: HikeSwiftUI, originalName: String? = nil, completion: (() -> Void)? = nil) {
+        print("🟠 DEBUG: DataService.updateHike() called")
+        print("🟠 DEBUG: hike.id: \(hike.id)")
+        print("🟠 DEBUG: hike.name: \(hike.name)")
+        print("🟠 DEBUG: hike.hikeGears count: \(hike.hikeGears.count)")
+        for (index, hikeGear) in hike.hikeGears.enumerated() {
+            print("🟠 DEBUG: hikeGear[\(index)]: \(hikeGear.gear?.name ?? "unknown")")
+        }
+        
         barrierQueue.async { [weak self] in
             guard let self = self else { return }
+            
+            print("🟠 DEBUG: Background thread started for updateHike")
             
             // Create a new Realm instance for this background thread
             do {
                 let backgroundRealm = try Realm()
                 try backgroundRealm.write {
                     guard let existingHike = self.findExistingHike(realm: backgroundRealm, hike: hike, originalName: originalName) else {
-                        print("Error: Hike not found for update")
+                        print("🟠 DEBUG ERROR: Hike not found for update")
                         return
                     }
                     
+                    print("🟠 DEBUG: Found existing hike: \(existingHike.name)")
+                    print("🟠 DEBUG: Existing hike gear count before update: \(existingHike.hikeGears.count)")
+                    
                     self.updateHikeProperties(existingHike: existingHike, from: hike)
                     self.updateHikeGearRelationships(realm: backgroundRealm, existingHike: existingHike, from: hike)
+                    
+                    print("🟠 DEBUG: Existing hike gear count after update: \(existingHike.hikeGears.count)")
                 }
+                print("🟠 DEBUG: Realm write transaction completed successfully")
                 DispatchQueue.main.async {
+                    print("🟠 DEBUG: Updating cache on main thread")
                     self.updateHikeInCache(hike)
+                    self.objectWillChange.send()
+                    print("🟠 DEBUG: Cache update completed")
+                    
+                    // Call completion handler after cache update is complete
+                    completion?()
                 }
             } catch {
-                print("Error updating hike: \(error)")
+                print("🟠 DEBUG ERROR: Error updating hike: \(error)")
             }
         }
+    }
+    
+    // Convenience method for backward compatibility
+    func updateHike(_ hike: HikeSwiftUI, originalName: String? = nil) {
+        updateHike(hike, originalName: originalName, completion: nil)
     }
     
     // MARK: - Private Helper Methods for updateHike
@@ -309,19 +369,29 @@ class DataService: DataServiceProtocol {
     }
     
     private func updateHikeGearRelationships(realm: Realm, existingHike: Hike, from hike: HikeSwiftUI) {
+        print("🟠 DEBUG: updateHikeGearRelationships() called")
+        print("🟠 DEBUG: Input hikeGears count: \(hike.hikeGears.count)")
+        
         // Remove existing HikeGear entries
+        print("🟠 DEBUG: Deleting \(existingHike.hikeGears.count) existing hikeGears")
         realm.delete(existingHike.hikeGears)
         existingHike.hikeGears.removeAll()
         
         // Get unique HikeGear entries to prevent duplicates
         let uniqueHikeGears = getUniqueHikeGears(from: hike.hikeGears)
+        print("🟠 DEBUG: Unique hikeGears count: \(uniqueHikeGears.count)")
         
         // Add current HikeGear relationships
-        for hikeGearSwiftUI in uniqueHikeGears {
+        for (index, hikeGearSwiftUI) in uniqueHikeGears.enumerated() {
+            print("🟠 DEBUG: Processing hikeGear[\(index)]: \(hikeGearSwiftUI.gear?.name ?? "unknown")")
             let legacyHikeGear = hikeGearSwiftUI.toLegacyHikeGear()
+            print("🟠 DEBUG: Created legacyHikeGear with gear: \(legacyHikeGear.gear?.name ?? "unknown")")
             realm.add(legacyHikeGear)
             existingHike.hikeGears.append(legacyHikeGear)
+            print("🟠 DEBUG: Added to Realm and existingHike")
         }
+        
+        print("🟠 DEBUG: Final existingHike.hikeGears count: \(existingHike.hikeGears.count)")
     }
     
     private func getUniqueHikeGears(from hikeGears: [HikeGearSwiftUI]) -> [HikeGearSwiftUI] {

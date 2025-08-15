@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct AddHikeView: View {
+struct AddHikeViewBridge: View {
     let hike: HikeSwiftUI?
     
     @State private var dataService = DataService.shared
@@ -19,7 +19,6 @@ struct AddHikeView: View {
     @State private var externalLink1 = ""
     @State private var externalLink2 = ""
     @State private var externalLink3 = ""
-    @State private var originalName = "" // Store original name for updates
     
     @Environment(\.dismiss) private var dismiss
     
@@ -32,12 +31,12 @@ struct AddHikeView: View {
     }
     
     var body: some View {
-        Form {
+        NavigationView {
+            Form {
                 Section("Hike Information") {
                     TextField("Hike Name", text: $name)
                     
                     TextField("Description (Optional)", text: $description)
-                        .lineLimit(3)
                     
                     TextField("Location (Optional)", text: $location)
                     
@@ -62,23 +61,28 @@ struct AddHikeView: View {
                         .autocapitalization(.none)
                 }
             }
-        .navigationTitle(isEditing ? "Edit Hike" : "Add Hike")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(content: {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button("Cancel") {
+            .navigationTitle(isEditing ? "Edit Hike" : "Add Hike")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(
+                leading: Button("Cancel") {
+                    // Notify parent controller that hike was cancelled
                     NotificationCenter.default.post(name: NSNotification.Name("HikeCancelled"), object: nil)
-                    dismiss()
+                    
+                    if let hostingController = findHostingController() {
+                        hostingController.dismiss(animated: true)
+                    } else {
+                        dismiss()
+                    }
                 }
-            }
-            
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Save") {
+                .foregroundColor(.blue),
+                trailing: Button("Save") {
                     saveHike()
                 }
+                .foregroundColor(.blue)
+                .font(.body.weight(.semibold))
                 .disabled(!isFormValid)
-            }
-        })
+            )
+        }
         .onAppear {
             setupForm()
         }
@@ -86,7 +90,6 @@ struct AddHikeView: View {
     
     private func setupForm() {
         if let hike = hike {
-            originalName = hike.name // Store original name
             name = hike.name
             description = hike.desc
             location = hike.location
@@ -109,7 +112,7 @@ struct AddHikeView: View {
             existingHike.externalLink2 = externalLink2.trimmingCharacters(in: .whitespacesAndNewlines)
             existingHike.externalLink3 = externalLink3.trimmingCharacters(in: .whitespacesAndNewlines)
             
-            dataService.updateHike(existingHike, originalName: originalName)
+            dataService.updateHike(existingHike)
         } else {
             let newHike = HikeSwiftUI(
                 name: name.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -126,12 +129,32 @@ struct AddHikeView: View {
             dataService.addHike(newHike)
         }
         
-        // Notify UIKit that hike was saved
+        // Notify parent controller that hike was saved
         NotificationCenter.default.post(name: NSNotification.Name("HikeSaved"), object: nil)
-        dismiss()
+        
+        // For UIKit presentation, we need to dismiss the hosting controller
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if let hostingController = findHostingController() {
+                hostingController.dismiss(animated: true)
+            } else {
+                // Fallback to SwiftUI dismiss if in sheet context
+                dismiss()
+            }
+        }
     }
-}
-
-#Preview {
-    AddHikeView(hike: nil)
+    
+    private func findHostingController() -> UIViewController? {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else {
+            return nil
+        }
+        
+        // Find the presented view controller (should be the navigation controller)
+        var controller = window.rootViewController
+        while let presented = controller?.presentedViewController {
+            controller = presented
+        }
+        
+        return controller
+    }
 }

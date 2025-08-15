@@ -10,7 +10,7 @@ import SwiftUI
 import RealmSwift
 import Combine
 
-class HikeSwiftUI: ObservableObject {
+public class HikeSwiftUI: ObservableObject {
     @Published var id: String = UUID().uuidString
     @Published var name: String = ""
     @Published var desc: String = ""
