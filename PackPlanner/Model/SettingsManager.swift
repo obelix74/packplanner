@@ -107,6 +107,14 @@ class SettingsManager {
     static let SINGLETON = SettingsManager()
     var settings: Settings = Settings()
     
+    // MARK: - Shared Realm Access
+    
+    /// Provides centralized access to the configured Realm instance
+    /// All classes should use this instead of creating their own Realm instances
+    static var sharedRealm: Realm {
+        return SINGLETON.realm
+    }
+    
     private init() {
         // Force the configuration to be set up
         _ = _realmConfig

@@ -38,105 +38,184 @@ import SwiftUI
 class LoadingStateManager {
     static let shared = LoadingStateManager()
     
-    private var activeLoadingViews: [UIView] = []
+    // Thread-safe storage for active loading views
+    private var _activeLoadingViews: [UIView] = []
     private let queue = DispatchQueue(label: "com.packplanner.loading", attributes: .concurrent)
     
     private init() {}
     
-    // MARK: - UIKit Loading Indicators
+    // MARK: - Thread-Safe Access to Active Loading Views
     
-    func showLoading(on viewController: UIViewController, message: String = "Loading...") {
-        DispatchQueue.main.async {
-            let loadingView = self.createLoadingView(message: message)
-            viewController.view.addSubview(loadingView)
-            
-            // Auto layout constraints
-            loadingView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                loadingView.centerXAnchor.constraint(equalTo: viewController.view.centerXAnchor),
-                loadingView.centerYAnchor.constraint(equalTo: viewController.view.centerYAnchor),
-                loadingView.widthAnchor.constraint(greaterThanOrEqualToConstant: 120),
-                loadingView.heightAnchor.constraint(greaterThanOrEqualToConstant: 120)
-            ])
-            
-            // Animate in
-            loadingView.alpha = 0
-            UIView.animate(withDuration: 0.3) {
-                loadingView.alpha = 1
+    private var activeLoadingViews: [UIView] {
+        get {
+            return queue.sync {
+                return _activeLoadingViews
             }
-            
-            self.queue.async(flags: .barrier) {
-                self.activeLoadingViews.append(loadingView)
+        }
+        set {
+            queue.async(flags: .barrier) { [weak self] in
+                self?._activeLoadingViews = newValue
             }
         }
     }
     
-    func hideLoading(from viewController: UIViewController) {
-        DispatchQueue.main.async {
-            let loadingViews = viewController.view.subviews.filter { $0.tag == 9999 }
-            
-            for loadingView in loadingViews {
-                UIView.animate(withDuration: 0.3, animations: {
-                    loadingView.alpha = 0
-                }, completion: { _ in
-                    loadingView.removeFromSuperview()
-                    
-                    self.queue.async(flags: .barrier) {
-                        self.activeLoadingViews.removeAll { $0 == loadingView }
-                    }
-                })
+    private func addActiveLoadingView(_ view: UIView) {
+        queue.async(flags: .barrier) { [weak self] in
+            self?._activeLoadingViews.append(view)
+        }
+    }
+    
+    private func removeActiveLoadingView(_ view: UIView) {
+        queue.async(flags: .barrier) { [weak self] in
+            self?._activeLoadingViews.removeAll { $0 == view }
+        }
+    }
+    
+    // MARK: - UIKit Loading Indicators
+    
+    func showLoading(on viewController: UIViewController, message: String = "Loading...") {
+        // Ensure we're on main thread for UI operations
+        if Thread.isMainThread {
+            self.performShowLoading(on: viewController, message: message)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.performShowLoading(on: viewController, message: message)
             }
+        }
+    }
+    
+    private func performShowLoading(on viewController: UIViewController, message: String) {
+        let loadingView = self.createLoadingView(message: message)
+        viewController.view.addSubview(loadingView)
+        
+        // Auto layout constraints
+        loadingView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            loadingView.centerXAnchor.constraint(equalTo: viewController.view.centerXAnchor),
+            loadingView.centerYAnchor.constraint(equalTo: viewController.view.centerYAnchor),
+            loadingView.widthAnchor.constraint(greaterThanOrEqualToConstant: 120),
+            loadingView.heightAnchor.constraint(greaterThanOrEqualToConstant: 120)
+        ])
+        
+        // Animate in
+        loadingView.alpha = 0
+        UIView.animate(withDuration: 0.3) {
+            loadingView.alpha = 1
+        }
+        
+        self.addActiveLoadingView(loadingView)
+    }
+    
+    func hideLoading(from viewController: UIViewController) {
+        // Ensure we're on main thread for UI operations  
+        if Thread.isMainThread {
+            self.performHideLoading(from: viewController)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.performHideLoading(from: viewController)
+            }
+        }
+    }
+    
+    private func performHideLoading(from viewController: UIViewController) {
+        let loadingViews = viewController.view.subviews.filter { $0.tag == 9999 }
+        
+        for loadingView in loadingViews {
+            UIView.animate(withDuration: 0.3, animations: {
+                loadingView.alpha = 0
+            }, completion: { [weak self] _ in
+                loadingView.removeFromSuperview()
+                self?.removeActiveLoadingView(loadingView)
+            })
         }
     }
     
     func showProgressHUD(on viewController: UIViewController, progress: Float, message: String) {
-        DispatchQueue.main.async {
-            // Remove existing progress views
-            self.hideLoading(from: viewController)
-            
-            let progressView = self.createProgressView(progress: progress, message: message)
-            viewController.view.addSubview(progressView)
-            
-            // Auto layout constraints
-            progressView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                progressView.centerXAnchor.constraint(equalTo: viewController.view.centerXAnchor),
-                progressView.centerYAnchor.constraint(equalTo: viewController.view.centerYAnchor),
-                progressView.widthAnchor.constraint(equalToConstant: 200),
-                progressView.heightAnchor.constraint(equalToConstant: 120)
-            ])
-            
-            // Animate in
-            progressView.alpha = 0
-            UIView.animate(withDuration: 0.3) {
-                progressView.alpha = 1
+        // Ensure we're on main thread for UI operations
+        if Thread.isMainThread {
+            self.performShowProgressHUD(on: viewController, progress: progress, message: message)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.performShowProgressHUD(on: viewController, progress: progress, message: message)
             }
         }
+    }
+    
+    private func performShowProgressHUD(on viewController: UIViewController, progress: Float, message: String) {
+        // Remove existing progress views
+        self.performHideLoading(from: viewController)
+        
+        let progressView = self.createProgressView(progress: progress, message: message)
+        viewController.view.addSubview(progressView)
+        
+        // Auto layout constraints
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            progressView.centerXAnchor.constraint(equalTo: viewController.view.centerXAnchor),
+            progressView.centerYAnchor.constraint(equalTo: viewController.view.centerYAnchor),
+            progressView.widthAnchor.constraint(equalToConstant: 200),
+            progressView.heightAnchor.constraint(equalToConstant: 120)
+        ])
+        
+        // Animate in
+        progressView.alpha = 0
+        UIView.animate(withDuration: 0.3) {
+            progressView.alpha = 1
+        }
+        
+        self.addActiveLoadingView(progressView)
     }
     
     // MARK: - Table View Loading States
     
     func showTableViewLoading(on tableView: UITableView, message: String = "Loading data...") {
-        DispatchQueue.main.async {
-            let loadingView = self.createTableLoadingView(message: message)
-            tableView.backgroundView = loadingView
-            tableView.separatorStyle = .none
+        // Ensure we're on main thread for UI operations
+        if Thread.isMainThread {
+            self.performShowTableViewLoading(on: tableView, message: message)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.performShowTableViewLoading(on: tableView, message: message)
+            }
         }
+    }
+    
+    private func performShowTableViewLoading(on tableView: UITableView, message: String) {
+        let loadingView = self.createTableLoadingView(message: message)
+        tableView.backgroundView = loadingView
+        tableView.separatorStyle = .none
     }
     
     func hideTableViewLoading(from tableView: UITableView) {
-        DispatchQueue.main.async {
-            tableView.backgroundView = nil
-            tableView.separatorStyle = .singleLine
+        // Ensure we're on main thread for UI operations
+        if Thread.isMainThread {
+            self.performHideTableViewLoading(from: tableView)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.performHideTableViewLoading(from: tableView)
+            }
         }
     }
     
+    private func performHideTableViewLoading(from tableView: UITableView) {
+        tableView.backgroundView = nil
+        tableView.separatorStyle = .singleLine
+    }
+    
     func showEmptyState(on tableView: UITableView, title: String, message: String, actionTitle: String? = nil, action: (() -> Void)? = nil) {
-        DispatchQueue.main.async {
-            let emptyView = self.createEmptyStateView(title: title, message: message, actionTitle: actionTitle, action: action)
-            tableView.backgroundView = emptyView
-            tableView.separatorStyle = .none
+        // Ensure we're on main thread for UI operations
+        if Thread.isMainThread {
+            self.performShowEmptyState(on: tableView, title: title, message: message, actionTitle: actionTitle, action: action)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.performShowEmptyState(on: tableView, title: title, message: message, actionTitle: actionTitle, action: action)
+            }
         }
+    }
+    
+    private func performShowEmptyState(on tableView: UITableView, title: String, message: String, actionTitle: String?, action: (() -> Void)?) {
+        let emptyView = self.createEmptyStateView(title: title, message: message, actionTitle: actionTitle, action: action)
+        tableView.backgroundView = emptyView
+        tableView.separatorStyle = .none
     }
     
     // MARK: - SwiftUI Loading States

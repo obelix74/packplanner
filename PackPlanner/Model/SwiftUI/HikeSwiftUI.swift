@@ -34,6 +34,9 @@ class HikeSwiftUI: ObservableObject {
     private var _consumableWeight: Double?
     private var weightCacheValid = false
     
+    // Thread-safe queue for weight cache operations
+    private let cacheQueue = DispatchQueue(label: "com.packplanner.hike.weightcache", attributes: .concurrent)
+    
     private var cancellables = Set<AnyCancellable>()
     
     deinit {
@@ -53,55 +56,69 @@ class HikeSwiftUI: ObservableObject {
     }
     
     var totalWeight: Double {
-        if let cached = _totalWeight, weightCacheValid {
-            return cached
+        return cacheQueue.sync {
+            if let cached = _totalWeight, weightCacheValid {
+                return cached
+            }
+            let calculated = hikeGears.reduce(0) { total, hikeGear in
+                total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
+            }
+            _totalWeight = calculated
+            weightCacheValid = true
+            return calculated
         }
-        let calculated = hikeGears.reduce(0) { total, hikeGear in
-            total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
-        }
-        _totalWeight = calculated
-        return calculated
     }
     
     var baseWeight: Double {
-        if let cached = _baseWeight, weightCacheValid {
-            return cached
+        return cacheQueue.sync {
+            if let cached = _baseWeight, weightCacheValid {
+                return cached
+            }
+            let calculated = hikeGears.filter { !$0.worn && !$0.consumable }.reduce(0) { total, hikeGear in
+                total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
+            }
+            _baseWeight = calculated
+            weightCacheValid = true
+            return calculated
         }
-        let calculated = hikeGears.filter { !$0.worn && !$0.consumable }.reduce(0) { total, hikeGear in
-            total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
-        }
-        _baseWeight = calculated
-        return calculated
     }
     
     var wornWeight: Double {
-        if let cached = _wornWeight, weightCacheValid {
-            return cached
+        return cacheQueue.sync {
+            if let cached = _wornWeight, weightCacheValid {
+                return cached
+            }
+            let calculated = hikeGears.filter { $0.worn }.reduce(0) { total, hikeGear in
+                total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
+            }
+            _wornWeight = calculated
+            weightCacheValid = true
+            return calculated
         }
-        let calculated = hikeGears.filter { $0.worn }.reduce(0) { total, hikeGear in
-            total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
-        }
-        _wornWeight = calculated
-        return calculated
     }
     
     var consumableWeight: Double {
-        if let cached = _consumableWeight, weightCacheValid {
-            return cached
+        return cacheQueue.sync {
+            if let cached = _consumableWeight, weightCacheValid {
+                return cached
+            }
+            let calculated = hikeGears.filter { $0.consumable }.reduce(0) { total, hikeGear in
+                total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
+            }
+            _consumableWeight = calculated
+            weightCacheValid = true
+            return calculated
         }
-        let calculated = hikeGears.filter { $0.consumable }.reduce(0) { total, hikeGear in
-            total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
-        }
-        _consumableWeight = calculated
-        return calculated
     }
     
     private func invalidateWeightCache() {
-        _totalWeight = nil
-        _baseWeight = nil
-        _wornWeight = nil
-        _consumableWeight = nil
-        weightCacheValid = false
+        cacheQueue.async(flags: .barrier) { [weak self] in
+            self?._totalWeight = nil
+            self?._baseWeight = nil
+            self?._wornWeight = nil
+            self?._consumableWeight = nil
+            self?.weightCacheValid = false
+        }
     }
     
     private func setupChildObservation() {

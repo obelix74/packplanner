@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import RealmSwift
 import Combine
+import UIKit
 
 // MARK: - DataService Protocol
 
@@ -63,7 +64,9 @@ protocol DataServiceProtocol: ObservableObject {
 class DataService: DataServiceProtocol {
     static let shared = DataService()
     
-    private let realm: Realm
+    // Note: Individual methods create thread-specific Realm instances
+    // This maintains centralized configuration while respecting thread-confinement
+    
     private let concurrentQueue = DispatchQueue(label: "com.packplanner.dataservice", attributes: .concurrent)
     private let barrierQueue = DispatchQueue(label: "com.packplanner.dataservice.barrier")
     
@@ -71,41 +74,25 @@ class DataService: DataServiceProtocol {
     @Published private var hikeCache: [HikeSwiftUI] = []
     
     private init() {
+        // Clean up any database duplicates on startup
+        cleanupDatabaseDuplicates()
+        // Also clean up gear duplicates
+        GearBrain.cleanupDuplicateGears()
+    }
+    
+    // MARK: - Error Handling
+    
+    /**
+     * Enhanced error logging with context information.
+     * Replaces simple print statements with structured error logging.
+     */
+    private func logError(_ error: Error, context: String, file: String = #file, function: String = #function, line: Int = #line) {
+        let fileName = (file as NSString).lastPathComponent
+        let errorMessage = "ERROR in \(fileName):\(function):\(line) - \(error.localizedDescription) Context: \(context)"
+        print("📱 \(errorMessage)")
         
-        do {
-            // Use the default configuration that should already be set by SettingsManager
-            self.realm = try Realm()
-            // Clean up any database duplicates on startup
-            cleanupDatabaseDuplicates()
-            // Also clean up gear duplicates
-            GearBrain.cleanupDuplicateGears()
-        } catch {
-            print("Critical: Failed to initialize Realm database: \(error)")
-            // Attempt fallback to in-memory realm
-            do {
-                let fallbackConfig = Realm.Configuration(
-                    inMemoryIdentifier: "dataservice_fallback",
-                    schemaVersion: 1
-                )
-                self.realm = try Realm(configuration: fallbackConfig)
-                print("DataService using in-memory database fallback")
-            } catch {
-                print("Critical: DataService fallback Realm initialization failed: \(error)")
-                // Create an empty in-memory realm as last resort
-                let emptyConfig = Realm.Configuration(
-                    inMemoryIdentifier: "dataservice_emergency_\(UUID().uuidString)",
-                    schemaVersion: 1
-                )
-                do {
-                    self.realm = try Realm(configuration: emptyConfig)
-                    print("DataService using emergency empty database")
-                } catch {
-                    // If even this fails, we can't continue - but let's not crash
-                    // Instead, we'll throw an error that can be caught
-                    preconditionFailure("Critical: Cannot initialize any database. Please restart the app.")
-                }
-            }
-        }
+        // TODO: Integrate with full ErrorHandler when import issues are resolved
+        // ErrorHandler.shared.logError(error, context: context)
     }
     
     // MARK: - Data Loading
@@ -124,11 +111,11 @@ class DataService: DataServiceProtocol {
         concurrentQueue.async { [weak self] in
             guard let self = self else { return }
             
-            // Create a new Realm instance for this background thread
+            // Create thread-specific Realm instance (using centralized configuration)
             do {
                 let backgroundRealm = try Realm()
                 
-                // Clean up duplicates first using the background realm
+                // Clean up duplicates first
                 try backgroundRealm.write {
                     let allGears = backgroundRealm.objects(Gear.self)
                     var seenUUIDs = Set<String>()
@@ -148,6 +135,7 @@ class DataService: DataServiceProtocol {
                     }
                 }
                 
+                // Load gear using background realm
                 let gearObjects = backgroundRealm.objects(Gear.self)
                 let newGearCache = Array(gearObjects.map { GearSwiftUI(from: $0) })
                 
@@ -155,7 +143,7 @@ class DataService: DataServiceProtocol {
                     self.gearCache = newGearCache
                 }
             } catch {
-                print("Error loading gear on background thread: \(error)")
+                self.logError(error, context: "loadGear - loading gear data from Realm")
             }
         }
     }
@@ -167,7 +155,7 @@ class DataService: DataServiceProtocol {
             
             print("🔴 DEBUG: loadHikes() background thread started")
             
-            // Create a new Realm instance for this background thread
+            // Create thread-specific Realm instance (using centralized configuration)
             do {
                 let backgroundRealm = try Realm()
                 let hikeObjects = backgroundRealm.objects(Hike.self)
@@ -185,7 +173,7 @@ class DataService: DataServiceProtocol {
                     print("🔴 DEBUG: hikeCache updated")
                 }
             } catch {
-                print("🔴 DEBUG ERROR: Error loading hikes on background thread: \(error)")
+                self.logError(error, context: "loadHikes - loading hike data from Realm")
             }
         }
     }
@@ -206,11 +194,27 @@ class DataService: DataServiceProtocol {
      * - Note: Cache is updated on main queue after successful database write
      */
     func addGear(_ gear: GearSwiftUI) {
+        // Validate gear input first
+        guard !gear.name.trimmingCharacters(in: .whitespaces).isEmpty else {
+            logError(NSError(domain: "PackPlanner", code: 1001, userInfo: [NSLocalizedDescriptionKey: "Gear name is required"]), context: "addGear - input validation failed")
+            return
+        }
+        
+        guard gear.weightInGrams > 0 else {
+            logError(NSError(domain: "PackPlanner", code: 1002, userInfo: [NSLocalizedDescriptionKey: "Valid weight is required"]), context: "addGear - input validation failed")
+            return
+        }
+        
+        guard !gear.category.trimmingCharacters(in: .whitespaces).isEmpty else {
+            logError(NSError(domain: "PackPlanner", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Category is required"]), context: "addGear - input validation failed")
+            return
+        }
+        
         barrierQueue.async { [weak self] in
             guard let self = self else { return }
             
-            // Create a new Realm instance for this background thread
             do {
+                // Create thread-specific Realm instance (using centralized configuration)
                 let backgroundRealm = try Realm()
                 let legacyGear = gear.toLegacyGear()
                 try backgroundRealm.write {
@@ -221,7 +225,7 @@ class DataService: DataServiceProtocol {
                     self.objectWillChange.send()
                 }
             } catch {
-                print("Error adding gear: \(error)")
+                self.logError(error, context: "addGear - failed to save gear to database")
             }
         }
     }
@@ -230,8 +234,8 @@ class DataService: DataServiceProtocol {
         barrierQueue.async { [weak self] in
             guard let self = self else { return }
             
-            // Create a new Realm instance for this background thread
             do {
+                // Create thread-specific Realm instance (using centralized configuration)
                 let backgroundRealm = try Realm()
                 try backgroundRealm.write {
                     if let existingGear = backgroundRealm.objects(Gear.self).filter("uuid == %@", gear.id).first {
@@ -248,7 +252,7 @@ class DataService: DataServiceProtocol {
                     }
                 }
             } catch {
-                print("Error updating gear: \(error)")
+                self.logError(error, context: "updateGear - failed to update gear in database")
             }
         }
     }
@@ -257,8 +261,8 @@ class DataService: DataServiceProtocol {
         barrierQueue.async { [weak self] in
             guard let self = self else { return }
             
-            // Create a new Realm instance for this background thread
             do {
+                // Create thread-specific Realm instance (using centralized configuration)
                 let backgroundRealm = try Realm()
                 try backgroundRealm.write {
                     if let gearToDelete = backgroundRealm.objects(Gear.self).filter("uuid == %@", gear.id).first {
@@ -269,7 +273,7 @@ class DataService: DataServiceProtocol {
                     self.gearCache.removeAll { $0.id == gear.id }
                 }
             } catch {
-                print("Error deleting gear: \(error)")
+                self.logError(error, context: "deleteGear - failed to remove gear from database")
             }
         }
     }
@@ -283,11 +287,29 @@ class DataService: DataServiceProtocol {
     }
     
     func addHike(_ hike: HikeSwiftUI) {
+        // Validate hike input first
+        guard !hike.name.trimmingCharacters(in: .whitespaces).isEmpty else {
+            logError(NSError(domain: "PackPlanner", code: 2001, userInfo: [NSLocalizedDescriptionKey: "Hike name is required"]), context: "addHike - input validation failed")
+            return
+        }
+        
+        guard !hike.location.trimmingCharacters(in: .whitespaces).isEmpty else {
+            logError(NSError(domain: "PackPlanner", code: 2002, userInfo: [NSLocalizedDescriptionKey: "Location is required"]), context: "addHike - input validation failed")
+            return
+        }
+        
+        if !hike.distance.isEmpty {
+            guard Double(hike.distance) != nil, Double(hike.distance)! >= 0 else {
+                logError(NSError(domain: "PackPlanner", code: 2003, userInfo: [NSLocalizedDescriptionKey: "Distance must be a valid number"]), context: "addHike - input validation failed")
+                return
+            }
+        }
+        
         barrierQueue.async { [weak self] in
             guard let self = self else { return }
             
-            // Create a new Realm instance for this background thread
             do {
+                // Create thread-specific Realm instance (using centralized configuration)
                 let backgroundRealm = try Realm()
                 try backgroundRealm.write {
                     let legacyHike = hike.toLegacyHike()
@@ -306,7 +328,7 @@ class DataService: DataServiceProtocol {
                     self.objectWillChange.send()
                 }
             } catch {
-                print("Error adding hike: \(error)")
+                self.logError(error, context: "addHike - failed to save hike to database")
             }
         }
     }
@@ -325,8 +347,8 @@ class DataService: DataServiceProtocol {
             
             print("🟠 DEBUG: Background thread started for updateHike")
             
-            // Create a new Realm instance for this background thread
             do {
+                // Create thread-specific Realm instance (using centralized configuration)
                 let backgroundRealm = try Realm()
                 try backgroundRealm.write {
                     guard let existingHike = self.findExistingHike(realm: backgroundRealm, hike: hike, originalName: originalName) else {
@@ -353,7 +375,7 @@ class DataService: DataServiceProtocol {
                     completion?()
                 }
             } catch {
-                print("🟠 DEBUG ERROR: Error updating hike: \(error)")
+                self.logError(error, context: "updateHike - failed to update hike in database")
             }
         }
     }
@@ -424,8 +446,8 @@ class DataService: DataServiceProtocol {
         barrierQueue.async { [weak self] in
             guard let self = self else { return }
             
-            // Create a new Realm instance for this background thread
             do {
+                // Create thread-specific Realm instance (using centralized configuration)
                 let backgroundRealm = try Realm()
                 try backgroundRealm.write {
                     if let hikeToDelete = backgroundRealm.objects(Hike.self).filter("name == %@", hike.name).first {
@@ -437,7 +459,7 @@ class DataService: DataServiceProtocol {
                     self.hikeCache.removeAll { $0.id == hike.id }
                 }
             } catch {
-                print("Error deleting hike: \(error)")
+                self.logError(error, context: "deleteHike - failed to remove hike from database")
             }
         }
     }
@@ -482,8 +504,8 @@ class DataService: DataServiceProtocol {
         barrierQueue.async { [weak self] in
             guard let self = self else { return }
             
-            // Create a new Realm instance for this background thread
             do {
+                // Create thread-specific Realm instance (using centralized configuration)
                 let backgroundRealm = try Realm()
                 try backgroundRealm.write {
                     let allHikes = backgroundRealm.objects(Hike.self)
@@ -513,14 +535,12 @@ class DataService: DataServiceProtocol {
                         }
                     }
                 }
-                
                 // Reload data after cleanup on main queue
                 DispatchQueue.main.async {
                     self.loadData()
                 }
-                
             } catch {
-                print("Error cleaning up database duplicates: \(error)")
+                self.logError(error, context: "cleanupDatabaseDuplicates - failed to clean up duplicate entries")
             }
         }
     }
@@ -529,8 +549,8 @@ class DataService: DataServiceProtocol {
         barrierQueue.async { [weak self] in
             guard let self = self else { return }
             
-            // Create a new Realm instance for this background thread
             do {
+                // Create thread-specific Realm instance (using centralized configuration)
                 let backgroundRealm = try Realm()
                 try backgroundRealm.write {
                     let allHikes = backgroundRealm.objects(Hike.self)
@@ -543,7 +563,7 @@ class DataService: DataServiceProtocol {
                     self.loadData()
                 }
             } catch {
-                print("Database cleanup failed: \(error)")
+                self.logError(error, context: "cleanupDuplicateHikeGears - failed to clean up duplicate hike gear entries")
             }
         }
     }

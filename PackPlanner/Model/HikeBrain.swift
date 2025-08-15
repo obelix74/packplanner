@@ -10,48 +10,9 @@ import RealmSwift
 
 class HikeBrain {
     
-    private static var _realm: Realm?
-    static var realm: Realm {
-        if let existingRealm = _realm {
-            return existingRealm
-        }
-        
-        do {
-            // Use the default configuration that should already be set by SettingsManager
-            let newRealm = try Realm()
-            _realm = newRealm
-            return newRealm
-        } catch {
-            print("Critical: Failed to initialize Realm database: \(error)")
-            // Attempt fallback to in-memory realm
-            do {
-                let fallbackConfig = Realm.Configuration(
-                    inMemoryIdentifier: "hikebrain_fallback",
-                    schemaVersion: 1
-                )
-                let fallbackRealm = try Realm(configuration: fallbackConfig)
-                print("HikeBrain using in-memory database fallback")
-                _realm = fallbackRealm
-                return fallbackRealm
-            } catch {
-                print("Critical: HikeBrain fallback Realm initialization failed: \(error)")
-                // Create an empty in-memory realm as last resort
-                let emptyConfig = Realm.Configuration(
-                    inMemoryIdentifier: "hikebrain_emergency_\(UUID().uuidString)",
-                    schemaVersion: 1
-                )
-                do {
-                    let emergencyRealm = try Realm(configuration: emptyConfig)
-                    print("HikeBrain using emergency empty database")
-                    _realm = emergencyRealm
-                    return emergencyRealm
-                } catch {
-                    // If even this fails, we can't continue - but let's not crash
-                    // Instead, we'll throw an error that can be caught
-                    preconditionFailure("Critical: Cannot initialize any database. Please restart the app.")
-                }
-            }
-        }
+    // Use centralized Realm access through SettingsManager
+    private static var realm: Realm {
+        return SettingsManager.sharedRealm
     }
     
     var hike : Hike
