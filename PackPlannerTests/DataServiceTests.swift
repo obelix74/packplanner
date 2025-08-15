@@ -2,7 +2,7 @@
 //  DataServiceTests.swift
 //  PackPlannerTests
 //
-//  Created by Claude on Unit Testing
+//  Created by Claude on Unit Testing with Dependency Injection
 //
 
 import XCTest
@@ -11,23 +11,17 @@ import RealmSwift
 
 class DataServiceTests: XCTestCase {
     
-    var dataService: DataService!
-    var testRealm: Realm!
+    var mockDataService: MockDataService!
+    var container: DependencyContainer!
     
     override func setUp() {
         super.setUp()
         
-        // Create in-memory Realm for testing
-        let configuration = Realm.Configuration(
-            inMemoryIdentifier: "DataServiceTests-\(UUID().uuidString)",
-            schemaVersion: 1
-        )
+        // Setup dependency injection with mock services
+        container = DITestHelper.setupMockContainer()
         
-        do {
-            testRealm = try Realm(configuration: configuration)
-            // Note: In a real implementation, we'd inject this test realm into DataService
-            // For now, we'll test the public interface
-            dataService = DataService.shared
+        // Get mock data service for testing
+        mockDataService = MockDataService()
         } catch {
             XCTFail("Failed to create test Realm: \(error)")
         }

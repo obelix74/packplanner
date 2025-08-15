@@ -8,6 +8,15 @@
 import Foundation
 import RealmSwift
 
+// MARK: - Database Error Tracking
+
+class DatabaseErrorHandler {
+    static let shared = DatabaseErrorHandler()
+    var criticalDatabaseFailure = false
+    
+    private init() {}
+}
+
 // Force Realm configuration to be set up early with enhanced error handling
 private let _realmConfig: Void = {
     print("Configuring Realm early from SettingsManager...")
@@ -169,9 +178,12 @@ class SettingsManager {
                         self.realm = try Realm(configuration: emptyConfig)
                         print("SettingsManager using emergency empty database")
                     } catch {
-                        // If even this fails, we can't continue - but let's not crash
-                        // Instead, we'll throw an error that can be caught
-                        preconditionFailure("Critical: Cannot initialize any database. Please restart the app.")
+                        // If even this fails, we can't continue - store the error for AppDelegate to handle
+                        print("Emergency: All database initialization attempts failed: \(error)")
+                        DatabaseErrorHandler.shared.criticalDatabaseFailure = true
+                        // Create a minimal fallback to prevent immediate crash
+                        let minimalConfig = Realm.Configuration(inMemoryIdentifier: "emergency_minimal")
+                        self.realm = try! Realm(configuration: minimalConfig)
                     }
                 }
             }

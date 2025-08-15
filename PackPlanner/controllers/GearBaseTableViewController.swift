@@ -11,8 +11,10 @@ import RealmSwift
 class GearBaseTableViewController: UITableViewController, NavigationStyling {
     lazy var settings : Settings = SettingsManager.SINGLETON.settings
     var gearBrain : GearBrain?
-    private let gearLogic = GearListLogic.shared
-    private let alertLogic = AlertLogic.shared
+    
+    // Dependency injection using property wrappers
+    @Injected private var gearLogic: GearListService
+    @Injected private var alertLogic: AlertService
     
     override func viewDidLoad() {
         super.viewDidLoad()

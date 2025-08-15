@@ -10,6 +10,7 @@ import SwiftUI
 import RealmSwift
 import Combine
 import UIKit
+import CSV
 
 // MARK: - Shared View Logic (eliminates UIKit/SwiftUI duplication)
 
@@ -40,9 +41,37 @@ protocol SearchLogic {
     func performSearch(items: [SearchableItem], query: String) -> [SearchableItem]
 }
 
+// MARK: - Service Protocols for Dependency Injection
+
+protocol HikeListService: SearchLogic where SearchableItem == HikeSwiftUI {
+    func copyHike(_ hike: HikeSwiftUI)
+    func deleteHike(_ hike: HikeSwiftUI, completion: @escaping (Bool) -> Void)
+    func shouldShowWelcomeMessage(hikeCount: Int) -> Bool
+    func getWelcomeMessage() -> (title: String, message: String)
+    func markFirstTimeUserComplete()
+}
+
+protocol GearListService: SearchLogic where SearchableItem == GearSwiftUI {
+    func groupGearsByCategory(_ gears: [GearSwiftUI]) -> [String: [GearSwiftUI]]
+    func sortedCategories(from groupedGears: [String: [GearSwiftUI]]) -> [String]
+    func duplicateGear(_ gear: GearSwiftUI, completion: @escaping (Bool) -> Void)
+    func deleteGear(_ gear: GearSwiftUI, completion: @escaping (Bool) -> Void)
+    func shouldShowWelcomeMessage(gearCount: Int) -> Bool
+    func getWelcomeMessage() -> (title: String, message: String)
+}
+
+protocol AlertService {
+    func createDeleteConfirmationAlert(itemName: String, onConfirm: @escaping () -> Void, onCancel: @escaping () -> Void) -> UIAlertController
+    func createWelcomeAlert(title: String, message: String) -> UIAlertController
+}
+
+protocol ExportService {
+    func exportHike(_ hike: Hike, presenter: UIViewController)
+}
+
 // MARK: - Hike List Logic
 
-class HikeListLogic: NavigationStyling, SearchLogic {
+class HikeListLogic: NavigationStyling, HikeListService {
     typealias SearchableItem = HikeSwiftUI
     
     static let shared = HikeListLogic()
@@ -88,7 +117,7 @@ class HikeListLogic: NavigationStyling, SearchLogic {
 
 // MARK: - Gear List Logic
 
-class GearListLogic: NavigationStyling, SearchLogic {
+class GearListLogic: NavigationStyling, GearListService {
     typealias SearchableItem = GearSwiftUI
     
     static let shared = GearListLogic()
@@ -173,7 +202,7 @@ class GearListLogic: NavigationStyling, SearchLogic {
 
 // MARK: - Alert Logic
 
-class AlertLogic {
+class AlertLogic: AlertService {
     static let shared = AlertLogic()
     private init() {}
     
@@ -208,7 +237,7 @@ class AlertLogic {
 
 // MARK: - Export Logic
 
-class ExportLogic {
+class ExportLogic: ExportService {
     static let shared = ExportLogic()
     private init() {}
     
@@ -216,9 +245,9 @@ class ExportLogic {
         do {
             let fileURL = try TemporaryFile(creatingTempDirectoryForFilename: "\(hike.name.replacingOccurrences(of: " ", with: "_")).csv").fileURL
             
-            // TODO: Re-enable CSV writing when CSV.swift dependency is resolved
-            let emptyData = Data()
-            try emptyData.write(to: fileURL)
+            // Generate CSV content with proper CSV.swift library
+            let csvContent = generateCSVContent(for: hike)
+            try csvContent.write(to: fileURL, atomically: true, encoding: .utf8)
             
             let activityViewController = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
             presenter.present(activityViewController, animated: true)
@@ -226,6 +255,345 @@ class ExportLogic {
         } catch {
             print("Error creating export file: \(error)")
         }
+    }
+    
+    private func generateCSVContent(for hike: Hike) -> String {
+        do {
+            let csvWriter = try CSVWriter(stream: .toMemory())
+            
+            // Write header information
+            try csvWriter.write(row: ["Hike Export Report"])
+            try csvWriter.write(row: ["Name", hike.name])
+            try csvWriter.write(row: ["Description", hike.desc])
+            try csvWriter.write(row: ["Location", hike.location])
+            try csvWriter.write(row: ["Distance", hike.distance])
+            try csvWriter.write(row: ["Completed", hike.completed ? "Yes" : "No"])
+            try csvWriter.write(row: [])
+            
+            // Write gear header
+            try csvWriter.write(row: ["Gear List"])
+            try csvWriter.write(row: ["Name", "Description", "Weight", "Category", "Quantity", "Worn", "Consumable", "Verified", "Notes"])
+            
+            // Write gear data
+            for hikeGear in hike.hikeGears {
+                let gear = hikeGear.gear
+                let weight = String(format: "%.1f", gear?.weightInGrams ?? 0)
+                
+                try csvWriter.write(row: [
+                    gear?.name ?? "",
+                    gear?.desc ?? "",
+                    weight,
+                    gear?.category ?? "",
+                    String(hikeGear.numberUnits),
+                    hikeGear.worn ? "Yes" : "No",
+                    hikeGear.consumable ? "Yes" : "No",
+                    hikeGear.verified ? "Yes" : "No",
+                    hikeGear.notes
+                ])
+            }
+            
+            // Write weight summary
+            let hikeBrain = HikeBrain(hike, false)
+            try csvWriter.write(row: [])
+            try csvWriter.write(row: ["Weight Summary"])
+            try csvWriter.write(row: ["Base Weight", String(format: "%.1f g", hikeBrain.getBaseWeight())])
+            try csvWriter.write(row: ["Worn Weight", String(format: "%.1f g", hikeBrain.getWornWeight())])
+            try csvWriter.write(row: ["Consumable Weight", String(format: "%.1f g", hikeBrain.getConsumableWeight())])
+            try csvWriter.write(row: ["Total Weight", String(format: "%.1f g", hikeBrain.getTotalWeight())])
+            
+            csvWriter.stream.close()
+            
+            if let csvData = csvWriter.stream.property(forKey: .dataWrittenToMemoryStreamKey) as? Data {
+                return String(data: csvData, encoding: .utf8) ?? ""
+            }
+            
+            return ""
+            
+        } catch {
+            print("Error generating CSV content: \(error)")
+            // Fallback to simple text format
+            return generateFallbackContent(for: hike)
+        }
+    }
+    
+    private func generateFallbackContent(for hike: Hike) -> String {
+        var content = "Hike Export Report\n"
+        content += "Name: \(hike.name)\n"
+        content += "Description: \(hike.desc)\n"
+        content += "Location: \(hike.location)\n"
+        content += "Distance: \(hike.distance)\n"
+        content += "Completed: \(hike.completed ? "Yes" : "No")\n\n"
+        
+        content += "Gear List:\n"
+        for hikeGear in hike.hikeGears {
+            let gear = hikeGear.gear
+            content += "\(gear?.name ?? "Unknown") - \(String(format: "%.1f", gear?.weightInGrams ?? 0))g\n"
+        }
+        
+        return content
+    }
+}
+
+// MARK: - Dependency Injection System
+
+// MARK: - Service Lifetime
+
+enum ServiceLifetime {
+    case singleton    // One instance for the entire app lifecycle
+    case transient    // New instance every time
+    case scoped      // One instance per scope (e.g., per view controller)
+}
+
+// MARK: - Service Registry Entry
+
+private class ServiceEntry {
+    let lifetime: ServiceLifetime
+    let factory: () -> Any
+    var instance: Any?
+    
+    init(lifetime: ServiceLifetime, factory: @escaping () -> Any) {
+        self.lifetime = lifetime
+        self.factory = factory
+    }
+}
+
+// MARK: - Dependency Container
+
+class DependencyContainer {
+    static let shared = DependencyContainer()
+    
+    private let queue = DispatchQueue(label: "com.packplanner.dependencies", attributes: .concurrent)
+    private var services: [String: ServiceEntry] = [:]
+    private var resolutionStack: Set<String> = []
+    
+    private init() {
+        registerDefaultServices()
+    }
+    
+    // MARK: - Service Registration
+    
+    func registerSingleton<T>(_ type: T.Type, factory: @escaping () -> T) {
+        register(type, lifetime: .singleton, factory: factory)
+    }
+    
+    func registerTransient<T>(_ type: T.Type, factory: @escaping () -> T) {
+        register(type, lifetime: .transient, factory: factory)
+    }
+    
+    func registerScoped<T>(_ type: T.Type, factory: @escaping () -> T) {
+        register(type, lifetime: .scoped, factory: factory)
+    }
+    
+    private func register<T>(_ type: T.Type, lifetime: ServiceLifetime, factory: @escaping () -> T) {
+        let key = String(describing: type)
+        let entry = ServiceEntry(lifetime: lifetime) { factory() }
+        
+        queue.async(flags: .barrier) { [weak self] in
+            self?.services[key] = entry
+        }
+    }
+    
+    // MARK: - Service Resolution
+    
+    func resolve<T>(_ type: T.Type) throws -> T {
+        let key = String(describing: type)
+        
+        return try queue.sync { [weak self] in
+            guard let self = self else {
+                throw DIError.containerNotAvailable
+            }
+            
+            // Check for circular dependency
+            if self.resolutionStack.contains(key) {
+                throw DIError.circularDependency(key)
+            }
+            
+            guard let entry = self.services[key] else {
+                throw DIError.serviceNotRegistered(key)
+            }
+            
+            // Add to resolution stack
+            self.resolutionStack.insert(key)
+            defer { self.resolutionStack.remove(key) }
+            
+            let instance: Any
+            
+            switch entry.lifetime {
+            case .singleton:
+                if let existingInstance = entry.instance {
+                    instance = existingInstance
+                } else {
+                    instance = entry.factory()
+                    entry.instance = instance
+                }
+                
+            case .transient:
+                instance = entry.factory()
+                
+            case .scoped:
+                if let existingInstance = entry.instance {
+                    instance = existingInstance
+                } else {
+                    instance = entry.factory()
+                    entry.instance = instance
+                }
+            }
+            
+            guard let typedInstance = instance as? T else {
+                throw DIError.typeMismatch(expected: String(describing: T.self), actual: "Unknown type")
+            }
+            
+            return typedInstance
+        }
+    }
+    
+    func optionalResolve<T>(_ type: T.Type) -> T? {
+        do {
+            return try resolve(type)
+        } catch {
+            return nil
+        }
+    }
+    
+    // MARK: - Service Management
+    
+    func isRegistered<T>(_ type: T.Type) -> Bool {
+        let key = String(describing: type)
+        return queue.sync {
+            return services[key] != nil
+        }
+    }
+    
+    func unregister<T>(_ type: T.Type) {
+        let key = String(describing: type)
+        queue.async(flags: .barrier) { [weak self] in
+            self?.services.removeValue(forKey: key)
+        }
+    }
+    
+    func clearSingletonInstances() {
+        queue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            for entry in self.services.values where entry.lifetime == .singleton {
+                entry.instance = nil
+            }
+        }
+    }
+    
+    // MARK: - Default Service Registration
+    
+    private func registerDefaultServices() {
+        // Register shared logic services by their protocols (for DI)
+        registerSingleton((any HikeListService).self) {
+            return HikeListLogic.shared
+        }
+        
+        registerSingleton((any GearListService).self) {
+            return GearListLogic.shared
+        }
+        
+        registerSingleton((any AlertService).self) {
+            return AlertLogic.shared
+        }
+        
+        registerSingleton((any ExportService).self) {
+            return ExportLogic.shared
+        }
+        
+        // Also register concrete types for backward compatibility
+        registerSingleton(HikeListLogic.self) {
+            return HikeListLogic.shared
+        }
+        
+        registerSingleton(GearListLogic.self) {
+            return GearListLogic.shared
+        }
+        
+        registerSingleton(AlertLogic.self) {
+            return AlertLogic.shared
+        }
+        
+        registerSingleton(ExportLogic.self) {
+            return ExportLogic.shared
+        }
+        
+        // Register SettingsManager as singleton
+        registerSingleton(SettingsManager.self) {
+            return SettingsManager.SINGLETON
+        }
+        
+        // Register SettingsManagerSwiftUI as singleton
+        registerSingleton(SettingsManagerSwiftUI.self) {
+            return SettingsManagerSwiftUI.shared
+        }
+        
+        // Register DataService protocol for testability
+        registerSingleton((any DataServiceProtocol).self) {
+            return DataService.shared
+        }
+    }
+}
+
+// MARK: - Dependency Injection Errors
+
+enum DIError: LocalizedError {
+    case serviceNotRegistered(String)
+    case circularDependency(String)
+    case typeMismatch(expected: String, actual: String)
+    case containerNotAvailable
+    
+    var errorDescription: String? {
+        switch self {
+        case .serviceNotRegistered(let service):
+            return "Service not registered: \(service)"
+        case .circularDependency(let service):
+            return "Circular dependency detected while resolving: \(service)"
+        case .typeMismatch(let expected, let actual):
+            return "Type mismatch: expected \(expected), got \(actual)"
+        case .containerNotAvailable:
+            return "Dependency container is not available"
+        }
+    }
+}
+
+// MARK: - Property Wrapper for Dependency Injection
+
+@propertyWrapper
+struct Injected<T> {
+    private let container: DependencyContainer
+    
+    var wrappedValue: T {
+        do {
+            return try container.resolve(T.self)
+        } catch {
+            print("Critical: Dependency injection failed for \(T.self): \(error)")
+            preconditionFailure("Critical dependency injection failure for \(T.self). Please restart the app.")
+        }
+    }
+    
+    init(container: DependencyContainer = .shared) {
+        self.container = container
+    }
+}
+
+@propertyWrapper
+struct OptionalInjected<T> {
+    private let container: DependencyContainer
+    
+    var wrappedValue: T? {
+        return container.optionalResolve(T.self)
+    }
+    
+    init(container: DependencyContainer = .shared) {
+        self.container = container
+    }
+}
+
+// MARK: - Convenience Extensions
+
+extension UIViewController {
+    func resolve<T>(_ type: T.Type) -> T? {
+        return DependencyContainer.shared.optionalResolve(type)
     }
 }
 

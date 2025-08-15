@@ -8,7 +8,6 @@
 import UIKit
 import RealmSwift
 import SwipeCellKit
-// import CSV  // Temporarily disabled for troubleshooting
 import SwiftUI
 
 class HikeListController: UITableViewController, SwipeTableViewCellDelegate, NavigationStyling {
@@ -19,9 +18,11 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate, Nav
     private var realm: Realm!
     var hikes : Results<Hike>?
     private var observersAdded = false
-    private let hikeLogic = HikeListLogic.shared
-    private let alertLogic = AlertLogic.shared
-    private let exportLogic = ExportLogic.shared
+    
+    // Dependency injection using property wrappers
+    @Injected private var hikeLogic: HikeListService
+    @Injected private var alertLogic: AlertService
+    @Injected private var exportLogic: ExportService
     
     override func viewDidLoad() {
         super.viewDidLoad()

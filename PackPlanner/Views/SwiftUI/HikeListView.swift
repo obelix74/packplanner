@@ -15,11 +15,12 @@ struct HikeListView: View {
     @State private var selectedHike: HikeSwiftUI?
     @State private var showingHikeDetail = false
     
-    private let hikeLogic = HikeListLogic.shared
+    // Dependency injection for SwiftUI
+    @OptionalInjected private var hikeLogic: HikeListService?
     
     private var filteredHikes: [HikeSwiftUI] {
-        // Use shared search logic
-        return hikeLogic.performSearch(items: dataService.hikes, query: searchText)
+        // Use shared search logic with optional injection
+        return hikeLogic?.performSearch(items: dataService.hikes, query: searchText) ?? dataService.hikes
     }
     
     var body: some View {
@@ -43,13 +44,13 @@ struct HikeListView: View {
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button("Delete", role: .destructive) {
-                                        // Use shared hike logic
-                                        hikeLogic.deleteHike(hike) { _ in }
+                                        // Use shared hike logic with optional injection
+                                        hikeLogic?.deleteHike(hike) { _ in }
                                     }
                                     
                                     Button("Copy") {
-                                        // Use shared hike logic
-                                        hikeLogic.copyHike(hike)
+                                        // Use shared hike logic with optional injection
+                                        hikeLogic?.copyHike(hike)
                                     }
                                     .tint(.blue)
                                     

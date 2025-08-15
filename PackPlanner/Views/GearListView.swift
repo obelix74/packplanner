@@ -17,21 +17,22 @@ struct GearListView: View {
     @State private var selectedGear: GearSwiftUI?
     @State private var showingSettings = false
     
-    private let gearLogic = GearListLogic.shared
+    // Dependency injection for SwiftUI
+    @OptionalInjected private var gearLogic: GearListService?
     
     private var filteredGears: [GearSwiftUI] {
-        // Use shared search logic
-        return gearLogic.performSearch(items: dataService.gears, query: searchText)
+        // Use shared search logic with optional injection
+        return gearLogic?.performSearch(items: dataService.gears, query: searchText) ?? dataService.gears
     }
     
     private var groupedGears: [String: [GearSwiftUI]] {
-        // Use shared categorization logic
-        return gearLogic.groupGearsByCategory(filteredGears)
+        // Use shared categorization logic with optional injection
+        return gearLogic?.groupGearsByCategory(filteredGears) ?? Dictionary(grouping: filteredGears) { $0.category }
     }
     
     private var sortedCategories: [String] {
-        // Use shared sorting logic
-        return gearLogic.sortedCategories(from: groupedGears)
+        // Use shared sorting logic with optional injection
+        return gearLogic?.sortedCategories(from: groupedGears) ?? groupedGears.keys.sorted()
     }
     
     var body: some View {
@@ -181,8 +182,8 @@ struct GearListView: View {
     }
     
     private func deleteGear(_ gear: GearSwiftUI) {
-        // Use shared gear logic
-        gearLogic.deleteGear(gear) { success in
+        // Use shared gear logic with optional injection
+        gearLogic?.deleteGear(gear) { success in
             if !success {
                 // Could show error alert here if needed
                 print("Failed to delete gear")
@@ -191,8 +192,8 @@ struct GearListView: View {
     }
     
     private func duplicateGear(_ gear: GearSwiftUI) {
-        // Use shared gear logic
-        gearLogic.duplicateGear(gear) { success in
+        // Use shared gear logic with optional injection
+        gearLogic?.duplicateGear(gear) { success in
             if !success {
                 // Could show error alert here if needed
                 print("Failed to duplicate gear")
