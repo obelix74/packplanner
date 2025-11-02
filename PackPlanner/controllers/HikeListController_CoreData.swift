@@ -175,6 +175,9 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate, Nav
         cell.delegate = self
 
         let hike = fetchedResultsController.object(at: indexPath)
+
+        // Convert HikeEntity to Hike for cell (temporary during migration)
+        // TODO: Update HikeListTableViewCell to accept HikeEntity directly
         cell.existingHikeCoreData = hike
         cell.accessoryType = .disclosureIndicator
 
@@ -200,6 +203,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate, Nav
             }
         } else if segue.identifier == "showAddHike" {
             // AddHikeViewController doesn't need any special configuration for new hikes
+            // existingHike will be nil by default
         }
     }
 
@@ -224,6 +228,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate, Nav
                 self.updateModel(at: indexPath)
                 action.fulfill(with: .delete)
             }
+            // customize the action appearance
             deleteAction.image = UIImage(systemName: "trash")
             return [deleteAction]
         }
@@ -237,6 +242,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate, Nav
             let copyAction = SwipeAction(style: .default, title: "Copy") { action, indexPath in
                 let hike = self.fetchedResultsController.object(at: indexPath)
                 HikeBrainCD.copyHike(hike: hike)
+                // Reload will happen automatically via NSFetchedResultsController
             }
             copyAction.hidesWhenSelected = true
             copyAction.image = UIImage(systemName: "doc")
@@ -248,7 +254,13 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate, Nav
     func exportHikeAt(at indexPath: IndexPath) {
         let hike = fetchedResultsController.object(at: indexPath)
 
-        // TODO: Update ExportService for Core Data
+        // Convert to Realm hike for export (temporary during migration)
+        // TODO: Update exportLogic to accept HikeEntity
+        // For now, create a temporary conversion or update ExportService
+
+        // Use shared export logic - need to update ExportService for Core Data
+        // exportLogic.exportHike(hike, presenter: self)
+
         print("⚠️ Export needs to be updated for Core Data")
         let alert = UIAlertController(title: "Export", message: "Export feature will be available after full migration.", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
@@ -260,6 +272,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate, Nav
     func updateModel(at indexPath: IndexPath) {
         let hike = fetchedResultsController.object(at: indexPath)
 
+        // Use shared alert logic
         let deleteAlert = alertLogic.createDeleteConfirmationAlert(
             itemName: "Hike",
             onConfirm: {
@@ -268,6 +281,7 @@ class HikeListController: UITableViewController, SwipeTableViewCellDelegate, Nav
                 do {
                     try self.context.save()
                     print("✅ Hike deleted successfully")
+                    // Reload happens automatically via NSFetchedResultsController
                 } catch {
                     print("❌ Error deleting hike: \(error)")
                     self.context.rollback()

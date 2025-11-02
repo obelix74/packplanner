@@ -7,21 +7,31 @@
 
 import UIKit
 import SwipeCellKit
+import CoreData
 
 class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, RefreshProtocol, UITableViewDelegate, UITableViewDataSource {
-    
+
     var hikeBrain : HikeBrain?
+    var hikeBrainCoreData: HikeBrainCD?
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var noGearLabel: UILabel!
     @IBOutlet weak var totalWeightLabel: UILabel!
     @IBOutlet weak var pendingSwitchToggled: UISegmentedControl!
-    
-    
+
+
     var existingHike : Hike?{
         didSet {
             self.hikeBrain = HikeBrain(existingHike!, false)
+        }
+    }
+
+    // Core Data version
+    var existingHikeCoreData: HikeEntity? {
+        didSet {
+            guard let hike = existingHikeCoreData else { return }
+            self.hikeBrainCoreData = HikeBrainCD(hike, false)
         }
     }
     
@@ -112,7 +122,8 @@ class HikeDetailViewController: UIViewController, SwipeTableViewCellDelegate, Re
         }
         else if (segue.identifier == "addGearToHike") {
             let destinationVC = segue.destination as! AddGearToHikeTableViewController
-            destinationVC.hike = self.existingHike
+            // Use Core Data version since AddGearToHikeTableViewController was migrated
+            destinationVC.hike = self.existingHikeCoreData
         }
         else if (segue.identifier == "editHikeGear" && tableView.indexPathForSelectedRow != nil) {
             let destinationVC = segue.destination as! EditHikeGearController

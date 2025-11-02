@@ -9,16 +9,17 @@ import UIKit
 import Former
 import RealmSwift
 import SwiftUI
+import CoreData
 
 class AddGearViewController: FormViewController {
-    
+
     @IBOutlet weak var saveButton: UIButton!
-    
+
     var name : String?
     var desc : String?
     var weight : Double?
     var category : String?
-    
+
     var existingGear : Gear?  {
         didSet {
             self.name = existingGear?.name
@@ -27,7 +28,17 @@ class AddGearViewController: FormViewController {
             self.category = existingGear?.category
         }
     }
-    
+
+    // Core Data version
+    var existingGearCoreData: GearEntity? {
+        didSet {
+            self.name = existingGearCoreData?.name
+            self.desc = existingGearCoreData?.desc
+            self.weight = existingGearCoreData?.weightInGrams
+            self.category = existingGearCoreData?.category
+        }
+    }
+
     private var realm: Realm?
     
     override func viewDidLoad() {
@@ -186,6 +197,63 @@ class AddGearViewController: FormViewController {
     }
     
     @IBAction func saveButtonPressed(_ sender: UIButton) {
+        // Basic validation
+        if (self.name == nil || self.name!.isEmpty) {
+            showAlert(name: "Name")
+            return
+        }
+
+        if (self.weight == nil) {
+            showAlert(name: "Weight")
+            return
+        }
+
+        // Check if we're using Core Data or Realm
+        if existingGearCoreData != nil || existingGear == nil {
+            // Save to Core Data
+            saveToCoreData()
+        } else {
+            // Save to Realm (legacy path)
+            saveToRealm()
+        }
+    }
+
+    private func saveToCoreData() {
+        let context = CoreDataStack.shared.viewContext
+
+        let gear: GearEntity
+        if let existingGear = existingGearCoreData {
+            // Editing existing gear
+            gear = existingGear
+        } else {
+            // Creating new gear
+            gear = GearEntity(context: context)
+            gear.uuid = UUID().uuidString
+        }
+
+        // Set values
+        gear.name = self.name!
+        gear.desc = self.desc ?? ""
+        gear.weightInGrams = self.weight!
+        gear.category = self.category ?? "Uncategorized"
+
+        // Save
+        do {
+            try context.save()
+            print("✅ Gear saved to Core Data successfully")
+
+            // Success - navigate back
+            _ = navigationController?.popViewController(animated: true)
+
+        } catch {
+            print("❌ Error saving gear to Core Data: \(error)")
+            let alert = UIAlertController(title: "Save Error", message: "Failed to save gear. Please try again.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+        }
+    }
+
+    private func saveToRealm() {
         // Guard against missing realm
         guard let realm = realm else {
             let alert = UIAlertController(title: "Error", message: "Database not available", preferredStyle: .alert)
@@ -193,18 +261,7 @@ class AddGearViewController: FormViewController {
             present(alert, animated: true)
             return
         }
-        
-        // Basic validation
-        if (self.name == nil || self.name!.isEmpty) {
-            showAlert(name: "Name")
-            return
-        }
-        
-        if (self.weight == nil) {
-            showAlert(name: "Weight")
-            return
-        }
-        
+
         // Save with proper error handling
         do {
             try realm.write {
@@ -217,12 +274,12 @@ class AddGearViewController: FormViewController {
                     realm.add(gear)
                 }
             }
-            
+
             // Success - navigate back
             _ = navigationController?.popViewController(animated: true)
-            
+
         } catch {
-            print("Error saving gear: \(error)")
+            print("Error saving gear to Realm: \(error)")
             let alert = UIAlertController(title: "Save Error", message: "Failed to save gear. Please try again.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
             present(alert, animated: true)

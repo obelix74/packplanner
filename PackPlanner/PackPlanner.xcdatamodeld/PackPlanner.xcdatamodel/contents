@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24299" systemVersion="24G90" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="GearEntity" representedClassName="GearEntity" syncable="YES">
+        <attribute name="category" attributeType="String" defaultValueString="Unknown"/>
+        <attribute name="desc" attributeType="String" defaultValueString=""/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="uuid" attributeType="String" defaultValueString=""/>
+        <attribute name="weightInGrams" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="hikeGears" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="HikeGearEntity" inverseName="gear" inverseEntity="HikeGearEntity"/>
+    </entity>
+    <entity name="HikeEntity" representedClassName="HikeEntity" syncable="YES">
+        <attribute name="completed" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="desc" attributeType="String" defaultValueString=""/>
+        <attribute name="distance" attributeType="String" defaultValueString=""/>
+        <attribute name="externalLink1" optional="YES" attributeType="String"/>
+        <attribute name="externalLink2" optional="YES" attributeType="String"/>
+        <attribute name="externalLink3" optional="YES" attributeType="String"/>
+        <attribute name="location" attributeType="String" defaultValueString=""/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <relationship name="hikeGears" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="HikeGearEntity" inverseName="hike" inverseEntity="HikeGearEntity"/>
+    </entity>
+    <entity name="HikeGearEntity" representedClassName="HikeGearEntity" syncable="YES">
+        <attribute name="consumable" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="notes" attributeType="String" defaultValueString=""/>
+        <attribute name="numberUnits" attributeType="Integer 32" defaultValueString="1" usesScalarValueType="YES"/>
+        <attribute name="verified" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="worn" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <relationship name="gear" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="GearEntity" inverseName="hikeGears" inverseEntity="GearEntity"/>
+        <relationship name="hike" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="HikeEntity" inverseName="hikeGears" inverseEntity="HikeEntity"/>
+    </entity>
+    <entity name="SettingsEntity" representedClassName="SettingsEntity" syncable="YES">
+        <attribute name="firstTimeUser" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="imperial" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+    </entity>
+</model>

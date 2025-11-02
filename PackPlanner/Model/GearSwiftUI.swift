@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import RealmSwift
+import CoreData
 import Combine
 
 class GearSwiftUI: ObservableObject, Identifiable {
@@ -93,7 +94,17 @@ extension GearSwiftUI {
         self.weightInGrams = gear.weightInGrams
         self.category = gear.category
     }
-    
+
+    // Core Data version
+    convenience init(fromCoreData gear: GearEntity) {
+        self.init()
+        self.id = gear.uuid ?? UUID().uuidString
+        self.name = gear.name
+        self.desc = gear.desc
+        self.weightInGrams = gear.weightInGrams
+        self.category = gear.category
+    }
+
     func toLegacyGear() -> Gear {
         let gear = Gear()
         gear.uuid = self.id

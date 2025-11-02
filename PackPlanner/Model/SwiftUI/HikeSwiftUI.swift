@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import RealmSwift
+import CoreData
 import Combine
 
 class HikeSwiftUI: ObservableObject {
@@ -165,7 +166,7 @@ extension HikeSwiftUI {
         self.externalLink1 = hike.externalLink1 ?? ""
         self.externalLink2 = hike.externalLink2 ?? ""
         self.externalLink3 = hike.externalLink3 ?? ""
-        
+
         // Convert HikeGear relationships
         self.hikeGears = hike.hikeGears.compactMap { legacyHikeGear in
             if let gear = legacyHikeGear.gear {
@@ -176,7 +177,37 @@ extension HikeSwiftUI {
             return nil
         }
     }
-    
+
+    // Core Data version
+    convenience init(fromCoreData hike: HikeEntity) {
+        self.init()
+        self.name = hike.name
+        self.desc = hike.desc
+        self.distance = hike.distance
+        self.location = hike.location
+        self.completed = hike.completed
+        self.externalLink1 = hike.externalLink1 ?? ""
+        self.externalLink2 = hike.externalLink2 ?? ""
+        self.externalLink3 = hike.externalLink3 ?? ""
+
+        // Convert HikeGear relationships from Core Data
+        if let hikeGearsSet = hike.hikeGears as? Set<HikeGearEntity> {
+            self.hikeGears = hikeGearsSet.compactMap { hikeGearEntity in
+                if let gear = hikeGearEntity.gear {
+                    let hikeGearSwiftUI = HikeGearSwiftUI()
+                    hikeGearSwiftUI.numberUnits = Int(hikeGearEntity.numberUnits)
+                    hikeGearSwiftUI.worn = hikeGearEntity.worn
+                    hikeGearSwiftUI.consumable = hikeGearEntity.consumable
+                    hikeGearSwiftUI.verified = hikeGearEntity.verified
+                    hikeGearSwiftUI.notes = hikeGearEntity.notes ?? ""
+                    hikeGearSwiftUI.gear = GearSwiftUI(fromCoreData: gear)
+                    return hikeGearSwiftUI
+                }
+                return nil
+            }
+        }
+    }
+
     func toLegacyHike() -> Hike {
         let hike = Hike()
         hike.name = self.name

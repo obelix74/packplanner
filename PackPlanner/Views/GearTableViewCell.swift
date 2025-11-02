@@ -7,6 +7,7 @@
 
 import UIKit
 import SwipeCellKit
+import CoreData
 
 class GearTableViewCell: SwipeTableViewCell {
 
@@ -21,6 +22,18 @@ class GearTableViewCell: SwipeTableViewCell {
                 self.descriptionLabel.text = existingGear!.desc
             }
             self.weightLabel.text = existingGear?.weightString()
+        }
+    }
+
+    // Core Data version
+    var existingGearCoreData: GearEntity? {
+        didSet {
+            guard let gear = existingGearCoreData else { return }
+            self.nameLabel.text = gear.name
+            if (self.descriptionLabel != nil) {
+                self.descriptionLabel.text = gear.desc
+            }
+            self.weightLabel.text = gear.weightString(imperial: SettingsManagerCD.SINGLETON.settings.imperial)
         }
     }
     

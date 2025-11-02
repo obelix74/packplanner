@@ -119,11 +119,14 @@ class AddHikeViewController: BaseViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "showHike") {
             let destinationVC = segue.destination as! HikeDetailViewController
-            destinationVC.existingHike = self.hike 
+            destinationVC.existingHike = self.hike
         }
         else if (segue.identifier == "addGearToHike") {
-            let destinationVC = segue.destination as! AddGearToHikeTableViewController
-            destinationVC.hike = self.hike 
+            // TODO: Update AddHikeViewController to use Core Data
+            // Currently disabled pending full migration of this controller
+            print("⚠️ addGearToHike segue temporarily disabled during Core Data migration")
+            // let destinationVC = segue.destination as! AddGearToHikeTableViewController
+            // destinationVC.hike = self.hike
         }
     }
     

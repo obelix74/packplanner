@@ -7,6 +7,7 @@
 
 import UIKit
 import SwipeCellKit
+import CoreData
 
 class HikeListTableViewCell: SwipeTableViewCell {
 
@@ -14,13 +15,25 @@ class HikeListTableViewCell: SwipeTableViewCell {
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var noItemsLabel: UILabel!
     @IBOutlet weak var completedImage: UIImageView!
-    
+
     var existingHike : Hike?  {
         didSet {
             self.nameLabel.text = existingHike!.name
             self.descriptionLabel.text = existingHike!.desc
             self.noItemsLabel.text = String("(\(existingHike!.hikeGears.count))")
             self.completedImage.isHighlighted = existingHike!.completed
+        }
+    }
+
+    // Core Data version
+    var existingHikeCoreData: HikeEntity? {
+        didSet {
+            guard let hike = existingHikeCoreData else { return }
+            self.nameLabel.text = hike.name
+            self.descriptionLabel.text = hike.desc
+            let count = (hike.hikeGears as? Set<HikeGearEntity>)?.count ?? 0
+            self.noItemsLabel.text = String("(\(count))")
+            self.completedImage.isHighlighted = hike.completed
         }
     }
     

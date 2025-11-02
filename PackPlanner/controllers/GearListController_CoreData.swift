@@ -96,14 +96,14 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
     }
 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
-        let addGearController = SwiftUIMigrationHelper.shared.createAddGearViewControllerFromCoreData()
+        let addGearController = SwiftUIMigrationHelper.shared.createAddGearViewController()
         let navController = UINavigationController(rootViewController: addGearController)
         present(navController, animated: true)
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedGear = gearBrain?.getGear(indexPath: indexPath)
-        let editGearController = SwiftUIMigrationHelper.shared.createAddGearViewControllerFromCoreData(gear: selectedGear)
+        let editGearController = SwiftUIMigrationHelper.shared.createAddGearViewController(gearCoreData: selectedGear)
         let navController = UINavigationController(rootViewController: editGearController)
         present(navController, animated: true)
 
@@ -158,10 +158,5 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
             gearBrain?.deleteGear(gear: gear)
             loadGear()
         }
-    }
-
-    // MARK: - ModalTransitionListener
-    func popoverDismissed() {
-        loadGear()
     }
 }

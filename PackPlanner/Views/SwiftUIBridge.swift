@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import UIKit
+import CoreData
 
 // Import SwiftUI views from SwiftUI folder
 // Note: These views are located in Views/SwiftUI/ folder
@@ -1074,6 +1075,20 @@ class SwiftUIMigrationHelper {
             return controller
         }
     }
+
+    // Core Data version - using explicit method name to avoid ambiguity
+    func createAddGearViewControllerFromCoreData(gear: GearEntity? = nil) -> UIViewController {
+        if enableSwiftUIAddGear {
+            let gearSwiftUI = gear != nil ? GearSwiftUI(fromCoreData: gear!) : nil
+            return UIHostingController(rootView: AddGearViewBridge(gear: gearSwiftUI))
+        } else {
+            // Return legacy UIKit controller
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let controller = storyboard.instantiateViewController(withIdentifier: "AddGearViewController") as! AddGearViewController
+            controller.existingGearCoreData = gear
+            return controller
+        }
+    }
     
     func createAddHikeViewController(hike: Hike? = nil) -> UIViewController {
         if enableSwiftUIAddHike {
@@ -1092,12 +1107,12 @@ class SwiftUIMigrationHelper {
         if enableSwiftUIHikeList {
             let dataService = DataService.shared
             let hikeSwiftUI = dataService.hikes.first(where: { $0.name == hike.name }) ?? HikeSwiftUI(from: hike)
-            
+
             let hostingController = UIHostingController(rootView: HikeDetailViewBridge(hike: hikeSwiftUI))
-            
+
             let hikeDetailViewWithCallback = HikeDetailViewBridge(hike: hikeSwiftUI, dismissCallback: { [weak hostingController] in
                 guard let hostingController = hostingController else { return }
-                
+
                 if hostingController.presentingViewController != nil {
                     hostingController.dismiss(animated: true)
                 } else if let navigationController = hostingController.navigationController {
@@ -1106,12 +1121,41 @@ class SwiftUIMigrationHelper {
                     hostingController.dismiss(animated: true)
                 }
             })
-            
+
             hostingController.rootView = hikeDetailViewWithCallback
             return hostingController
         } else {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             return storyboard.instantiateViewController(withIdentifier: "HikeDetailViewController")
+        }
+    }
+
+    // Core Data version
+    func createHikeDetailViewController(hikeCoreData: HikeEntity) -> UIViewController {
+        if enableSwiftUIHikeList {
+            let hikeSwiftUI = HikeSwiftUI(fromCoreData: hikeCoreData)
+
+            let hostingController = UIHostingController(rootView: HikeDetailViewBridge(hike: hikeSwiftUI))
+
+            let hikeDetailViewWithCallback = HikeDetailViewBridge(hike: hikeSwiftUI, dismissCallback: { [weak hostingController] in
+                guard let hostingController = hostingController else { return }
+
+                if hostingController.presentingViewController != nil {
+                    hostingController.dismiss(animated: true)
+                } else if let navigationController = hostingController.navigationController {
+                    navigationController.popViewController(animated: true)
+                } else {
+                    hostingController.dismiss(animated: true)
+                }
+            })
+
+            hostingController.rootView = hikeDetailViewWithCallback
+            return hostingController
+        } else {
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let controller = storyboard.instantiateViewController(withIdentifier: "HikeDetailViewController") as! HikeDetailViewController
+            controller.existingHikeCoreData = hikeCoreData
+            return controller
         }
     }
     
