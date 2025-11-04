@@ -1,0 +1,208 @@
+═══════════════════════════════════════════════════════════════
+                    PACKPLANNER - APP STORE CONTENT
+═══════════════════════════════════════════════════════════════
+
+📱 APP NAME
+═══════════════════════════════════════════════════════════════
+PackPlanner - Hiking Gear Organizer
+
+
+🎯 PROMOTIONAL TEXT (170 characters max)
+═══════════════════════════════════════════════════════════════
+The ultimate hiking gear organizer. Track weight, plan trips, and pack smarter. Perfect for day hikes to thru-hikes. Download now!
+
+
+📝 DESCRIPTION (4000 characters max)
+═══════════════════════════════════════════════════════════════
+PACK LIKE A PRO WITH PACKPLANNER
+
+PackPlanner is the essential companion for hikers, backpackers, and outdoor enthusiasts who want to optimize their gear and reduce pack weight. Whether you're planning a weekend camping trip or a months-long thru-hike, PackPlanner helps you organize, weigh, and perfect your loadout.
+
+KEY FEATURES:
+
+⚖️ SMART WEIGHT TRACKING
+• Track base weight, worn weight, and consumables separately
+• See exactly where every ounce goes
+• Optimize your pack for maximum comfort and efficiency
+• Real-time weight calculations that update instantly
+
+📋 COMPREHENSIVE GEAR LIBRARY
+• Build your complete gear inventory with detailed information
+• Add weights, categories, and custom descriptions
+• Organize by Shelter, Sleep System, Cooking, Clothing, and more
+• Never forget an essential item again
+
+🏔️ TRIP PLANNING MADE EASY
+• Create custom gear lists for each adventure
+• Toggle items as worn, consumable, or verified
+• Filter by pending items to see what needs attention
+• Copy hikes to reuse gear lists for similar trips
+
+🔄 IMPERIAL & METRIC SUPPORT
+• Seamlessly switch between pounds/ounces and kilograms/grams
+• Perfect for international hiking adventures
+• All weights displayed in your preferred unit
+
+📊 DETAILED WEIGHT BREAKDOWN
+• Base Weight - Essential non-consumable gear
+• Worn Weight - Items worn on your body
+• Consumable Weight - Food, fuel, and toiletries
+• Total Pack Weight - Complete weight analysis
+
+☁️ ICLOUD SYNC
+• Access your gear lists across all Apple devices
+• Automatic backup to iCloud
+• Your data stays in sync seamlessly
+
+🎨 MODERN, INTUITIVE DESIGN
+• Beautiful SwiftUI interface optimized for iOS
+• Smooth animations and responsive controls
+• Easy-to-use swipe actions for quick edits
+• Dark mode support
+
+📤 EXPORT & SHARE
+• Export gear lists to CSV format
+• Share packing lists with hiking partners
+• Backup your data externally
+
+PERFECT FOR:
+• Day hikers planning weekend adventures
+• Thru-hikers optimizing for ultralight setups
+• Backpackers tracking gear across multiple trips
+• Outdoor enthusiasts building their gear collection
+• Anyone who wants organized, lightweight packing
+
+WHY HIKERS LOVE PACKPLANNER:
+"Finally, a gear app that actually helps me pack lighter!" - Trail enthusiast
+"The weight breakdown feature is a game-changer for planning" - Backpacker
+"Clean interface, works offline, does exactly what I need" - Thru-hiker
+
+GETTING STARTED:
+1. Add your gear items with weights and categories
+2. Create a hike and add gear to your pack list
+3. Toggle properties and see weight calculations update live
+4. Export or share your perfect packing list
+
+Join thousands of hikers who have discovered the joy of organized, lightweight packing. Download PackPlanner today and transform the way you prepare for outdoor adventures!
+
+No subscription required. One-time purchase for lifetime access.
+
+
+🆕 WHAT'S NEW IN THIS VERSION
+═══════════════════════════════════════════════════════════════
+Version 2.0 - Major Update!
+
+✨ NEW FEATURES:
+• Complete SwiftUI redesign with modern interface
+• Real-time weight updates - see calculations instantly
+• Enhanced imperial/metric unit support throughout
+• Improved performance with optimized weight caching
+
+🐛 BUG FIXES:
+• Fixed weight display rounding issues (now properly shows 4 lb instead of 3 lb 16 oz)
+• Resolved weight calculation updates in hike detail view
+• Fixed unit conversion in gear edit screen
+• Improved data synchronization across views
+
+🎨 IMPROVEMENTS:
+• Better category-based organization
+• Smoother animations and transitions
+• Enhanced search functionality
+• Optimized for latest iOS versions
+
+📱 TECHNICAL:
+• Added required 1024x1024 App Store icon
+• Performance optimizations for large gear inventories
+• Reduced memory usage
+• Bug fixes and stability improvements
+
+Thank you for your continued support! If you enjoy PackPlanner, please leave a review!
+
+
+🔑 KEYWORDS (100 characters max, comma-separated)
+═══════════════════════════════════════════════════════════════
+hiking,backpacking,camping,gear,ultralight,trail,outdoor,weight,packing,thru-hike,adventure
+
+
+🔑 EXTENDED KEYWORD IDEAS
+═══════════════════════════════════════════════════════════════
+Primary Keywords:
+• hiking
+• backpacking
+• camping
+• gear list
+• pack weight
+• ultralight
+• trail planning
+• outdoor gear
+• trekking
+• thru-hike
+
+Secondary Keywords:
+• gear organizer
+• base weight
+• packing list
+• weight tracker
+• adventure planner
+• hiking checklist
+• camping list
+• trail gear
+• backpack organizer
+• hiking planner
+
+Long-tail Keywords:
+• ultralight backpacking gear
+• hiking gear list
+• pack weight calculator
+• camping checklist
+• thru-hiking planner
+
+
+📸 SCREENSHOT CAPTIONS
+═══════════════════════════════════════════════════════════════
+1. "Organize Your Complete Gear Inventory"
+2. "Smart Weight Tracking - See Every Detail"
+3. "Plan Perfect Hikes with Custom Gear Lists"
+4. "Toggle Properties & See Updates in Real-Time"
+5. "Switch Between Imperial & Metric Units"
+
+
+🎭 CATEGORY SUGGESTIONS
+═══════════════════════════════════════════════════════════════
+Primary: Travel
+Secondary: Lifestyle
+Alternative: Sports
+
+
+👥 AGE RATING
+═══════════════════════════════════════════════════════════════
+4+ (No objectionable content)
+
+
+🌐 SUPPORT & MARKETING URLS
+═══════════════════════════════════════════════════════════════
+Support URL: [Your support website]
+Marketing URL: [Link to marketing.html]
+Privacy Policy URL: [Your privacy policy]
+
+
+💡 APP STORE OPTIMIZATION TIPS
+═══════════════════════════════════════════════════════════════
+1. Use "hiking" and "backpacking" as primary keywords
+2. Emphasize "weight tracking" and "ultralight" for niche audience
+3. Highlight "no subscription" as a key selling point
+4. Include screenshots showing weight calculations
+5. Respond to all user reviews promptly
+6. Update regularly to maintain search ranking
+
+
+📊 SUGGESTED PRICING
+═══════════════════════════════════════════════════════════════
+Free with optional Pro features, or
+$2.99 - $4.99 one-time purchase
+(Consider your target market and feature set)
+
+
+═══════════════════════════════════════════════════════════════
+                    END OF APP STORE CONTENT
+═══════════════════════════════════════════════════════════════
