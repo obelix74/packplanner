@@ -17,15 +17,15 @@ import CoreData
 
 public struct HikeDetailViewBridge: View {
     @ObservedObject var hike: HikeSwiftUI
-    @StateObject private var dataService = DataService.shared
     @State private var settingsManager = SettingsManagerSwiftUI.shared
     @State private var showingAddGear = false
     @State private var showPendingOnly = false
     @State private var refreshTrigger = false
     @Environment(\.dismiss) private var dismiss
+    private let context = CoreDataStack.shared.viewContext
     let dismissCallback: (() -> Void)?
-    
-    public init(hike: HikeSwiftUI, dismissCallback: (() -> Void)? = nil) {
+
+    init(hike: HikeSwiftUI, dismissCallback: (() -> Void)? = nil) {
         self.hike = hike
         self.dismissCallback = dismissCallback
     }
@@ -157,27 +157,70 @@ public struct HikeDetailViewBridge: View {
     private func removeGear(_ hikeGear: HikeGearSwiftUI) {
         if let index = hike.hikeGears.firstIndex(where: { $0.id == hikeGear.id }) {
             hike.hikeGears.remove(at: index)
-            dataService.updateHike(hike) {
-                // Refresh data after successful update
-                DispatchQueue.main.async {
-                    self.refreshHikeData()
-                }
-            }
+            // Save to Core Data
+            saveHikeToCoreData()
+            refreshHikeData()
         }
     }
     
     private func refreshHikeData() {
-        // Reload data and update hike with simplified approach
-        dataService.loadData()
-        
-        // Use a single short delay to allow data loading to complete
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            if let updatedHike = self.dataService.hikes.first(where: { $0.name == self.hike.name }) {
+        // Reload from Core Data
+        let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            if let hikeEntity = results.first {
+                let updatedHike = HikeSwiftUI(fromCoreData: hikeEntity)
                 self.hike.hikeGears = updatedHike.hikeGears
             }
+        } catch {
+            print("Error refreshing hike data: \(error)")
         }
     }
-    
+
+    private func saveHikeToCoreData() {
+        let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            if let hikeEntity = results.first {
+                // Update hike gear relationships
+                // Remove all existing relationships
+                if let existingGears = hikeEntity.hikeGears as? Set<HikeGearEntity> {
+                    for gear in existingGears {
+                        context.delete(gear)
+                    }
+                }
+
+                // Add new relationships
+                for hikeGearSwiftUI in hike.hikeGears {
+                    let hikeGearEntity = HikeGearEntity(context: context)
+                    hikeGearEntity.consumable = hikeGearSwiftUI.consumable
+                    hikeGearEntity.numberUnits = Int32(hikeGearSwiftUI.numberUnits)
+                    hikeGearEntity.notes = hikeGearSwiftUI.notes
+                    hikeGearEntity.verified = hikeGearSwiftUI.verified
+                    hikeGearEntity.worn = hikeGearSwiftUI.worn
+                    hikeGearEntity.hike = hikeEntity
+
+                    // Find the gear entity
+                    if let gearSwiftUI = hikeGearSwiftUI.gear {
+                        let gearFetch: NSFetchRequest<GearEntity> = GearEntity.fetchRequest()
+                        gearFetch.predicate = NSPredicate(format: "uuid == %@", gearSwiftUI.id)
+                        if let gearEntity = try? context.fetch(gearFetch).first {
+                            hikeGearEntity.gear = gearEntity
+                        }
+                    }
+                }
+
+                try context.save()
+            }
+        } catch {
+            print("Error saving hike to Core Data: \(error)")
+        }
+    }
+
 }
 
 public struct HikeHeaderViewBridge: View {
@@ -275,8 +318,8 @@ public struct HikeGearRowViewBridge: View {
     @ObservedObject var hikeGear: HikeGearSwiftUI
     let hike: HikeSwiftUI
     @Binding var refreshTrigger: Bool
-    @State private var dataService = DataService.shared
     @State private var settingsManager = SettingsManagerSwiftUI.shared
+    private let context = CoreDataStack.shared.viewContext
     
     public var body: some View {
         HStack {
@@ -310,7 +353,7 @@ public struct HikeGearRowViewBridge: View {
                         hikeGear.worn.toggle()
                         hike.objectWillChange.send()
                         refreshTrigger.toggle()
-                        dataService.updateHike(hike)
+                        saveHikeGearToCoreData()
                     }) {
                         Image(systemName: hikeGear.worn ? "tshirt.fill" : "tshirt")
                             .foregroundColor(hikeGear.worn ? .green : .gray)
@@ -318,12 +361,12 @@ public struct HikeGearRowViewBridge: View {
                             .frame(width: 30, height: 30)
                     }
                     .buttonStyle(.plain)
-                    
+
                     Button(action: {
                         hikeGear.consumable.toggle()
                         hike.objectWillChange.send()
                         refreshTrigger.toggle()
-                        dataService.updateHike(hike)
+                        saveHikeGearToCoreData()
                     }) {
                         Image(systemName: hikeGear.consumable ? "leaf.fill" : "leaf")
                             .foregroundColor(hikeGear.consumable ? .orange : .gray)
@@ -331,11 +374,11 @@ public struct HikeGearRowViewBridge: View {
                             .frame(width: 30, height: 30)
                     }
                     .buttonStyle(.plain)
-                    
+
                     Button(action: {
                         hikeGear.verified.toggle()
                         hike.objectWillChange.send()
-                        dataService.updateHike(hike)
+                        saveHikeGearToCoreData()
                     }) {
                         Image(systemName: hikeGear.verified ? "checkmark.circle.fill" : "checkmark.circle")
                             .foregroundColor(hikeGear.verified ? .blue : .gray)
@@ -348,19 +391,54 @@ public struct HikeGearRowViewBridge: View {
         }
         .padding(.vertical, 2)
     }
+
+    private func saveHikeGearToCoreData() {
+        let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            if let hikeEntity = results.first {
+                // Find the specific HikeGearEntity to update
+                if let hikeGearSet = hikeEntity.hikeGears as? Set<HikeGearEntity> {
+                    for hikeGearEntity in hikeGearSet {
+                        if let gearEntity = hikeGearEntity.gear, gearEntity.uuid == hikeGear.gear?.id {
+                            // Update the properties
+                            hikeGearEntity.worn = hikeGear.worn
+                            hikeGearEntity.consumable = hikeGear.consumable
+                            hikeGearEntity.verified = hikeGear.verified
+                            break
+                        }
+                    }
+                }
+                try context.save()
+            }
+        } catch {
+            print("Error saving hike gear to Core Data: \(error)")
+        }
+    }
 }
 
 
 public struct HikeListViewBridge: View {
-    @StateObject private var dataService = DataService.shared
     @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
     @State private var searchText = ""
     @State private var showingAddHike = false
     @State private var selectedHike: HikeSwiftUI?
     @State private var showingHikeDetail = false
-    
+    @State private var hikes: [HikeSwiftUI] = []
+    private let context = CoreDataStack.shared.viewContext
+
     private var filteredHikes: [HikeSwiftUI] {
-        dataService.searchHikes(query: searchText)
+        if searchText.isEmpty {
+            return hikes
+        } else {
+            return hikes.filter { hike in
+                hike.name.localizedCaseInsensitiveContains(searchText) ||
+                hike.desc.localizedCaseInsensitiveContains(searchText) ||
+                hike.location.localizedCaseInsensitiveContains(searchText)
+            }
+        }
     }
     
     public var body: some View {
@@ -394,15 +472,14 @@ public struct HikeListViewBridge: View {
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button("Delete", role: .destructive) {
-                                        dataService.deleteHike(hike)
+                                        deleteHike(hike)
                                     }
-                                    
+
                                     Button("Copy") {
-                                        let copiedHike = dataService.copyHike(hike)
-                                        dataService.addHike(copiedHike)
+                                        copyHike(hike)
                                     }
                                     .tint(.blue)
-                                    
+
                                     Button("Edit") {
                                         selectedHike = hike
                                         showingAddHike = true
@@ -421,9 +498,9 @@ public struct HikeListViewBridge: View {
                 }
             )
             .sheet(isPresented: $showingAddHike) {
-                AddHikeViewBridge(hike: selectedHike)
+                AddHikeView(hike: selectedHike)
                     .onDisappear {
-                        dataService.loadData()
+                        loadHikesFromCoreData()
                     }
             }
             .sheet(isPresented: $showingHikeDetail) {
@@ -432,11 +509,78 @@ public struct HikeListViewBridge: View {
                 }
             }
             .onAppear {
-                dataService.loadData()
+                loadHikesFromCoreData()
             }
             .refreshable {
-                dataService.loadData()
+                loadHikesFromCoreData()
             }
+        }
+    }
+
+    private func loadHikesFromCoreData() {
+        let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            hikes = results.map { HikeSwiftUI(fromCoreData: $0) }
+        } catch {
+            print("Error loading hikes: \(error)")
+        }
+    }
+
+    private func deleteHike(_ hike: HikeSwiftUI) {
+        let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            if let hikeEntity = results.first {
+                context.delete(hikeEntity)
+                try context.save()
+                loadHikesFromCoreData()
+            }
+        } catch {
+            print("Error deleting hike: \(error)")
+        }
+    }
+
+    private func copyHike(_ hike: HikeSwiftUI) {
+        let hikeEntity = HikeEntity(context: context)
+        hikeEntity.name = "\(hike.name) (Copy)"
+        hikeEntity.desc = hike.desc
+        hikeEntity.distance = hike.distance
+        hikeEntity.location = hike.location
+        hikeEntity.completed = false
+        hikeEntity.externalLink1 = hike.externalLink1
+        hikeEntity.externalLink2 = hike.externalLink2
+        hikeEntity.externalLink3 = hike.externalLink3
+
+        // Copy hike gear relationships
+        for hikeGearSwiftUI in hike.hikeGears {
+            let hikeGearEntity = HikeGearEntity(context: context)
+            hikeGearEntity.consumable = hikeGearSwiftUI.consumable
+            hikeGearEntity.numberUnits = Int32(hikeGearSwiftUI.numberUnits)
+            hikeGearEntity.notes = hikeGearSwiftUI.notes
+            hikeGearEntity.verified = hikeGearSwiftUI.verified
+            hikeGearEntity.worn = hikeGearSwiftUI.worn
+            hikeGearEntity.hike = hikeEntity
+
+            // Find the gear entity
+            if let gearSwiftUI = hikeGearSwiftUI.gear {
+                let gearFetch: NSFetchRequest<GearEntity> = GearEntity.fetchRequest()
+                gearFetch.predicate = NSPredicate(format: "uuid == %@", gearSwiftUI.id)
+                if let gearEntity = try? context.fetch(gearFetch).first {
+                    hikeGearEntity.gear = gearEntity
+                }
+            }
+        }
+
+        do {
+            try context.save()
+            loadHikesFromCoreData()
+        } catch {
+            print("Error copying hike: \(error)")
         }
     }
 }
@@ -650,8 +794,7 @@ public struct EditHikeGearView: View {
     @State private var worn: Bool = false
     @State private var verified: Bool = false
     @Environment(\.dismiss) private var dismiss
-    
-    private var dataService = DataService.shared
+    private let context = CoreDataStack.shared.viewContext
     
     public var body: some View {
         NavigationView {
@@ -779,10 +922,33 @@ public struct EditHikeGearView: View {
         hikeGear.consumable = consumable
         hikeGear.worn = worn
         hikeGear.verified = verified
-        
-        // Update the hike in the data service
-        dataService.updateHike(hike)
-        
+
+        // Update in Core Data
+        let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            if let hikeEntity = results.first {
+                // Find the specific HikeGearEntity to update
+                if let hikeGearSet = hikeEntity.hikeGears as? Set<HikeGearEntity> {
+                    for hikeGearEntity in hikeGearSet {
+                        if let gearEntity = hikeGearEntity.gear, gearEntity.uuid == hikeGear.gear?.id {
+                            hikeGearEntity.numberUnits = Int32(hikeGear.numberUnits)
+                            hikeGearEntity.notes = hikeGear.notes
+                            hikeGearEntity.consumable = hikeGear.consumable
+                            hikeGearEntity.worn = hikeGear.worn
+                            hikeGearEntity.verified = hikeGear.verified
+                            break
+                        }
+                    }
+                }
+                try context.save()
+            }
+        } catch {
+            print("Error saving changes: \(error)")
+        }
+
         dismiss()
     }
     
@@ -805,10 +971,9 @@ public struct AddGearToHikeView: View {
     @State private var gearList: [GearSwiftUI] = []
     @State private var categorizedGear: [String: [GearSwiftUI]] = [:]
     @Environment(\.dismiss) private var dismiss
-    
-    private var dataService = DataService.shared
-    
-    public init(hike: HikeSwiftUI) {
+    private let context = CoreDataStack.shared.viewContext
+
+    init(hike: HikeSwiftUI) {
         self.hike = hike
     }
     
@@ -885,8 +1050,16 @@ public struct AddGearToHikeView: View {
     }
     
     private func loadGear() {
-        gearList = dataService.gears
-        categorizedGear = Dictionary(grouping: gearList) { $0.category }
+        let fetchRequest: NSFetchRequest<GearEntity> = GearEntity.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            gearList = results.map { GearSwiftUI(fromCoreData: $0) }
+            categorizedGear = Dictionary(grouping: gearList) { $0.category }
+        } catch {
+            print("Error loading gear: \(error)")
+        }
     }
     
     private func loadExistingGearSelections() {
@@ -903,39 +1076,45 @@ public struct AddGearToHikeView: View {
     }
     
     private func saveSelectedGear() {
-        // Create HikeGear relationships for selected gear
-        var updatedHikeGears: [HikeGearSwiftUI] = []
-        
-        // Keep existing gear that's still selected
-        for existingHikeGear in hike.hikeGears {
-            if let gearId = existingHikeGear.gear?.id, selectedGear.contains(gearId) {
-                updatedHikeGears.append(existingHikeGear)
+        let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            guard let hikeEntity = results.first else { return }
+
+            // Remove existing relationships
+            if let existingGears = hikeEntity.hikeGears as? Set<HikeGearEntity> {
+                for gear in existingGears {
+                    context.delete(gear)
+                }
             }
-        }
-        
-        // Add new gear selections
-        for gearId in selectedGear {
-            let alreadyExists = hike.hikeGears.contains { $0.gear?.id == gearId }
-            if !alreadyExists, let gear = gearList.first(where: { $0.id == gearId }) {
-                let hikeGear = HikeGearSwiftUI()
-                hikeGear.gear = gear
-                hikeGear.consumable = false
-                hikeGear.worn = false
-                hikeGear.numberUnits = 1
-                hikeGear.verified = false
-                hikeGear.notes = ""
-                updatedHikeGears.append(hikeGear)
+
+            // Add selected gear
+            for gearId in selectedGear {
+                if let gearSwiftUI = gearList.first(where: { $0.id == gearId }) {
+                    let hikeGearEntity = HikeGearEntity(context: context)
+                    hikeGearEntity.consumable = false
+                    hikeGearEntity.numberUnits = 1
+                    hikeGearEntity.notes = ""
+                    hikeGearEntity.verified = false
+                    hikeGearEntity.worn = false
+                    hikeGearEntity.hike = hikeEntity
+
+                    // Find the gear entity
+                    let gearFetch: NSFetchRequest<GearEntity> = GearEntity.fetchRequest()
+                    gearFetch.predicate = NSPredicate(format: "uuid == %@", gearId)
+                    if let gearEntity = try? context.fetch(gearFetch).first {
+                        hikeGearEntity.gear = gearEntity
+                    }
+                }
             }
+
+            try context.save()
+            dismiss()
+        } catch {
+            print("Error saving selected gear: \(error)")
         }
-        
-        // Update the hike with new gear list
-        let updatedHike = hike
-        updatedHike.hikeGears = updatedHikeGears
-        
-        // Save to DataService
-        dataService.updateHike(updatedHike)
-        
-        dismiss()
     }
 }
 
@@ -1063,18 +1242,7 @@ class SwiftUIMigrationHelper {
         }
     }
     
-    func createAddGearViewController(gear: Gear? = nil) -> UIViewController {
-        if enableSwiftUIAddGear {
-            let gearSwiftUI = gear != nil ? GearSwiftUI(from: gear!) : nil
-            return UIHostingController(rootView: AddGearViewBridge(gear: gearSwiftUI))
-        } else {
-            // Return legacy UIKit controller
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            let controller = storyboard.instantiateViewController(withIdentifier: "AddGearViewController")
-            // Configure with gear if needed
-            return controller
-        }
-    }
+    // Removed - use createAddGearViewControllerFromCoreData instead
 
     // Core Data version - using explicit method name to avoid ambiguity
     func createAddGearViewControllerFromCoreData(gear: GearEntity? = nil) -> UIViewController {
@@ -1090,10 +1258,11 @@ class SwiftUIMigrationHelper {
         }
     }
     
-    func createAddHikeViewController(hike: Hike? = nil) -> UIViewController {
+    // Removed - use Core Data version instead
+    func createAddHikeViewController(hikeCoreData: HikeEntity? = nil) -> UIViewController {
         if enableSwiftUIAddHike {
-            let hikeSwiftUI = hike != nil ? HikeSwiftUI(from: hike!) : nil
-            return UIHostingController(rootView: AddHikeViewBridge(hike: hikeSwiftUI))
+            let hikeSwiftUI = hikeCoreData != nil ? HikeSwiftUI(fromCoreData: hikeCoreData!) : nil
+            return UIHostingController(rootView: AddHikeView(hike: hikeSwiftUI))
         } else {
             // Return legacy UIKit controller
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
@@ -1103,32 +1272,7 @@ class SwiftUIMigrationHelper {
         }
     }
     
-    func createHikeDetailViewController(hike: Hike) -> UIViewController {
-        if enableSwiftUIHikeList {
-            let dataService = DataService.shared
-            let hikeSwiftUI = dataService.hikes.first(where: { $0.name == hike.name }) ?? HikeSwiftUI(from: hike)
-
-            let hostingController = UIHostingController(rootView: HikeDetailViewBridge(hike: hikeSwiftUI))
-
-            let hikeDetailViewWithCallback = HikeDetailViewBridge(hike: hikeSwiftUI, dismissCallback: { [weak hostingController] in
-                guard let hostingController = hostingController else { return }
-
-                if hostingController.presentingViewController != nil {
-                    hostingController.dismiss(animated: true)
-                } else if let navigationController = hostingController.navigationController {
-                    navigationController.popViewController(animated: true)
-                } else {
-                    hostingController.dismiss(animated: true)
-                }
-            })
-
-            hostingController.rootView = hikeDetailViewWithCallback
-            return hostingController
-        } else {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            return storyboard.instantiateViewController(withIdentifier: "HikeDetailViewController")
-        }
-    }
+    // Removed - use Core Data version only
 
     // Core Data version
     func createHikeDetailViewController(hikeCoreData: HikeEntity) -> UIViewController {
@@ -1154,7 +1298,7 @@ class SwiftUIMigrationHelper {
         } else {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let controller = storyboard.instantiateViewController(withIdentifier: "HikeDetailViewController") as! HikeDetailViewController
-            controller.existingHikeCoreData = hikeCoreData
+            controller.hikeEntity = hikeCoreData
             return controller
         }
     }
@@ -1169,27 +1313,22 @@ class SwiftUIMigrationHelper {
         }
     }
     
-    func createHikeReportViewController(hike: Hike) -> UIViewController {
-        // Temporarily use legacy UIKit controller until SwiftUI views are added to Xcode target
+    // Removed legacy Realm methods - use Core Data equivalents
+    func createHikeReportViewController(hikeCoreData: HikeEntity) -> UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let controller = storyboard.instantiateViewController(withIdentifier: "HikeReportController")
-        // Configure with hike if needed
         return controller
     }
-    
-    func createAddGearToHikeViewController(hike: Hike) -> UIViewController {
-        // Temporarily use legacy UIKit controller until SwiftUI views are added to Xcode target
+
+    func createAddGearToHikeViewController(hikeCoreData: HikeEntity) -> UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let controller = storyboard.instantiateViewController(withIdentifier: "AddGearToHikeTableViewController")
-        // Configure with hike if needed
         return controller
     }
-    
-    func createEditHikeGearViewController(hikeGear: HikeGear, hike: Hike) -> UIViewController {
-        // Temporarily use legacy UIKit controller until SwiftUI views are added to Xcode target
+
+    func createEditHikeGearViewController(hikeGearCoreData: HikeGearEntity, hikeCoreData: HikeEntity) -> UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let controller = storyboard.instantiateViewController(withIdentifier: "EditHikeGearController")
-        // Configure with hikeGear and hike if needed
         return controller
     }
     
@@ -1314,13 +1453,13 @@ class MigrationStatusTracker {
 class SwiftUIIntegrationTestHelper {
     static let shared = SwiftUIIntegrationTestHelper()
     private init() {}
-    
+
     func validateSwiftUIIntegration() -> Bool {
         // Simple validation - just try to create key components
         do {
-            let _ = DataService.shared
             let _ = SettingsManagerSwiftUI.shared
             let _ = SwiftUIMigrationHelper.shared.createGearListViewController()
+            let _ = CoreDataStack.shared.viewContext
             return true
         } catch {
             return false

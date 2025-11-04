@@ -6,11 +6,11 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct AddHikeViewBridge: View {
     let hike: HikeSwiftUI?
-    
-    @State private var dataService = DataService.shared
+
     @State private var name = ""
     @State private var description = ""
     @State private var location = ""
@@ -19,8 +19,9 @@ struct AddHikeViewBridge: View {
     @State private var externalLink1 = ""
     @State private var externalLink2 = ""
     @State private var externalLink3 = ""
-    
+
     @Environment(\.dismiss) private var dismiss
+    private let context = CoreDataStack.shared.viewContext
     
     private var isEditing: Bool {
         hike != nil
@@ -102,44 +103,65 @@ struct AddHikeViewBridge: View {
     }
     
     private func saveHike() {
+        // Save to Core Data
+        let hikeEntity: HikeEntity
         if let existingHike = hike {
-            existingHike.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
-            existingHike.desc = description.trimmingCharacters(in: .whitespacesAndNewlines)
-            existingHike.location = location.trimmingCharacters(in: .whitespacesAndNewlines)
-            existingHike.distance = distance.trimmingCharacters(in: .whitespacesAndNewlines)
-            existingHike.completed = completed
-            existingHike.externalLink1 = externalLink1.trimmingCharacters(in: .whitespacesAndNewlines)
-            existingHike.externalLink2 = externalLink2.trimmingCharacters(in: .whitespacesAndNewlines)
-            existingHike.externalLink3 = externalLink3.trimmingCharacters(in: .whitespacesAndNewlines)
-            
-            dataService.updateHike(existingHike)
-        } else {
-            let newHike = HikeSwiftUI(
-                name: name.trimmingCharacters(in: .whitespacesAndNewlines),
-                desc: description.trimmingCharacters(in: .whitespacesAndNewlines),
-                distance: distance.trimmingCharacters(in: .whitespacesAndNewlines),
-                location: location.trimmingCharacters(in: .whitespacesAndNewlines)
-            )
-            
-            newHike.completed = completed
-            newHike.externalLink1 = externalLink1.trimmingCharacters(in: .whitespacesAndNewlines)
-            newHike.externalLink2 = externalLink2.trimmingCharacters(in: .whitespacesAndNewlines)
-            newHike.externalLink3 = externalLink3.trimmingCharacters(in: .whitespacesAndNewlines)
-            
-            dataService.addHike(newHike)
-        }
-        
-        // Notify parent controller that hike was saved
-        NotificationCenter.default.post(name: NSNotification.Name("HikeSaved"), object: nil)
-        
-        // For UIKit presentation, we need to dismiss the hosting controller
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            if let hostingController = findHostingController() {
-                hostingController.dismiss(animated: true)
-            } else {
-                // Fallback to SwiftUI dismiss if in sheet context
-                dismiss()
+            // Update existing hike - need to fetch from Core Data
+            let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "name == %@", existingHike.name)
+
+            do {
+                let results = try context.fetch(fetchRequest)
+                if let existing = results.first {
+                    hikeEntity = existing
+                } else {
+                    // If not found, create new
+                    hikeEntity = HikeEntity(context: context)
+                }
+            } catch {
+                print("Error fetching existing hike: \(error)")
+                return
             }
+        } else {
+            // Create new hike
+            hikeEntity = HikeEntity(context: context)
+        }
+
+        // Set values
+        hikeEntity.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        hikeEntity.desc = description.trimmingCharacters(in: .whitespacesAndNewlines)
+        hikeEntity.location = location.trimmingCharacters(in: .whitespacesAndNewlines)
+        hikeEntity.distance = distance.trimmingCharacters(in: .whitespacesAndNewlines)
+        hikeEntity.completed = completed
+
+        // Set external links (only if not empty)
+        let link1 = externalLink1.trimmingCharacters(in: .whitespacesAndNewlines)
+        let link2 = externalLink2.trimmingCharacters(in: .whitespacesAndNewlines)
+        let link3 = externalLink3.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        hikeEntity.externalLink1 = link1.isEmpty ? nil : link1
+        hikeEntity.externalLink2 = link2.isEmpty ? nil : link2
+        hikeEntity.externalLink3 = link3.isEmpty ? nil : link3
+
+        // Save to Core Data
+        do {
+            try context.save()
+            print("✅ Hike saved to Core Data successfully")
+
+            // Notify parent controller that hike was saved
+            NotificationCenter.default.post(name: NSNotification.Name("HikeSaved"), object: nil)
+
+            // Dismiss after a short delay to allow notification to propagate
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                if let hostingController = findHostingController() {
+                    hostingController.dismiss(animated: true)
+                } else {
+                    // Fallback to SwiftUI dismiss if in sheet context
+                    dismiss()
+                }
+            }
+        } catch {
+            print("❌ Error saving hike to Core Data: \(error)")
         }
     }
     

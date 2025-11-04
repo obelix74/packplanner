@@ -7,23 +7,23 @@
 
 import Foundation
 import SwiftUI
-import RealmSwift
 import Combine
+import CoreData
 
 class SettingsManagerSwiftUI: ObservableObject {
     static let shared = SettingsManagerSwiftUI()
-    
-    private let realm: Realm
+
+    private let context = CoreDataStack.shared.viewContext
     @Published var settings: SettingsSwiftUI
-    
+
     private init() {
+        // Load existing settings from Core Data or create default
+        let fetchRequest: NSFetchRequest<SettingsEntity> = SettingsEntity.fetchRequest()
+
         do {
-            self.realm = try Realm()
-            
-            // Load existing settings or create default
-            let results = realm.objects(Settings.self)
+            let results = try context.fetch(fetchRequest)
             if let existingSettings = results.first {
-                self.settings = SettingsSwiftUI(from: existingSettings)
+                self.settings = SettingsSwiftUI(fromCoreData: existingSettings)
             } else {
                 self.settings = SettingsSwiftUI()
                 self.settings.imperial = true
@@ -31,61 +31,70 @@ class SettingsManagerSwiftUI: ObservableObject {
                 saveSettings()
             }
         } catch {
-            fatalError("Failed to initialize SettingsManagerSwiftUI: \(error)")
+            print("Error loading settings from Core Data: \(error)")
+            // Fallback to defaults
+            self.settings = SettingsSwiftUI()
+            self.settings.imperial = true
+            self.settings.firstTimeUser = true
         }
     }
-    
+
     func updateImperialSetting(_ imperial: Bool) {
         settings.imperial = imperial
         saveSettings()
     }
-    
+
     func updateFirstTimeUser(_ firstTime: Bool) {
         settings.firstTimeUser = firstTime
         saveSettings()
     }
-    
+
     private func saveSettings() {
+        let fetchRequest: NSFetchRequest<SettingsEntity> = SettingsEntity.fetchRequest()
+
         do {
-            try realm.write {
-                let results = realm.objects(Settings.self)
-                if let existingSettings = results.first {
-                    existingSettings.imperial = settings.imperial
-                    existingSettings.firstTimeUser = settings.firstTimeUser
-                } else {
-                    let newSettings = settings.toLegacySettings()
-                    realm.add(newSettings)
-                }
+            let results = try context.fetch(fetchRequest)
+            let settingsEntity: SettingsEntity
+
+            if let existingSettings = results.first {
+                settingsEntity = existingSettings
+            } else {
+                settingsEntity = SettingsEntity(context: context)
             }
+
+            settingsEntity.imperial = settings.imperial
+            settingsEntity.firstTimeUser = settings.firstTimeUser
+
+            try context.save()
         } catch {
-            print("Error saving settings: \(error)")
+            print("Error saving settings to Core Data: \(error)")
         }
     }
-    
+
     // Convenience computed properties
     var isImperial: Bool {
         get { settings.imperial }
         set { updateImperialSetting(newValue) }
     }
-    
+
     var isFirstTimeUser: Bool {
         get { settings.firstTimeUser }
         set { updateFirstTimeUser(newValue) }
     }
-    
+
     var weightUnit: String {
         settings.weightUnit
     }
-    
+
     var distanceUnit: String {
         settings.distanceUnit
     }
-    
+
     // Weight conversion utilities
     func formatWeight(_ weightInGrams: Double) -> String {
         return GearSwiftUI.getWeightString(weight: weightInGrams, imperial: settings.imperial)
     }
-    
+
     func convertWeight(_ weight: Double, fromImperial: Bool) -> Double {
         if fromImperial == settings.imperial {
             return weight

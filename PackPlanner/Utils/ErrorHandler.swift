@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import RealmSwift
 
 /**
  * ErrorHandler - Centralized error handling system for PackPlanner

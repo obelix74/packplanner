@@ -6,17 +6,18 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct AddGearViewBridge: View {
     let gear: GearSwiftUI?
     @State private var name = ""
     @State private var description = ""
     @State private var weight = ""
-    @State private var category = "Clothing"
+    @State private var category = "Backpack"
     @Environment(\.dismiss) private var dismiss
-    
-    private let categories = ["Clothing", "Cooking", "Electronics", "Navigation", "Safety", "Shelter", "Water & Hydration", "Other"]
-    private var dataService = DataService.shared
+
+    private let categories = Categories.SINGLETON.list
+    private let context = CoreDataStack.shared.viewContext
     
     init(gear: GearSwiftUI? = nil) {
         self.gear = gear
@@ -78,39 +79,62 @@ struct AddGearViewBridge: View {
     }
     
     private func saveGear() {
-        guard let weightValue = Double(weight) else { 
+        guard let weightValue = Double(weight) else {
             print("Invalid weight value: \(weight)")
-            return 
+            return
         }
-        
+
+        // Save to Core Data
+        let gearEntity: GearEntity
         if let existingGear = gear {
-            // Update existing gear
-            existingGear.name = name
-            existingGear.desc = description
-            existingGear.weightInGrams = weightValue
-            existingGear.category = category
-            dataService.updateGear(existingGear)
+            // Update existing gear - need to fetch from Core Data
+            let fetchRequest: NSFetchRequest<GearEntity> = GearEntity.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "uuid == %@", existingGear.id)
+
+            do {
+                let results = try context.fetch(fetchRequest)
+                if let existing = results.first {
+                    gearEntity = existing
+                } else {
+                    // If not found, create new
+                    gearEntity = GearEntity(context: context)
+                    gearEntity.uuid = UUID().uuidString
+                }
+            } catch {
+                print("Error fetching existing gear: \(error)")
+                return
+            }
         } else {
             // Create new gear
-            let newGear = GearSwiftUI()
-            newGear.name = name
-            newGear.desc = description
-            newGear.weightInGrams = weightValue
-            newGear.category = category
-            dataService.addGear(newGear)
+            gearEntity = GearEntity(context: context)
+            gearEntity.uuid = UUID().uuidString
         }
-        
-        // Notify parent controller that gear was saved
-        NotificationCenter.default.post(name: NSNotification.Name("GearSaved"), object: nil)
-        
-        // For UIKit presentation, we need to dismiss the hosting controller
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            if let hostingController = findHostingController() {
-                hostingController.dismiss(animated: true)
-            } else {
-                // Fallback to SwiftUI dismiss if in sheet context
-                dismiss()
+
+        // Set values
+        gearEntity.name = name
+        gearEntity.desc = description
+        gearEntity.weightInGrams = weightValue
+        gearEntity.category = category
+
+        // Save to Core Data
+        do {
+            try context.save()
+            print("✅ Gear saved to Core Data successfully")
+
+            // Notify parent controller that gear was saved
+            NotificationCenter.default.post(name: NSNotification.Name("GearSaved"), object: nil)
+
+            // Dismiss after a short delay to allow notification to propagate
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                if let hostingController = findHostingController() {
+                    hostingController.dismiss(animated: true)
+                } else {
+                    // Fallback to SwiftUI dismiss if in sheet context
+                    dismiss()
+                }
             }
+        } catch {
+            print("❌ Error saving gear to Core Data: \(error)")
         }
     }
     

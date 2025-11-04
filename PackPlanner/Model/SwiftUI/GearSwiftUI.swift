@@ -7,11 +7,10 @@
 
 import Foundation
 import SwiftUI
-import RealmSwift
 import CoreData
 import Combine
 
-class GearSwiftUI: ObservableObject {
+class GearSwiftUI: ObservableObject, Identifiable {
     @Published var id: String = UUID().uuidString
     @Published var name: String = ""
     @Published var desc: String = ""
@@ -84,18 +83,8 @@ struct WeightUnitSwiftUI {
     }
 }
 
-// Bridge functions for converting between legacy and modern models
+// Bridge functions for Core Data
 extension GearSwiftUI {
-    convenience init(from gear: Gear) {
-        self.init()
-        self.id = gear.uuid.isEmpty ? UUID().uuidString : gear.uuid
-        self.name = gear.name
-        self.desc = gear.desc
-        self.weightInGrams = gear.weightInGrams
-        self.category = gear.category
-    }
-
-    // Core Data version
     convenience init(fromCoreData gear: GearEntity) {
         self.init()
         self.id = gear.uuid ?? UUID().uuidString
@@ -103,15 +92,5 @@ extension GearSwiftUI {
         self.desc = gear.desc
         self.weightInGrams = gear.weightInGrams
         self.category = gear.category
-    }
-
-    func toLegacyGear() -> Gear {
-        let gear = Gear()
-        gear.uuid = self.id
-        gear.name = self.name
-        gear.desc = self.desc
-        gear.weightInGrams = self.weightInGrams
-        gear.category = self.category
-        return gear
     }
 }

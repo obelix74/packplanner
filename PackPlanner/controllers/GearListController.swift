@@ -10,7 +10,7 @@ import CoreData
 import SwipeCellKit
 import SwiftUI
 
-class GearListController: GearBaseTableViewController, ModalTransitionListener, SwipeTableViewCellDelegate {
+class GearListController: GearBaseTableViewController, ModalTransitionListener, SwipeTableViewCellDelegate, UISearchBarDelegate {
 
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var addButton: UIBarButtonItem!
@@ -18,7 +18,8 @@ class GearListController: GearBaseTableViewController, ModalTransitionListener, 
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.rowHeight = 65
+        tableView.estimatedRowHeight = 100
+        tableView.rowHeight = UITableView.automaticDimension
         searchBar.delegate = self
 
         // Listen for notifications from SwiftUI AddGearView (only add once)

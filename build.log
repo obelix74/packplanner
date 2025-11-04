@@ -1,0 +1,210 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -workspace PackPlanner.xcworkspace -scheme PackPlanner -configuration Debug clean build
+
+2025-11-02 21:49:24.808 xcodebuild[64575:2274845] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, variant:Designed for [iPad,iPhone], id:00008132-001249612ED9801C, name:My Mac }
+{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device }
+{ platform:iOS Simulator, id:dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder, name:Any iOS Simulator Device }
+{ platform:iOS Simulator, arch:arm64, id:F6397D8F-96AB-4FC7-85CF-80786414BF45, OS:18.5, name:iPad (A16) }
+{ platform:iOS Simulator, arch:x86_64, id:F6397D8F-96AB-4FC7-85CF-80786414BF45, OS:18.5, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:D14B09A9-503B-44CA-BCB4-43EC9E072593, OS:26.0, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:97631F0E-52F2-4DCC-97F3-D268EE273CF4, OS:18.5, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:x86_64, id:97631F0E-52F2-4DCC-97F3-D268EE273CF4, OS:18.5, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:76CD8093-F1CF-4170-9907-E936C781BA7F, OS:26.0, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:BD42D397-0A99-44C0-8EC1-8E1F0D88D637, OS:18.5, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:x86_64, id:BD42D397-0A99-44C0-8EC1-8E1F0D88D637, OS:18.5, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:C06945C0-3CC2-4F28-95AF-BBAD8BB13695, OS:26.0, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:FDC113A5-A251-4897-8534-8EA86B40260F, OS:18.5, name:iPad Pro 11-inch (M4) }
+{ platform:iOS Simulator, arch:x86_64, id:FDC113A5-A251-4897-8534-8EA86B40260F, OS:18.5, name:iPad Pro 11-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:85014A9B-0483-4204-A79A-A70772ABE48D, OS:26.0, name:iPad Pro 11-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:D9E8ED8D-B78F-40CE-ADE5-44D692F2260E, OS:18.5, name:iPad Pro 13-inch (M4) }
+{ platform:iOS Simulator, arch:x86_64, id:D9E8ED8D-B78F-40CE-ADE5-44D692F2260E, OS:18.5, name:iPad Pro 13-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:C7B14E24-6C15-48AF-AE52-DE0261DF8B18, OS:26.0, name:iPad Pro 13-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:95CB2922-238D-4D74-B527-1F0DCE6C4950, OS:18.5, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:x86_64, id:95CB2922-238D-4D74-B527-1F0DCE6C4950, OS:18.5, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:8D5FA0C5-E29E-4333-BA86-9909CAC7D2F2, OS:26.0, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:09F06641-6A53-49DE-80D8-1BFF34CE6C2B, OS:18.5, name:iPhone 16 }
+{ platform:iOS Simulator, arch:x86_64, id:09F06641-6A53-49DE-80D8-1BFF34CE6C2B, OS:18.5, name:iPhone 16 }
+{ platform:iOS Simulator, arch:arm64, id:BFE07D04-4F3D-43F5-B3DE-7C6516919CFA, OS:18.5, name:iPhone 16 Plus }
+{ platform:iOS Simulator, arch:x86_64, id:BFE07D04-4F3D-43F5-B3DE-7C6516919CFA, OS:18.5, name:iPhone 16 Plus }
+{ platform:iOS Simulator, arch:arm64, id:8D91BA84-F7FF-430A-AAD0-C9A54FDE9EC3, OS:18.5, name:iPhone 16 Pro }
+{ platform:iOS Simulator, arch:x86_64, id:8D91BA84-F7FF-430A-AAD0-C9A54FDE9EC3, OS:18.5, name:iPhone 16 Pro }
+{ platform:iOS Simulator, arch:arm64, id:B63C8F03-AF47-48CA-BA5D-4BFA50DAD58F, OS:18.5, name:iPhone 16 Pro Max }
+{ platform:iOS Simulator, arch:x86_64, id:B63C8F03-AF47-48CA-BA5D-4BFA50DAD58F, OS:18.5, name:iPhone 16 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:1C158E8F-DE4C-4140-8030-392B265C7CF2, OS:18.5, name:iPhone 16e }
+{ platform:iOS Simulator, arch:x86_64, id:1C158E8F-DE4C-4140-8030-392B265C7CF2, OS:18.5, name:iPhone 16e }
+{ platform:iOS Simulator, arch:arm64, id:55AB1DAC-5408-46D9-8E2B-B9FD0878DDCE, OS:26.0, name:iPhone 16e }
+{ platform:iOS Simulator, arch:arm64, id:7A2A13A6-2454-48B4-8E87-AF8A09E91FD4, OS:26.0, name:iPhone 17 }
+{ platform:iOS Simulator, arch:arm64, id:D8587B4A-8CFB-44C4-9E29-7E3DC1A86C58, OS:26.0, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:84FC344E-7255-45FF-A771-8CE29814AB48, OS:26.0, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:DE980B1F-4886-4DC3-BF82-B70515653A78, OS:26.0, name:iPhone Air }
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+** CLEAN SUCCEEDED **
+
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, variant:Designed for [iPad,iPhone], id:00008132-001249612ED9801C, name:My Mac }
+{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device }
+{ platform:iOS Simulator, id:dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder, name:Any iOS Simulator Device }
+{ platform:iOS Simulator, arch:arm64, id:F6397D8F-96AB-4FC7-85CF-80786414BF45, OS:18.5, name:iPad (A16) }
+{ platform:iOS Simulator, arch:x86_64, id:F6397D8F-96AB-4FC7-85CF-80786414BF45, OS:18.5, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:D14B09A9-503B-44CA-BCB4-43EC9E072593, OS:26.0, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:97631F0E-52F2-4DCC-97F3-D268EE273CF4, OS:18.5, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:x86_64, id:97631F0E-52F2-4DCC-97F3-D268EE273CF4, OS:18.5, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:76CD8093-F1CF-4170-9907-E936C781BA7F, OS:26.0, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:BD42D397-0A99-44C0-8EC1-8E1F0D88D637, OS:18.5, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:x86_64, id:BD42D397-0A99-44C0-8EC1-8E1F0D88D637, OS:18.5, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:C06945C0-3CC2-4F28-95AF-BBAD8BB13695, OS:26.0, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:FDC113A5-A251-4897-8534-8EA86B40260F, OS:18.5, name:iPad Pro 11-inch (M4) }
+{ platform:iOS Simulator, arch:x86_64, id:FDC113A5-A251-4897-8534-8EA86B40260F, OS:18.5, name:iPad Pro 11-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:85014A9B-0483-4204-A79A-A70772ABE48D, OS:26.0, name:iPad Pro 11-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:D9E8ED8D-B78F-40CE-ADE5-44D692F2260E, OS:18.5, name:iPad Pro 13-inch (M4) }
+{ platform:iOS Simulator, arch:x86_64, id:D9E8ED8D-B78F-40CE-ADE5-44D692F2260E, OS:18.5, name:iPad Pro 13-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:C7B14E24-6C15-48AF-AE52-DE0261DF8B18, OS:26.0, name:iPad Pro 13-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:95CB2922-238D-4D74-B527-1F0DCE6C4950, OS:18.5, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:x86_64, id:95CB2922-238D-4D74-B527-1F0DCE6C4950, OS:18.5, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:8D5FA0C5-E29E-4333-BA86-9909CAC7D2F2, OS:26.0, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:09F06641-6A53-49DE-80D8-1BFF34CE6C2B, OS:18.5, name:iPhone 16 }
+{ platform:iOS Simulator, arch:x86_64, id:09F06641-6A53-49DE-80D8-1BFF34CE6C2B, OS:18.5, name:iPhone 16 }
+{ platform:iOS Simulator, arch:arm64, id:BFE07D04-4F3D-43F5-B3DE-7C6516919CFA, OS:18.5, name:iPhone 16 Plus }
+{ platform:iOS Simulator, arch:x86_64, id:BFE07D04-4F3D-43F5-B3DE-7C6516919CFA, OS:18.5, name:iPhone 16 Plus }
+{ platform:iOS Simulator, arch:arm64, id:8D91BA84-F7FF-430A-AAD0-C9A54FDE9EC3, OS:18.5, name:iPhone 16 Pro }
+{ platform:iOS Simulator, arch:x86_64, id:8D91BA84-F7FF-430A-AAD0-C9A54FDE9EC3, OS:18.5, name:iPhone 16 Pro }
+{ platform:iOS Simulator, arch:arm64, id:B63C8F03-AF47-48CA-BA5D-4BFA50DAD58F, OS:18.5, name:iPhone 16 Pro Max }
+{ platform:iOS Simulator, arch:x86_64, id:B63C8F03-AF47-48CA-BA5D-4BFA50DAD58F, OS:18.5, name:iPhone 16 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:1C158E8F-DE4C-4140-8030-392B265C7CF2, OS:18.5, name:iPhone 16e }
+{ platform:iOS Simulator, arch:x86_64, id:1C158E8F-DE4C-4140-8030-392B265C7CF2, OS:18.5, name:iPhone 16e }
+{ platform:iOS Simulator, arch:arm64, id:55AB1DAC-5408-46D9-8E2B-B9FD0878DDCE, OS:26.0, name:iPhone 16e }
+{ platform:iOS Simulator, arch:arm64, id:7A2A13A6-2454-48B4-8E87-AF8A09E91FD4, OS:26.0, name:iPhone 17 }
+{ platform:iOS Simulator, arch:arm64, id:D8587B4A-8CFB-44C4-9E29-7E3DC1A86C58, OS:26.0, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:84FC344E-7255-45FF-A771-8CE29814AB48, OS:26.0, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:DE980B1F-4886-4DC3-BF82-B70515653A78, OS:26.0, name:iPhone Air }
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (22 targets)
+    Target 'PackPlanner' in project 'PackPlanner'
+        ➜ Implicit dependency on target 'Pods-PackPlanner' in project 'Pods' via file 'Pods_PackPlanner.framework' in build phase 'Link Binary'
+        ➜ Implicit dependency on target 'CSV.swift' in project 'Pods' via options '-framework CSV' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'ChameleonFramework' in project 'Pods' via options '-framework ChameleonFramework' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'Former' in project 'Pods' via options '-framework Former' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQKeyboardCore' in project 'Pods' via options '-framework IQKeyboardCore' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQKeyboardManagerSwift' in project 'Pods' via options '-framework IQKeyboardManagerSwift' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQKeyboardNotification' in project 'Pods' via options '-framework IQKeyboardNotification' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQKeyboardReturnManager' in project 'Pods' via options '-framework IQKeyboardReturnManager' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQKeyboardToolbar' in project 'Pods' via options '-framework IQKeyboardToolbar' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQKeyboardToolbarManager' in project 'Pods' via options '-framework IQKeyboardToolbarManager' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQTextInputViewNotification' in project 'Pods' via options '-framework IQTextInputViewNotification' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQTextView' in project 'Pods' via options '-framework IQTextView' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'SwipeCellKit' in project 'Pods' via options '-framework SwipeCellKit' in build setting 'OTHER_LDFLAGS'
+    Target 'Pods-PackPlanner' in project 'Pods'
+        ➜ Explicit dependency on target 'CSV.swift' in project 'Pods'
+        ➜ Explicit dependency on target 'ChameleonFramework' in project 'Pods'
+        ➜ Explicit dependency on target 'Former' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardCore' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardManagerSwift' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardNotification' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardReturnManager' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardToolbar' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardToolbarManager' in project 'Pods'
+        ➜ Explicit dependency on target 'IQTextInputViewNotification' in project 'Pods'
+        ➜ Explicit dependency on target 'IQTextView' in project 'Pods'
+        ➜ Explicit dependency on target 'SwipeCellKit' in project 'Pods'
+    Target 'SwipeCellKit' in project 'Pods' (no dependencies)
+    Target 'IQKeyboardManagerSwift' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardManagerSwift-IQKeyboardManagerSwift' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardNotification' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardReturnManager' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardToolbarManager' in project 'Pods'
+        ➜ Explicit dependency on target 'IQTextInputViewNotification' in project 'Pods'
+        ➜ Explicit dependency on target 'IQTextView' in project 'Pods'
+    Target 'IQKeyboardManagerSwift-IQKeyboardManagerSwift' in project 'Pods'
+        ➜ Implicit dependency on target 'IQKeyboardNotification' in project 'Pods' via options '-framework IQKeyboardNotification' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQKeyboardReturnManager' in project 'Pods' via options '-framework IQKeyboardReturnManager' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQKeyboardToolbarManager' in project 'Pods' via options '-framework IQKeyboardToolbarManager' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQTextInputViewNotification' in project 'Pods' via options '-framework IQTextInputViewNotification' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQTextView' in project 'Pods' via options '-framework IQTextView' in build setting 'OTHER_LDFLAGS'
+    Target 'IQTextView' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardToolbar' in project 'Pods'
+        ➜ Explicit dependency on target 'IQTextView-IQTextView' in project 'Pods'
+    Target 'IQTextView-IQTextView' in project 'Pods'
+        ➜ Implicit dependency on target 'IQKeyboardToolbar' in project 'Pods' via options '-framework IQKeyboardToolbar' in build setting 'OTHER_LDFLAGS'
+    Target 'IQKeyboardToolbarManager' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardToolbar' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardToolbarManager-IQKeyboardToolbarManager' in project 'Pods'
+        ➜ Explicit dependency on target 'IQTextInputViewNotification' in project 'Pods'
+    Target 'IQKeyboardToolbarManager-IQKeyboardToolbarManager' in project 'Pods'
+        ➜ Implicit dependency on target 'IQKeyboardToolbar' in project 'Pods' via options '-framework IQKeyboardToolbar' in build setting 'OTHER_LDFLAGS'
+        ➜ Implicit dependency on target 'IQTextInputViewNotification' in project 'Pods' via options '-framework IQTextInputViewNotification' in build setting 'OTHER_LDFLAGS'
+    Target 'IQTextInputViewNotification' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardCore' in project 'Pods'
+        ➜ Explicit dependency on target 'IQTextInputViewNotification-IQTextInputViewNotification' in project 'Pods'
+    Target 'IQTextInputViewNotification-IQTextInputViewNotification' in project 'Pods'
+        ➜ Implicit dependency on target 'IQKeyboardCore' in project 'Pods' via options '-framework IQKeyboardCore' in build setting 'OTHER_LDFLAGS'
+    Target 'IQKeyboardToolbar' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardCore' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardToolbar-IQKeyboardToolbar' in project 'Pods'
+    Target 'IQKeyboardToolbar-IQKeyboardToolbar' in project 'Pods'
+        ➜ Implicit dependency on target 'IQKeyboardCore' in project 'Pods' via options '-framework IQKeyboardCore' in build setting 'OTHER_LDFLAGS'
+    Target 'IQKeyboardReturnManager' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardCore' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardReturnManager-IQKeyboardReturnManager' in project 'Pods'
+    Target 'IQKeyboardReturnManager-IQKeyboardReturnManager' in project 'Pods'
+        ➜ Implicit dependency on target 'IQKeyboardCore' in project 'Pods' via options '-framework IQKeyboardCore' in build setting 'OTHER_LDFLAGS'
+    Target 'IQKeyboardNotification' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardNotification-IQKeyboardNotification' in project 'Pods'
+    Target 'IQKeyboardNotification-IQKeyboardNotification' in project 'Pods' (no dependencies)
+    Target 'IQKeyboardCore' in project 'Pods'
+        ➜ Explicit dependency on target 'IQKeyboardCore-IQKeyboardCore' in project 'Pods'
+    Target 'IQKeyboardCore-IQKeyboardCore' in project 'Pods' (no dependencies)
+    Target 'Former' in project 'Pods' (no dependencies)
+    Target 'ChameleonFramework' in project 'Pods' (no dependencies)
+    Target 'CSV.swift' in project 'Pods' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/ibtool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/momc --dry-run --action generate --swift-version 5.0 --sdkroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk --iphoneos-deployment-target 15.6 --module PackPlanner /Users/anand/projects/packplanner/PackPlanner/PackPlanner.xcdatamodeld /Users/anand/Library/Developer/Xcode/DerivedData/PackPlanner-blcgmoceamnhthbzeorykzwxqiqr/Build/Intermediates.noindex/PackPlanner.build/Debug-iphoneos/PackPlanner.build/DerivedSources/CoreDataGenerated/PackPlanner
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/anand/projects/packplanner/PackPlanner/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk -x objective-c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool -V
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+Build description signature: fc016245daadfdd00180b99033ec5045
+Build description path: /Users/anand/Library/Developer/Xcode/DerivedData/PackPlanner-blcgmoceamnhthbzeorykzwxqiqr/Build/Intermediates.noindex/XCBuildData/fc016245daadfdd00180b99033ec5045.xcbuilddata
+/Users/anand/projects/packplanner/PackPlanner.xcodeproj: error: Provisioning profile "iOS Team Provisioning Profile: net.anands.PackPlanner" doesn't include the currently selected device "Anand’s MacBook Air" (identifier 00008132-001249612ED9801C). (in target 'PackPlanner' from project 'PackPlanner')
+** BUILD FAILED **
+
+
+The following build commands failed:
+	Building workspace PackPlanner with scheme PackPlanner and configuration Debug
+(1 failure)

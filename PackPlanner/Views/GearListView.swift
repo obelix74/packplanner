@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import RealmSwift
 
 struct GearListView: View {
     @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
@@ -16,64 +15,63 @@ struct GearListView: View {
     @State private var showingAddGear = false
     @State private var selectedGear: GearSwiftUI?
     @State private var showingSettings = false
-    
-    // Dependency injection for SwiftUI
-    @OptionalInjected private var gearLogic: GearListService?
-    
+
     private var filteredGears: [GearSwiftUI] {
-        // Use shared search logic with optional injection
-        return gearLogic?.performSearch(items: dataService.gears, query: searchText) ?? dataService.gears
+        if searchText.isEmpty {
+            return dataService.gears
+        }
+        return dataService.gears.filter { gear in
+            gear.name.localizedCaseInsensitiveContains(searchText) ||
+            gear.category.localizedCaseInsensitiveContains(searchText) ||
+            gear.desc.localizedCaseInsensitiveContains(searchText)
+        }
     }
-    
+
     private var groupedGears: [String: [GearSwiftUI]] {
-        // Use shared categorization logic with optional injection
-        return gearLogic?.groupGearsByCategory(filteredGears) ?? Dictionary(grouping: filteredGears) { $0.category }
+        Dictionary(grouping: filteredGears) { $0.category }
     }
-    
+
     private var sortedCategories: [String] {
-        // Use shared sorting logic with optional injection
-        return gearLogic?.sortedCategories(from: groupedGears) ?? groupedGears.keys.sorted()
+        groupedGears.keys.sorted()
     }
     
     var body: some View {
-        NavigationView {
-            mainContent
-                .navigationTitle("Gear")
-                .navigationBarTitleDisplayMode(.large)
-                .navigationBarItems(
-                    leading: Button(action: {
-                        showingSettings = true
-                    }) {
-                        Image(systemName: "gearshape")
-                    },
-                    trailing: Button(action: {
-                        showingAddGear = true
-                    }) {
-                        Image(systemName: "plus")
+        mainContent
+            .navigationTitle("Gear")
+            .navigationBarTitleDisplayMode(.large)
+            .navigationBarItems(
+                leading: Button(action: {
+                    showingSettings = true
+                }) {
+                    Image(systemName: "gearshape")
+                },
+                trailing: Button(action: {
+                    showingAddGear = true
+                }) {
+                    Image(systemName: "plus")
+                }
+            )
+            .onAppear {
+                dataService.loadData()
+            }
+            .refreshable {
+                dataService.loadData()
+            }
+            .sheet(isPresented: $showingAddGear) {
+                AddGearViewBridge()
+                    .onDisappear {
+                        dataService.loadData()
                     }
-                )
-                .onAppear {
-                    dataService.loadData()
-                }
-                .refreshable {
-                    dataService.loadData()
-                }
-                .sheet(isPresented: $showingAddGear) {
-                    AddGearViewBridge()
-                        .onDisappear {
-                            dataService.loadData()
-                        }
-                }
-                .sheet(item: $selectedGear) { gear in
-                    AddGearViewBridge(gear: gear)
-                        .onDisappear {
-                            dataService.loadData()
-                        }
-                }
-                .sheet(isPresented: $showingSettings) {
-                    SettingsView()
-                }
-        }
+            }
+            .sheet(item: $selectedGear) { gear in
+                AddGearViewBridge(gear: gear)
+                    .onDisappear {
+                        dataService.loadData()
+                    }
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
+            }
     }
     
     @ViewBuilder
@@ -182,23 +180,16 @@ struct GearListView: View {
     }
     
     private func deleteGear(_ gear: GearSwiftUI) {
-        // Use shared gear logic with optional injection
-        gearLogic?.deleteGear(gear) { success in
-            if !success {
-                // Could show error alert here if needed
-                print("Failed to delete gear")
-            }
-        }
+        dataService.deleteGear(gear)
     }
-    
+
     private func duplicateGear(_ gear: GearSwiftUI) {
-        // Use shared gear logic with optional injection
-        gearLogic?.duplicateGear(gear) { success in
-            if !success {
-                // Could show error alert here if needed
-                print("Failed to duplicate gear")
-            }
-        }
+        _ = dataService.createGear(
+            name: gear.name + " (Copy)",
+            desc: gear.desc,
+            weightInGrams: gear.weightInGrams,
+            category: gear.category
+        )
     }
 }
 

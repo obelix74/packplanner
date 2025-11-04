@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import RealmSwift
 import Combine
 
 class SettingsSwiftUI: ObservableObject {
@@ -30,18 +29,11 @@ class SettingsSwiftUI: ObservableObject {
     }
 }
 
-// Bridge functions for converting between legacy and modern models
+// Bridge functions for Core Data
 extension SettingsSwiftUI {
-    convenience init(from settings: Settings) {
+    convenience init(fromCoreData settings: SettingsEntity) {
         self.init()
         self.imperial = settings.imperial
         self.firstTimeUser = settings.firstTimeUser
-    }
-    
-    func toLegacySettings() -> Settings {
-        let settings = Settings()
-        settings.imperial = self.imperial
-        settings.firstTimeUser = self.firstTimeUser
-        return settings
     }
 }

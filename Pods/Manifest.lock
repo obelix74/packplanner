@@ -44,11 +44,6 @@ PODS:
     - IQKeyboardCore
   - IQTextView (1.0.5):
     - IQKeyboardToolbar/Placeholderable
-  - Realm (20.0.3):
-    - Realm/Headers (= 20.0.3)
-  - Realm/Headers (20.0.3)
-  - RealmSwift (20.0.3):
-    - Realm (= 20.0.3)
   - SwipeCellKit (2.7.1)
 
 DEPENDENCIES:
@@ -56,7 +51,6 @@ DEPENDENCIES:
   - CSV.swift (~> 2.4.3)
   - Former
   - IQKeyboardManagerSwift
-  - RealmSwift
   - SwipeCellKit
 
 SPEC REPOS:
@@ -71,8 +65,6 @@ SPEC REPOS:
     - IQKeyboardToolbarManager
     - IQTextInputViewNotification
     - IQTextView
-    - Realm
-    - RealmSwift
     - SwipeCellKit
 
 EXTERNAL SOURCES:
@@ -97,10 +89,8 @@ SPEC CHECKSUMS:
   IQKeyboardToolbarManager: 6c693c8478d6327a7ef2107528d29698b3514dbb
   IQTextInputViewNotification: f5e954d8881fd9808b744e49e024cc0d4bcfe572
   IQTextView: ae13b4922f22e6f027f62c557d9f4f236b19d5c7
-  Realm: 853e5089d6042dff807bda000277eadfe2da93d2
-  RealmSwift: f33c19577cefcbf681345d721fcbc7b42be4c949
   SwipeCellKit: 3972254a826da74609926daf59b08d6c72e619ea
 
-PODFILE CHECKSUM: 65a80a5810509160912581175b7bff1e7ac1d761
+PODFILE CHECKSUM: 4e5f2e33d7e20dd1253715eb84148e25151e0de8
 
 COCOAPODS: 1.16.2

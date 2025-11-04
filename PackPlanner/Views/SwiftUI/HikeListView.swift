@@ -12,85 +12,110 @@ struct HikeListView: View {
     @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
     @State private var searchText = ""
     @State private var showingAddHike = false
-    @State private var selectedHike: HikeSwiftUI?
-    @State private var showingHikeDetail = false
-    
-    // Dependency injection for SwiftUI
-    @OptionalInjected private var hikeLogic: HikeListService?
-    
+    @State private var selectedHikeForEdit: HikeSwiftUI?
+    @State private var selectedHikeForDetail: HikeSwiftUI?
+
     private var filteredHikes: [HikeSwiftUI] {
-        // Use shared search logic with optional injection
-        return hikeLogic?.performSearch(items: dataService.hikes, query: searchText) ?? dataService.hikes
+        if searchText.isEmpty {
+            return dataService.hikes
+        }
+        return dataService.hikes.filter { hike in
+            hike.name.localizedCaseInsensitiveContains(searchText) ||
+            hike.location.localizedCaseInsensitiveContains(searchText) ||
+            hike.desc.localizedCaseInsensitiveContains(searchText)
+        }
     }
-    
+
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "mountain.2")
+                .font(.system(size: 60))
+                .foregroundColor(.gray)
+
+            Text("No Hikes Found")
+                .font(.title2)
+                .foregroundColor(.primary)
+
+            Text("Plan your first hiking adventure by adding a new hike.")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .padding()
+    }
+
     var body: some View {
-        NavigationView {
-            VStack {
-                SearchBar(text: $searchText)
-                
-                if filteredHikes.isEmpty {
-                    ContentUnavailableView(
-                        "No Hikes Found",
-                        systemImage: "mountain.2",
-                        description: Text("Plan your first hiking adventure by adding a new hike.")
-                    )
-                } else {
-                    List {
-                        ForEach(filteredHikes, id: \.id) { hike in
+        VStack {
+            SearchBar(text: $searchText)
+
+            if filteredHikes.isEmpty {
+                emptyStateView
+            } else {
+                List {
+                    ForEach(filteredHikes, id: \.id) { hike in
+                        Button(action: {
+                            selectedHikeForDetail = hike
+                        }) {
                             HikeRowView(hike: hike)
-                                .onTapGesture {
-                                    selectedHike = hike
-                                    showingHikeDetail = true
-                                }
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button("Delete", role: .destructive) {
-                                        // Use shared hike logic with optional injection
-                                        hikeLogic?.deleteHike(hike) { _ in }
-                                    }
-                                    
-                                    Button("Copy") {
-                                        // Use shared hike logic with optional injection
-                                        hikeLogic?.copyHike(hike)
-                                    }
-                                    .tint(.blue)
-                                    
-                                    Button("Edit") {
-                                        selectedHike = hike
-                                        showingAddHike = true
-                                    }
-                                    .tint(.orange)
-                                }
                         }
+                        .buttonStyle(PlainButtonStyle())
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button("Delete", role: .destructive) {
+                                    dataService.deleteHike(hike)
+                                }
+
+                                Button("Copy") {
+                                    copyHike(hike)
+                                }
+                                .tint(.blue)
+
+                                Button("Edit") {
+                                    selectedHikeForEdit = hike
+                                    showingAddHike = true
+                                }
+                                .tint(.orange)
+                            }
                     }
                 }
-            }
-            .navigationTitle("Hikes")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Add") {
-                        selectedHike = nil
-                        showingAddHike = true
-                    }
-                }
-            }
-            .sheet(isPresented: $showingAddHike) {
-                AddHikeView(hike: selectedHike)
-                    .onDisappear {
-                        dataService.loadData()
-                    }
-            }
-            .sheet(isPresented: $showingHikeDetail) {
-                if let hike = selectedHike {
-                    HikeDetailView(hike: hike)
-                }
-            }
-            .onAppear {
-                dataService.loadData()
-            }
-            .refreshable {
-                dataService.loadData()
             }
         }
+        .navigationTitle("Hikes")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Add") {
+                    selectedHikeForEdit = nil
+                    showingAddHike = true
+                }
+            }
+        }
+        .sheet(isPresented: $showingAddHike) {
+            AddHikeView(hike: selectedHikeForEdit)
+                .onDisappear {
+                    dataService.loadData()
+                }
+        }
+        .sheet(item: $selectedHikeForDetail) { hike in
+            HikeDetailView(hike: hike)
+                .onDisappear {
+                    dataService.loadData()
+                }
+        }
+        .onAppear {
+            dataService.loadData()
+        }
+        .refreshable {
+            dataService.loadData()
+        }
+    }
+
+    private func copyHike(_ hike: HikeSwiftUI) {
+        _ = dataService.createHike(
+            name: hike.name + " (Copy)",
+            desc: hike.desc,
+            distance: hike.distance,
+            location: hike.location
+        )
     }
 }
 

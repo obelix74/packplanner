@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import RealmSwift
 import Combine
 
 class HikeGearSwiftUI: ObservableObject {
@@ -35,44 +34,3 @@ class HikeGearSwiftUI: ObservableObject {
     }
 }
 
-// Bridge functions for converting between legacy and modern models
-extension HikeGearSwiftUI {
-    convenience init(from hikeGear: HikeGear) {
-        self.init()
-        self.consumable = hikeGear.consumable
-        self.worn = hikeGear.worn
-        self.numberUnits = hikeGear.numberUnits
-        self.verified = hikeGear.verified
-        self.notes = hikeGear.notes
-        
-        // The gear relationship will be set by the parent HikeSwiftUI
-    }
-    
-    func toLegacyHikeGear() -> HikeGear {
-        let hikeGear = HikeGear()
-        hikeGear.consumable = self.consumable
-        hikeGear.worn = self.worn
-        hikeGear.numberUnits = self.numberUnits
-        hikeGear.verified = self.verified
-        hikeGear.notes = self.notes
-        
-        // Reference existing gear instead of creating new one
-        if let gear = self.gear {
-            // Find existing gear in Realm by UUID
-            do {
-                let realm = try Realm()
-                if let existingGear = realm.objects(Gear.self).filter("uuid == %@", gear.id).first {
-                    hikeGear.gear = existingGear
-                } else {
-                    // If gear doesn't exist, create it
-                    hikeGear.gear = gear.toLegacyGear()
-                }
-            } catch {
-                // Fallback to creating new gear
-                hikeGear.gear = gear.toLegacyGear()
-            }
-        }
-        
-        return hikeGear
-    }
-}

@@ -6,9 +6,6 @@ project 'PackPlanner.xcodeproj'
 target 'PackPlanner' do
   use_frameworks!
 
-  # Re-added Realm to fix compilation errors
-  pod 'RealmSwift'
-  
   # UI dependencies
   pod 'SwipeCellKit'
   pod 'ChameleonFramework/Swift', :git => 'https://github.com/wowansm/Chameleon.git', :branch => 'swift5'

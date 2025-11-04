@@ -15,16 +15,6 @@ class GearTableViewCell: SwipeTableViewCell {
     @IBOutlet weak var weightLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
 
-    var existingGear : Gear?  {
-        didSet {
-            self.nameLabel.text = existingGear!.name
-            if (self.descriptionLabel != nil) {
-                self.descriptionLabel.text = existingGear!.desc
-            }
-            self.weightLabel.text = existingGear?.weightString()
-        }
-    }
-
     // Core Data version
     var existingGearCoreData: GearEntity? {
         didSet {
@@ -40,8 +30,10 @@ class GearTableViewCell: SwipeTableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         self.nameLabel.lineBreakMode = .byWordWrapping
+        self.nameLabel.numberOfLines = 0
         if (self.descriptionLabel != nil) {
             self.descriptionLabel.lineBreakMode = .byWordWrapping
+            self.descriptionLabel.numberOfLines = 0
         }
         // Initialization code
     }

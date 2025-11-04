@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -13,12 +14,47 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard scene is UIWindowScene else { return }
-        
-        // Use existing storyboard-based app
+        guard let windowScene = scene as? UIWindowScene else { return }
+
+        // Create the SwiftUI view hierarchy
+        let window = UIWindow(windowScene: windowScene)
+
+        // Create tab bar with SwiftUI views
+        let tabBarController = createTabBarController()
+
+        window.rootViewController = tabBarController
+        self.window = window
+        window.makeKeyAndVisible()
+    }
+
+    private func createTabBarController() -> UITabBarController {
+        let tabBarController = UITabBarController()
+
+        // Hike List Tab (SwiftUI)
+        let hikeListView = HikeListView()
+        let hikeListHost = UIHostingController(rootView: hikeListView)
+        hikeListHost.tabBarItem = UITabBarItem(
+            title: "Hikes",
+            image: UIImage(systemName: "figure.hiking"),
+            selectedImage: UIImage(systemName: "figure.hiking")
+        )
+        let hikeNavController = UINavigationController(rootViewController: hikeListHost)
+        hikeNavController.navigationBar.prefersLargeTitles = false
+
+        // Gear List Tab (SwiftUI)
+        let gearListView = GearListView()
+        let gearListHost = UIHostingController(rootView: gearListView)
+        gearListHost.tabBarItem = UITabBarItem(
+            title: "Gear",
+            image: UIImage(systemName: "backpack"),
+            selectedImage: UIImage(systemName: "backpack.fill")
+        )
+        let gearNavController = UINavigationController(rootViewController: gearListHost)
+        gearNavController.navigationBar.prefersLargeTitles = false
+
+        tabBarController.viewControllers = [hikeNavController, gearNavController]
+
+        return tabBarController
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

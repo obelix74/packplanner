@@ -7,11 +7,10 @@
 
 import Foundation
 import SwiftUI
-import RealmSwift
 import CoreData
 import Combine
 
-class HikeSwiftUI: ObservableObject {
+class HikeSwiftUI: ObservableObject, Identifiable {
     @Published var id: String = UUID().uuidString
     @Published var name: String = ""
     @Published var desc: String = ""
@@ -33,8 +32,7 @@ class HikeSwiftUI: ObservableObject {
     private var _baseWeight: Double?
     private var _wornWeight: Double?
     private var _consumableWeight: Double?
-    private var weightCacheValid = false
-    
+
     // Thread-safe queue for weight cache operations
     private let cacheQueue = DispatchQueue(label: "com.packplanner.hike.weightcache", attributes: .concurrent)
     
@@ -58,67 +56,62 @@ class HikeSwiftUI: ObservableObject {
     
     var totalWeight: Double {
         return cacheQueue.sync {
-            if let cached = _totalWeight, weightCacheValid {
+            if let cached = _totalWeight {
                 return cached
             }
             let calculated = hikeGears.reduce(0) { total, hikeGear in
                 total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
             }
             _totalWeight = calculated
-            weightCacheValid = true
             return calculated
         }
     }
-    
+
     var baseWeight: Double {
         return cacheQueue.sync {
-            if let cached = _baseWeight, weightCacheValid {
+            if let cached = _baseWeight {
                 return cached
             }
             let calculated = hikeGears.filter { !$0.worn && !$0.consumable }.reduce(0) { total, hikeGear in
                 total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
             }
             _baseWeight = calculated
-            weightCacheValid = true
             return calculated
         }
     }
-    
+
     var wornWeight: Double {
         return cacheQueue.sync {
-            if let cached = _wornWeight, weightCacheValid {
+            if let cached = _wornWeight {
                 return cached
             }
             let calculated = hikeGears.filter { $0.worn }.reduce(0) { total, hikeGear in
                 total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
             }
             _wornWeight = calculated
-            weightCacheValid = true
             return calculated
         }
     }
-    
+
     var consumableWeight: Double {
         return cacheQueue.sync {
-            if let cached = _consumableWeight, weightCacheValid {
+            if let cached = _consumableWeight {
                 return cached
             }
             let calculated = hikeGears.filter { $0.consumable }.reduce(0) { total, hikeGear in
                 total + (hikeGear.gear?.weightInGrams ?? 0) * Double(hikeGear.numberUnits)
             }
             _consumableWeight = calculated
-            weightCacheValid = true
             return calculated
         }
     }
     
-    private func invalidateWeightCache() {
-        cacheQueue.async(flags: .barrier) { [weak self] in
-            self?._totalWeight = nil
-            self?._baseWeight = nil
-            self?._wornWeight = nil
-            self?._consumableWeight = nil
-            self?.weightCacheValid = false
+    func invalidateWeightCache() {
+        cacheQueue.sync(flags: .barrier) {
+            self._totalWeight = nil
+            self._baseWeight = nil
+            self._wornWeight = nil
+            self._consumableWeight = nil
         }
     }
     
@@ -154,31 +147,8 @@ class HikeSwiftUI: ObservableObject {
     }
 }
 
-// Bridge functions for converting between legacy and modern models
+// Bridge functions for Core Data
 extension HikeSwiftUI {
-    convenience init(from hike: Hike) {
-        self.init()
-        self.name = hike.name
-        self.desc = hike.desc
-        self.distance = hike.distance
-        self.location = hike.location
-        self.completed = hike.completed
-        self.externalLink1 = hike.externalLink1 ?? ""
-        self.externalLink2 = hike.externalLink2 ?? ""
-        self.externalLink3 = hike.externalLink3 ?? ""
-
-        // Convert HikeGear relationships
-        self.hikeGears = hike.hikeGears.compactMap { legacyHikeGear in
-            if let gear = legacyHikeGear.gear {
-                let hikeGearSwiftUI = HikeGearSwiftUI(from: legacyHikeGear)
-                hikeGearSwiftUI.gear = GearSwiftUI(from: gear)
-                return hikeGearSwiftUI
-            }
-            return nil
-        }
-    }
-
-    // Core Data version
     convenience init(fromCoreData hike: HikeEntity) {
         self.init()
         self.name = hike.name
@@ -206,18 +176,5 @@ extension HikeSwiftUI {
                 return nil
             }
         }
-    }
-
-    func toLegacyHike() -> Hike {
-        let hike = Hike()
-        hike.name = self.name
-        hike.desc = self.desc
-        hike.distance = self.distance
-        hike.location = self.location
-        hike.completed = self.completed
-        hike.externalLink1 = self.externalLink1.isEmpty ? nil : self.externalLink1
-        hike.externalLink2 = self.externalLink2.isEmpty ? nil : self.externalLink2
-        hike.externalLink3 = self.externalLink3.isEmpty ? nil : self.externalLink3
-        return hike
     }
 }

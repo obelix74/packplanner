@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import RealmSwift
 import CoreData
 
 @main
@@ -17,36 +16,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
 
-        // STEP 1: Check and perform Core Data migration if needed
-        // This will automatically detect Realm data and migrate to Core Data on first launch
-        if let window = window {
-            AppMigrationCoordinator.shared.checkAndMigrateIfNeeded(from: window) { success in
-                if success {
-                    print("✅ Migration complete or not needed")
-                } else {
-                    print("⚠️ Migration had issues but app can continue")
-                }
-            }
-        }
-
-        // STEP 2: Initialize Core Data stack
+        // Initialize Core Data stack
         _ = CoreDataStack.shared.viewContext
         print("✅ Core Data loaded successfully")
 
         // Initialize database with proper fallback handling
         return initializeDatabase()
     }
-    
+
     private func initializeDatabase() -> Bool {
-        // Initialize SettingsManager - it has internal fallback handling
-        _ = SettingsManager.SINGLETON.settings
-        
-        // Check if there was a critical database failure
-        if DatabaseErrorHandler.shared.criticalDatabaseFailure {
-            print("Critical database failure detected")
-            return handleDatabaseFailure()
-        }
-        
         print("Database initialized successfully")
         return true
     }

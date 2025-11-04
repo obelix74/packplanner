@@ -62,9 +62,26 @@ public class GearEntity: NSManagedObject {
 
     /// Formats weight and returns as string with units
     static func getWeightString(weight: Double, imperial: Bool) -> String {
-        let weightUnit = WeightUnit(weight, imperial)
-        let minor = weightUnit.minor
+        // Inline weight formatting logic
+        let major: Int
+        let minor: Double
+        let majorUnit: String
+        let minorUnit: String
+
+        if imperial {
+            majorUnit = "Lb"
+            minorUnit = "Oz"
+            let weightInImperial = convertWeightToImperial(weightInGrams: weight)
+            minor = weightInImperial.truncatingRemainder(dividingBy: 16)
+            major = Int((weightInImperial / 16).rounded(.towardZero))
+        } else {
+            majorUnit = "Kg"
+            minorUnit = "Grams"
+            minor = weight.truncatingRemainder(dividingBy: 1000)
+            major = Int((weight / 1000).rounded(.towardZero))
+        }
+
         let minorString = String(format: "%.1f", minor)
-        return "\(weightUnit.major) \(weightUnit.majorUnit) \(minorString) \(weightUnit.minorUnit)"
+        return "\(major) \(majorUnit) \(minorString) \(minorUnit)"
     }
 }

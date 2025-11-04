@@ -9,8 +9,8 @@ import SwiftUI
 
 struct AddHikeView: View {
     let hike: HikeSwiftUI?
-    
-    @State private var dataService = DataService.shared
+
+    @StateObject private var dataService = DataService.shared
     @State private var name = ""
     @State private var description = ""
     @State private var location = ""
@@ -36,8 +36,8 @@ struct AddHikeView: View {
                 Section("Hike Information") {
                     TextField("Hike Name", text: $name)
                     
-                    TextField("Description (Optional)", text: $description, axis: .vertical)
-                        .lineLimit(3...6)
+                    TextField("Description (Optional)", text: $description)
+                        .lineLimit(3)
                     
                     TextField("Location (Optional)", text: $location)
                     
@@ -110,19 +110,12 @@ struct AddHikeView: View {
             
             dataService.updateHike(existingHike)
         } else {
-            let newHike = HikeSwiftUI(
+            _ = dataService.createHike(
                 name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                 desc: description.trimmingCharacters(in: .whitespacesAndNewlines),
                 distance: distance.trimmingCharacters(in: .whitespacesAndNewlines),
                 location: location.trimmingCharacters(in: .whitespacesAndNewlines)
             )
-            
-            newHike.completed = completed
-            newHike.externalLink1 = externalLink1.trimmingCharacters(in: .whitespacesAndNewlines)
-            newHike.externalLink2 = externalLink2.trimmingCharacters(in: .whitespacesAndNewlines)
-            newHike.externalLink3 = externalLink3.trimmingCharacters(in: .whitespacesAndNewlines)
-            
-            dataService.addHike(newHike)
         }
         
         dismiss()

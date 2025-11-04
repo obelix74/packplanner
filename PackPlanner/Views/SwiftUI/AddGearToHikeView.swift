@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct AddGearToHikeView: View {
     let hike: HikeSwiftUI
@@ -14,8 +15,8 @@ struct AddGearToHikeView: View {
     @State private var gearList: [GearSwiftUI] = []
     @State private var categorizedGear: [String: [GearSwiftUI]] = [:]
     @Environment(\.dismiss) private var dismiss
-    
-    private var dataService = DataService.shared
+
+    private let context = CoreDataStack.shared.viewContext
     
     var body: some View {
         NavigationView {
@@ -91,13 +92,21 @@ struct AddGearToHikeView: View {
     }
     
     private func loadGear() {
-        // Clean up any duplicate gears first
-        GearBrain.cleanupDuplicateGears()
-        
-        // Reload data from DataService to ensure fresh data
-        dataService.loadData()
-        gearList = dataService.gears
-        categorizedGear = Dictionary(grouping: gearList) { $0.category }
+        // Load from Core Data
+        let fetchRequest: NSFetchRequest<GearEntity> = GearEntity.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+
+        do {
+            let gearEntities = try context.fetch(fetchRequest)
+            // Convert GearEntity to GearSwiftUI
+            gearList = gearEntities.map { gearEntity in
+                GearSwiftUI(fromCoreData: gearEntity)
+            }
+            categorizedGear = Dictionary(grouping: gearList) { $0.category }
+        } catch {
+            gearList = []
+            categorizedGear = [:]
+        }
     }
     
     private func loadExistingGearSelections() {
@@ -114,59 +123,50 @@ struct AddGearToHikeView: View {
     }
     
     private func saveSelectedGear() {
-        print("🔵 DEBUG: saveSelectedGear() called")
-        print("🔵 DEBUG: selectedGear count: \(selectedGear.count)")
-        print("🔵 DEBUG: hike.hikeGears count before: \(hike.hikeGears.count)")
-        print("🔵 DEBUG: hike.id: \(hike.id)")
-        print("🔵 DEBUG: hike.name: \(hike.name)")
-        
-        // Create HikeGear relationships for selected gear
-        var updatedHikeGears: [HikeGearSwiftUI] = []
-        
-        // Keep existing gear that's still selected
-        for existingHikeGear in hike.hikeGears {
-            if let gearId = existingHikeGear.gear?.id, selectedGear.contains(gearId) {
-                print("🔵 DEBUG: Keeping existing gear: \(existingHikeGear.gear?.name ?? "unknown")")
-                updatedHikeGears.append(existingHikeGear)
-            } else {
-                print("🔵 DEBUG: Removing gear: \(existingHikeGear.gear?.name ?? "unknown")")
+        // Find the hike in Core Data
+        let hikeFetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
+        hikeFetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+
+        do {
+            guard let hikeEntity = try context.fetch(hikeFetchRequest).first else {
+                dismiss()
+                return
             }
-        }
-        
-        // Add new gear selections
-        for gearId in selectedGear {
-            let alreadyExists = hike.hikeGears.contains { $0.gear?.id == gearId }
-            if !alreadyExists, let gear = gearList.first(where: { $0.id == gearId }) {
-                print("🔵 DEBUG: Adding new gear: \(gear.name)")
-                let hikeGear = HikeGearSwiftUI()
-                hikeGear.gear = gear
-                hikeGear.consumable = false
-                hikeGear.worn = false
-                hikeGear.numberUnits = 1
-                hikeGear.verified = false
-                hikeGear.notes = ""
-                updatedHikeGears.append(hikeGear)
-            } else if alreadyExists {
-                print("🔵 DEBUG: Gear already exists, skipping: \(gear?.name ?? "unknown")")
+
+            // Get existing HikeGear relationships
+            let existingHikeGears = (hikeEntity.hikeGears as? Set<HikeGearEntity>) ?? []
+
+            // Delete all existing HikeGear relationships
+            for hikeGear in existingHikeGears {
+                context.delete(hikeGear)
             }
-        }
-        
-        print("🔵 DEBUG: updatedHikeGears count: \(updatedHikeGears.count)")
-        
-        // Update the hike with new gear list
-        let updatedHike = hike
-        updatedHike.hikeGears = updatedHikeGears
-        
-        print("🔵 DEBUG: hike.hikeGears count after update: \(hike.hikeGears.count)")
-        print("🔵 DEBUG: Calling dataService.updateHike()")
-        
-        // Save to DataService with completion handler
-        dataService.updateHike(updatedHike) {
-            print("🔵 DEBUG: DataService.updateHike() completion called")
+
+            // Create new HikeGear relationships for selected gear
+            for gearId in selectedGear {
+                // Find the gear in Core Data
+                let gearFetchRequest: NSFetchRequest<GearEntity> = GearEntity.fetchRequest()
+                gearFetchRequest.predicate = NSPredicate(format: "uuid == %@", gearId)
+
+                if let gearEntity = try context.fetch(gearFetchRequest).first {
+                    let hikeGear = HikeGearEntity(context: context)
+                    hikeGear.consumable = false
+                    hikeGear.worn = false
+                    hikeGear.numberUnits = 1
+                    hikeGear.verified = false
+                    hikeGear.notes = ""
+                    hikeGear.gear = gearEntity
+                    hikeGear.hike = hikeEntity
+                }
+            }
+
+            // Save to Core Data
+            try context.save()
+
             DispatchQueue.main.async {
-                print("🔵 DEBUG: saveSelectedGear() completed, dismissing")
                 self.dismiss()
             }
+        } catch {
+            // Silently handle error
         }
     }
 }

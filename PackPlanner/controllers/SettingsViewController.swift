@@ -2,81 +2,15 @@
 //  SettingsViewController.swift
 //  PackPlanner
 //
-//  Created by Kumar on 9/18/20.
+//  DEPRECATED: This legacy UIKit controller has been replaced by SettingsView (SwiftUI)
+//  Kept as stub for backward compatibility
 //
 
 import UIKit
-import RealmSwift
 
 class SettingsViewController: UIViewController {
-    
-    @IBOutlet weak var dismissButton: UIButton!
-    private var realm: Realm!
-    var settings: Settings = SettingsManager.SINGLETON.settings
-    @IBOutlet weak var unitOfWeight: UISegmentedControl!
-    
-    @IBOutlet weak var reviewButton: UIButton!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Initialize Realm safely
-        do {
-            realm = try Realm()
-        } catch {
-            print("Critical: Failed to initialize Realm in SettingsViewController: \(error)")
-            // Show user-friendly error and disable functionality
-            let alert = UIAlertController(
-                title: "Database Error", 
-                message: "Unable to save settings. Please restart the app.", 
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
-            // Disable functionality that requires database
-            unitOfWeight.isEnabled = false
-            return
-        }
-        let backgroundColor = UIColor.systemRed
-        dismissButton.backgroundColor = backgroundColor
-        dismissButton.layer.cornerRadius = 25.0
-        dismissButton.tintColor = UIColor.white
-        
-        if(settings.imperial) {
-            unitOfWeight.selectedSegmentIndex = 0
-        } else {
-            unitOfWeight.selectedSegmentIndex = 1
-        }
-    }
-    
-    
-    @IBAction func weightSettingsChanged(_ segment: UISegmentedControl) {
-        if let title = segment.titleForSegment(at: segment.selectedSegmentIndex) {
-            do {
-                try realm.write {
-                    if title.hasPrefix("Imperial") {
-                        print("Updating settings to Imperial")
-                        settings.imperial = true
-                    } else {
-                        print("Updating settings to Metric")
-                        settings.imperial = false
-                    }
-                }
-            } catch {
-                print("Error updating Settings \(error)")
-            }
-        }
-    }
-
-    @IBAction func reviewButtonSelected(_ sender: UIButton) {
-        let url = "itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?id=1534201357&onlyLatestVersion=true&pageNumber=0&sortOrdering=1&type=Purple+Software"
-        if let url = URL(string: url) {
-            UIApplication.shared.open(url)
-        }
-    }
-    
-    @IBAction func dismissButtonPressed(_ sender: Any) {
-        dismiss(animated: true, completion: nil)
-        ModalTransitionMediator.instance.sendPopoverDismissed(modelChanged: true)
+        print("⚠️ SettingsViewController is deprecated. Use SwiftUI SettingsView instead.")
     }
 }

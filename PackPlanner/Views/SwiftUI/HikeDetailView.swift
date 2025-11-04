@@ -6,14 +6,15 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct HikeDetailView: View {
-    @State var hike: HikeSwiftUI
-    @State private var dataService = DataService.shared
-    @State private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject var hike: HikeSwiftUI
+    @StateObject private var dataService = DataService.shared
+    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
     @State private var showingAddGear = false
     @State private var showPendingOnly = false
-    
+
     @Environment(\.dismiss) private var dismiss
     
     private var filteredGears: [HikeGearSwiftUI] {
@@ -35,7 +36,7 @@ struct HikeDetailView: View {
             VStack(spacing: 0) {
                 // Header with hike info and weights
                 HikeHeaderView(hike: hike)
-                
+
                 // Pending/All toggle
                 Picker("View", selection: $showPendingOnly) {
                     Text("All Items").tag(false)
@@ -46,11 +47,22 @@ struct HikeDetailView: View {
                 
                 // Gear list
                 if filteredGears.isEmpty {
-                    ContentUnavailableView(
-                        showPendingOnly ? "No Pending Items" : "No Gear Added",
-                        systemImage: "backpack",
-                        description: Text(showPendingOnly ? "All items have been verified." : "Add gear to start planning this hike.")
-                    )
+                    VStack(spacing: 20) {
+                        Image(systemName: "backpack")
+                            .font(.system(size: 60))
+                            .foregroundColor(.gray)
+
+                        Text(showPendingOnly ? "No Pending Items" : "No Gear Added")
+                            .font(.title2)
+                            .foregroundColor(.primary)
+
+                        Text(showPendingOnly ? "All items have been verified." : "Add gear to start planning this hike.")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                    .padding()
                 } else {
                     List {
                         ForEach(gearByCategory.keys.sorted(), id: \.self) { category in
@@ -85,6 +97,9 @@ struct HikeDetailView: View {
             }
             .sheet(isPresented: $showingAddGear) {
                 AddGearToHikeView(hike: hike)
+                    .onDisappear {
+                        reloadHikeData()
+                    }
             }
         }
     }
@@ -95,11 +110,47 @@ struct HikeDetailView: View {
             dataService.updateHike(hike)
         }
     }
+
+    private func reloadHikeData() {
+        // Fetch the hike from Core Data to get updated gear list
+        let context = CoreDataStack.shared.viewContext
+        let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+
+        do {
+            if let hikeEntity = try context.fetch(fetchRequest).first {
+                // Reload hikeGears from Core Data
+                let hikeGearEntities = (hikeEntity.hikeGears as? Set<HikeGearEntity>) ?? []
+
+                hike.hikeGears = hikeGearEntities.map { hikeGearEntity in
+                    let hikeGear = HikeGearSwiftUI()
+                    hikeGear.id = UUID().uuidString
+                    hikeGear.numberUnits = Int(hikeGearEntity.numberUnits)
+                    hikeGear.consumable = hikeGearEntity.consumable
+                    hikeGear.worn = hikeGearEntity.worn
+                    hikeGear.verified = hikeGearEntity.verified
+                    hikeGear.notes = hikeGearEntity.notes ?? ""
+
+                    // Load the associated gear
+                    if let gearEntity = hikeGearEntity.gear {
+                        hikeGear.gear = GearSwiftUI(fromCoreData: gearEntity)
+                    }
+
+                    return hikeGear
+                }
+
+                // Force UI update
+                hike.objectWillChange.send()
+            }
+        } catch {
+            // Silently handle error
+        }
+    }
 }
 
 struct HikeHeaderView: View {
-    let hike: HikeSwiftUI
-    @State private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject var hike: HikeSwiftUI
+    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -171,7 +222,7 @@ struct WeightSummaryItem: View {
     let title: String
     let weight: Double
     let color: Color
-    @State private var settingsManager = SettingsManagerSwiftUI.shared
+    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
     
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -187,62 +238,80 @@ struct WeightSummaryItem: View {
 }
 
 struct HikeGearRowView: View {
-    @State var hikeGear: HikeGearSwiftUI
+    @ObservedObject var hikeGear: HikeGearSwiftUI
     let hike: HikeSwiftUI
-    @State private var dataService = DataService.shared
-    @State private var settingsManager = SettingsManagerSwiftUI.shared
-    
+    @StateObject private var dataService = DataService.shared
+    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(hikeGear.gear?.name ?? "Unknown Gear")
                     .font(.headline)
-                
+
                 if let desc = hikeGear.gear?.desc, !desc.isEmpty {
                     Text(desc)
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                 }
-                
+
                 HStack {
                     Text("Qty: \(hikeGear.numberUnits)")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    
+
                     Text(hikeGear.weightString(imperial: settingsManager.isImperial))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
-            
+
             Spacer()
-            
+
             VStack {
-                HStack {
+                HStack(spacing: 16) {
                     Button(action: {
                         hikeGear.worn.toggle()
-                        dataService.updateHike(hike)
+                        hike.invalidateWeightCache()
+                        hike.objectWillChange.send()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                            dataService.updateHike(hike)
+                        }
                     }) {
                         Image(systemName: hikeGear.worn ? "tshirt.fill" : "tshirt")
                             .foregroundColor(hikeGear.worn ? .green : .gray)
+                            .font(.title3)
                     }
-                    
+                    .buttonStyle(.borderless)
+
                     Button(action: {
                         hikeGear.consumable.toggle()
-                        dataService.updateHike(hike)
+                        hike.invalidateWeightCache()
+                        hike.objectWillChange.send()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                            dataService.updateHike(hike)
+                        }
                     }) {
                         Image(systemName: hikeGear.consumable ? "leaf.fill" : "leaf")
                             .foregroundColor(hikeGear.consumable ? .orange : .gray)
+                            .font(.title3)
                     }
-                    
+                    .buttonStyle(.borderless)
+
                     Button(action: {
                         hikeGear.verified.toggle()
-                        dataService.updateHike(hike)
+                        hike.invalidateWeightCache()
+                        hike.objectWillChange.send()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                            dataService.updateHike(hike)
+                        }
                     }) {
                         Image(systemName: hikeGear.verified ? "checkmark.circle.fill" : "checkmark.circle")
                             .foregroundColor(hikeGear.verified ? .blue : .gray)
+                            .font(.title3)
                     }
+                    .buttonStyle(.borderless)
                 }
             }
         }
