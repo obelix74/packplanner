@@ -217,8 +217,8 @@ struct GearSelectionRow: View {
     
     private func formatWeight(_ weightInGrams: Double) -> String {
         let settings = SettingsManagerSwiftUI.shared.settings
-        
-        if settings.useImperialUnits {
+
+        if settings.imperial {
             let ounces = weightInGrams * 0.035274
             return String(format: "%.2f oz", ounces)
         } else {

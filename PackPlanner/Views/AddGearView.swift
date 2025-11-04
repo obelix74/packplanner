@@ -15,10 +15,11 @@ struct AddGearViewBridge: View {
     @State private var weight = ""
     @State private var category = "Backpack"
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
 
     private let categories = Categories.SINGLETON.list
     private let context = CoreDataStack.shared.viewContext
-    
+
     init(gear: GearSwiftUI? = nil) {
         self.gear = gear
     }
@@ -29,7 +30,7 @@ struct AddGearViewBridge: View {
                 Section(header: Text("Gear Details")) {
                     TextField("Name", text: $name)
                     TextField("Description", text: $description)
-                    TextField("Weight (grams)", text: $weight)
+                    TextField("Weight (\(settingsManager.isImperial ? "oz" : "g"))", text: $weight)
                         .keyboardType(.decimalPad)
                 }
                 
@@ -73,15 +74,32 @@ struct AddGearViewBridge: View {
         if let gear = gear {
             name = gear.name
             description = gear.desc
-            weight = String(gear.weightInGrams)
+
+            // Convert weight based on settings
+            if settingsManager.isImperial {
+                let ounces = gear.weightInGrams * 0.035274
+                weight = String(format: "%.2f", ounces)
+            } else {
+                weight = String(format: "%.1f", gear.weightInGrams)
+            }
+
             category = gear.category
         }
     }
     
     private func saveGear() {
         guard let weightValue = Double(weight) else {
-            print("Invalid weight value: \(weight)")
             return
+        }
+
+        // Convert weight to grams if in imperial
+        let weightInGrams: Double
+        if settingsManager.isImperial {
+            // User entered ounces, convert to grams
+            weightInGrams = weightValue / 0.035274
+        } else {
+            // Already in grams
+            weightInGrams = weightValue
         }
 
         // Save to Core Data
@@ -101,7 +119,6 @@ struct AddGearViewBridge: View {
                     gearEntity.uuid = UUID().uuidString
                 }
             } catch {
-                print("Error fetching existing gear: \(error)")
                 return
             }
         } else {
@@ -113,13 +130,12 @@ struct AddGearViewBridge: View {
         // Set values
         gearEntity.name = name
         gearEntity.desc = description
-        gearEntity.weightInGrams = weightValue
+        gearEntity.weightInGrams = weightInGrams
         gearEntity.category = category
 
         // Save to Core Data
         do {
             try context.save()
-            print("✅ Gear saved to Core Data successfully")
 
             // Notify parent controller that gear was saved
             NotificationCenter.default.post(name: NSNotification.Name("GearSaved"), object: nil)
@@ -134,7 +150,7 @@ struct AddGearViewBridge: View {
                 }
             }
         } catch {
-            print("❌ Error saving gear to Core Data: \(error)")
+            // Silently handle error
         }
     }
     

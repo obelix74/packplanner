@@ -72,8 +72,17 @@ struct WeightUnitSwiftUI {
             self.majorUnit = "Lb"
             self.minorUnit = "Oz"
             let weightInImperial = GearSwiftUI.convertWeightToImperial(weightInGrams: weightInGrams)
-            self.minor = weightInImperial.truncatingRemainder(dividingBy: 16)
-            self.major = Int((weightInImperial / 16).rounded(.towardZero))
+            var minorOz = weightInImperial.truncatingRemainder(dividingBy: 16)
+            var majorLb = Int((weightInImperial / 16).rounded(.towardZero))
+
+            // If minor rounds to 16 oz, convert to 1 lb
+            if minorOz.rounded() >= 16.0 {
+                majorLb += 1
+                minorOz = 0.0
+            }
+
+            self.minor = minorOz
+            self.major = majorLb
         } else {
             self.majorUnit = "Kg"
             self.minorUnit = "Grams"
