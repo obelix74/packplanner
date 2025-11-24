@@ -2,7 +2,7 @@
 //  GearListView.swift
 //  PackPlanner
 //
-//  Created by Claude on SwiftUI Migration
+//  Created by Claude on SwiftUI Migration - With colorful category icons
 //
 
 import SwiftUI
@@ -33,6 +33,42 @@ struct GearListView: View {
 
     private var sortedCategories: [String] {
         groupedGears.keys.sorted()
+    }
+    
+    // Category icon helper
+    private func categoryIcon(for category: String) -> String {
+        switch category.lowercased() {
+        case "shelter": return "tent.fill"
+        case "sleeping": return "bed.double.fill"
+        case "cooking": return "flame.fill"
+        case "clothing": return "tshirt.fill"
+        case "hygiene": return "drop.fill"
+        case "electronics": return "bolt.fill"
+        case "safety", "first aid": return "cross.fill"
+        case "water": return "drop.triangle.fill"
+        case "food": return "fork.knife"
+        case "navigation": return "map.fill"
+        case "tools": return "wrench.and.screwdriver.fill"
+        default: return "square.grid.2x2.fill"
+        }
+    }
+    
+    // Category color helper
+    private func categoryColor(for category: String) -> Color {
+        switch category.lowercased() {
+        case "shelter": return .pink
+        case "sleeping": return .purple
+        case "cooking": return .orange
+        case "clothing": return .cyan
+        case "hygiene": return .green
+        case "electronics": return .yellow
+        case "safety", "first aid": return .red
+        case "water": return .blue
+        case "food": return .brown
+        case "navigation": return .indigo
+        case "tools": return .gray
+        default: return .gray
+        }
     }
     
     var body: some View {
@@ -96,12 +132,12 @@ struct GearListView: View {
     
     private var noGearView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "backpack")
+            Image(systemName: "backpack.fill")
                 .font(.system(size: 60))
-                .foregroundColor(.gray)
+                .foregroundStyle(.orange)
             
             Text("No Gear Found")
-                .font(.title2)
+                .font(.title2.bold())
                 .foregroundColor(.primary)
             
             Text("Get started by adding your first piece of gear")
@@ -112,15 +148,11 @@ struct GearListView: View {
             Button(action: {
                 showingAddGear = true
             }) {
-                HStack {
-                    Image(systemName: "plus")
-                    Text("Add Your First Gear")
-                }
-                .padding()
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(10)
+                Label("Add Your First Gear", systemImage: "plus.circle.fill")
+                    .font(.headline)
             }
+            .buttonStyle(.borderedProminent)
+            .tint(.green)
         }
         .padding()
     }
@@ -145,9 +177,28 @@ struct GearListView: View {
     private var gearListView: some View {
         List {
             ForEach(sortedCategories, id: \.self) { category in
-                Section(header: Text(category).font(.headline)) {
+                Section {
                     ForEach(groupedGears[category] ?? [], id: \.id) { gear in
                         gearRow(for: gear)
+                    }
+                } header: {
+                    HStack(spacing: 8) {
+                        Image(systemName: categoryIcon(for: category))
+                            .foregroundStyle(categoryColor(for: category))
+                            .font(.headline)
+                        
+                        Text(category)
+                            .font(.headline)
+                        
+                        Spacer()
+                        
+                        Text("\(groupedGears[category]?.count ?? 0)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.secondary.opacity(0.15))
+                            .cornerRadius(8)
                     }
                 }
             }
@@ -156,27 +207,32 @@ struct GearListView: View {
     }
     
     private func gearRow(for gear: GearSwiftUI) -> some View {
-        GearRowView(gear: gear, settingsManager: settingsManager)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                selectedGear = gear
+        GearRowView(
+            gear: gear,
+            settingsManager: settingsManager,
+            categoryIcon: categoryIcon(for: gear.category),
+            categoryColor: categoryColor(for: gear.category)
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            selectedGear = gear
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(action: {
+                deleteGear(gear)
+            }) {
+                Label("Delete", systemImage: "trash")
             }
-            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                Button(action: {
-                    deleteGear(gear)
-                }) {
-                    Label("Delete", systemImage: "trash")
-                }
-                .tint(.red)
+            .tint(.red)
+        }
+        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+            Button(action: {
+                duplicateGear(gear)
+            }) {
+                Label("Copy", systemImage: "doc.on.doc")
             }
-            .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                Button(action: {
-                    duplicateGear(gear)
-                }) {
-                    Label("Copy", systemImage: "doc.on.doc")
-                }
-                .tint(.blue)
-            }
+            .tint(.blue)
+        }
     }
     
     private func deleteGear(_ gear: GearSwiftUI) {
@@ -196,9 +252,19 @@ struct GearListView: View {
 struct GearRowView: View {
     let gear: GearSwiftUI
     let settingsManager: SettingsManagerSwiftUI
+    let categoryIcon: String
+    let categoryColor: Color
     
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
+            // Colorful category icon
+            Image(systemName: categoryIcon)
+                .font(.title2)
+                .foregroundStyle(categoryColor)
+                .frame(width: 40, height: 40)
+                .background(categoryColor.opacity(0.15))
+                .clipShape(Circle())
+            
             VStack(alignment: .leading, spacing: 4) {
                 Text(gear.name)
                     .font(.headline)
@@ -216,8 +282,7 @@ struct GearRowView: View {
             
             VStack(alignment: .trailing, spacing: 2) {
                 Text(gear.weightString(imperial: settingsManager.isImperial))
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.subheadline.bold())
                     .foregroundColor(.primary)
                 
                 Text(settingsManager.weightUnit)

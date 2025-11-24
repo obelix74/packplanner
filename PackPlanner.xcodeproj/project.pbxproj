@@ -23,6 +23,7 @@
 		17685E7A2E4B5626006331C3 /* GearListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17685E712E4B5626006331C3 /* GearListView.swift */; };
 		17685E7C2E4B5626006331C3 /* AddGearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17685E6F2E4B5626006331C3 /* AddGearView.swift */; };
 		17685E7F2E4B5626006331C3 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17685E802E4B5626006331C3 /* SearchBar.swift */; };
+		1770909C2ED3E00500FDED08 /* ColorTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1770909B2ED3E00500FDED08 /* ColorTheme.swift */; };
 		17949EE22EB8761A00871A87 /* SettingsManagerSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17949EDF2EB8761A00871A87 /* SettingsManagerSwiftUI.swift */; };
 		17949EE32EB8761A00871A87 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17949EDB2EB8761A00871A87 /* DataService.swift */; };
 		17949EE42EB8761A00871A87 /* HikeGearSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17949EDD2EB8761A00871A87 /* HikeGearSwiftUI.swift */; };
@@ -101,6 +102,7 @@
 		17685E712E4B5626006331C3 /* GearListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GearListView.swift; sourceTree = "<group>"; };
 		17685E742E4B5626006331C3 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		17685E802E4B5626006331C3 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
+		1770909B2ED3E00500FDED08 /* ColorTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ColorTheme.swift; path = PackPlanner/Views/SwiftUI/ColorTheme.swift; sourceTree = "<group>"; };
 		17949EDB2EB8761A00871A87 /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
 		17949EDC2EB8761A00871A87 /* GearSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GearSwiftUI.swift; sourceTree = "<group>"; };
 		17949EDD2EB8761A00871A87 /* HikeGearSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeGearSwiftUI.swift; sourceTree = "<group>"; };
@@ -245,6 +247,7 @@
 		A95F90062515B94D00A73E40 = {
 			isa = PBXGroup;
 			children = (
+				1770909B2ED3E00500FDED08 /* ColorTheme.swift */,
 				A95F90112515B94D00A73E40 /* PackPlanner */,
 				A95F90102515B94D00A73E40 /* Products */,
 				00937B4EBA440B29C493D1EC /* Pods */,
@@ -522,6 +525,7 @@
 				A9478900251C27EE0017F916 /* HikeDetailViewController.swift in Sources */,
 				A9FC0F9F251AC872009E6993 /* GearTableViewCell.swift in Sources */,
 				A95F90522515D96900A73E40 /* GearListController.swift in Sources */,
+				1770909C2ED3E00500FDED08 /* ColorTheme.swift in Sources */,
 				171FEAE92EB66AA6000DD99E /* HikeEntity+CoreDataProperties.swift in Sources */,
 				17949EEA2EB8764500871A87 /* SwiftUIDemo.swift in Sources */,
 				17949EEB2EB8764500871A87 /* SwiftUIBridge.swift in Sources */,
@@ -742,16 +746,16 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PackPlanner/PackPlanner.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 400;
+				CURRENT_PROJECT_VERSION = 401;
 				DEVELOPMENT_TEAM = KR2S32CA88;
 				INFOPLIST_FILE = PackPlanner/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.0;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.anands.PackPlanner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -767,16 +771,16 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PackPlanner/PackPlanner.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 400;
+				CURRENT_PROJECT_VERSION = 401;
 				DEVELOPMENT_TEAM = KR2S32CA88;
 				INFOPLIST_FILE = PackPlanner/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.0;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.anands.PackPlanner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
