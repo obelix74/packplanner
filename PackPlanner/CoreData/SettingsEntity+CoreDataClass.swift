@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import os
 
 @objc(SettingsEntity)
 public class SettingsEntity: NSManagedObject {
@@ -30,7 +31,7 @@ public class SettingsEntity: NSManagedObject {
                 return settings
             }
         } catch {
-            print("❌ Failed to fetch or create settings: \(error)")
+            Logger.coreData.error("Failed to fetch or create settings: \(error)")
             // Return a new object but don't save (caller should handle)
             let settings = SettingsEntity(context: context)
             settings.imperial = true

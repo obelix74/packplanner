@@ -33,9 +33,14 @@
 		17949EEA2EB8764500871A87 /* SwiftUIDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17949EE92EB8764500871A87 /* SwiftUIDemo.swift */; };
 		17949EEB2EB8764500871A87 /* SwiftUIBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17949EE82EB8764500871A87 /* SwiftUIBridge.swift */; };
 		17EF5E692EB6529300217675 /* PackPlanner.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 17EF5E672EB6529300217675 /* PackPlanner.xcdatamodeld */; };
+		1B7A64C71A6633A3F7BCB8CE /* AddGearToHikeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5B1ACE9576504A5DF85FE7E /* AddGearToHikeView.swift */; };
+		1D481065C6CF90B17718CDD7 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = A085E066E9881F0E706E80CF /* Log.swift */; };
+		47940889E8F657CF56E675A5 /* LoadingStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB49F65D80F887C5BDC5978 /* LoadingStateManager.swift */; };
 		641C21F3CB19828146965EDA /* Pods_PackPlanner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EDC425ADBD2AEF037A8A8BB8 /* Pods_PackPlanner.framework */; };
 		644D3CEB162E2C1A575FB2C3 /* AddHikeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E266E77F7461DF375368BD29 /* AddHikeView.swift */; };
 		8E64706CD5404B5894FBFA8D /* HikeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA4588F675ED25BC105FFCF6 /* HikeDetailView.swift */; };
+		926EB89EE524EE1D6D496379 /* HikeReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0DD93C8A13A48CA736B30D /* HikeReportView.swift */; };
+		A6CE04C4C1B68DCA1040FBB4 /* DependencyContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F57F93E4CC08DD8236EAF8B /* DependencyContainer.swift */; };
 		A935694A251859C300542BCC /* Categories.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9356949251859C300542BCC /* Categories.swift */; };
 		A94788CF251B190F0017F916 /* ModalTransitionListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788CE251B190F0017F916 /* ModalTransitionListener.swift */; };
 		A94788E9251BF7E60017F916 /* HikeListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A94788E8251BF7E60017F916 /* HikeListTableViewCell.swift */; };
@@ -64,7 +69,10 @@
 		A9FC0F9F251AC872009E6993 /* GearTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9FC0F9E251AC872009E6993 /* GearTableViewCell.swift */; };
 		A9FCE9A125205119006585C6 /* HikeGearTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9FCE9A025205119006585C6 /* HikeGearTableViewCell.swift */; };
 		A9FCE9A625205612006585C6 /* RefreshProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9FCE9A525205612006585C6 /* RefreshProtocol.swift */; };
+		ADAACF6B347CD1759DDAAA05 /* ErrorHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAC36F7006CC31C2898378F5 /* ErrorHandler.swift */; };
+		D0C95433BDCE36EF3EBE3208 /* CategoryHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DDAE702787747628B236BAA /* CategoryHelper.swift */; };
 		DA738FA3DDE4318430BA60CE /* HikeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 790157A02AA13CA30336A356 /* HikeListView.swift */; };
+		E8710B67B81CDAF40BBDFAB3 /* EditHikeGearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D9627FD0DB5FF789F38E8C0 /* EditHikeGearView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +93,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A0DD93C8A13A48CA736B30D /* HikeReportView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HikeReportView.swift; path = SwiftUI/HikeReportView.swift; sourceTree = "<group>"; };
 		171FEAD92EB66AA6000DD99E /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		171FEADA2EB66AA6000DD99E /* GearBrainCD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GearBrainCD.swift; sourceTree = "<group>"; };
 		171FEADB2EB66AA6000DD99E /* GearEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GearEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -112,8 +121,13 @@
 		17949EE82EB8764500871A87 /* SwiftUIBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIBridge.swift; sourceTree = "<group>"; };
 		17949EE92EB8764500871A87 /* SwiftUIDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIDemo.swift; sourceTree = "<group>"; };
 		17EF5E682EB6529300217675 /* PackPlanner.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = PackPlanner.xcdatamodel; sourceTree = "<group>"; };
+		4BB49F65D80F887C5BDC5978 /* LoadingStateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoadingStateManager.swift; sourceTree = "<group>"; };
+		4D9627FD0DB5FF789F38E8C0 /* EditHikeGearView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EditHikeGearView.swift; path = SwiftUI/EditHikeGearView.swift; sourceTree = "<group>"; };
+		6F57F93E4CC08DD8236EAF8B /* DependencyContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DependencyContainer.swift; sourceTree = "<group>"; };
 		790157A02AA13CA30336A356 /* HikeListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HikeListView.swift; path = SwiftUI/HikeListView.swift; sourceTree = "<group>"; };
+		7DDAE702787747628B236BAA /* CategoryHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CategoryHelper.swift; path = SwiftUI/CategoryHelper.swift; sourceTree = "<group>"; };
 		8844BB9CB52C1CD46C0C149C /* Pods-PackPlanner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PackPlanner.release.xcconfig"; path = "Target Support Files/Pods-PackPlanner/Pods-PackPlanner.release.xcconfig"; sourceTree = "<group>"; };
+		A085E066E9881F0E706E80CF /* Log.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		A56C0C89627B5F363E5C4AFB /* Pods-PackPlanner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PackPlanner.debug.xcconfig"; path = "Target Support Files/Pods-PackPlanner/Pods-PackPlanner.debug.xcconfig"; sourceTree = "<group>"; };
 		A9356949251859C300542BCC /* Categories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Categories.swift; sourceTree = "<group>"; };
 		A94788CE251B190F0017F916 /* ModalTransitionListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalTransitionListener.swift; sourceTree = "<group>"; };
@@ -147,6 +161,8 @@
 		A9FC0F9E251AC872009E6993 /* GearTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GearTableViewCell.swift; sourceTree = "<group>"; };
 		A9FCE9A025205119006585C6 /* HikeGearTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikeGearTableViewCell.swift; sourceTree = "<group>"; };
 		A9FCE9A525205612006585C6 /* RefreshProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshProtocol.swift; sourceTree = "<group>"; };
+		AAC36F7006CC31C2898378F5 /* ErrorHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ErrorHandler.swift; sourceTree = "<group>"; };
+		D5B1ACE9576504A5DF85FE7E /* AddGearToHikeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AddGearToHikeView.swift; path = SwiftUI/AddGearToHikeView.swift; sourceTree = "<group>"; };
 		E266E77F7461DF375368BD29 /* AddHikeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AddHikeView.swift; path = SwiftUI/AddHikeView.swift; sourceTree = "<group>"; };
 		EDC425ADBD2AEF037A8A8BB8 /* Pods_PackPlanner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PackPlanner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA4588F675ED25BC105FFCF6 /* HikeDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HikeDetailView.swift; path = SwiftUI/HikeDetailView.swift; sourceTree = "<group>"; };
@@ -219,6 +235,18 @@
 			path = SwiftUI;
 			sourceTree = "<group>";
 		};
+		6427547F1F97EC325BE6F50E /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				A085E066E9881F0E706E80CF /* Log.swift */,
+				AAC36F7006CC31C2898378F5 /* ErrorHandler.swift */,
+				6F57F93E4CC08DD8236EAF8B /* DependencyContainer.swift */,
+				4BB49F65D80F887C5BDC5978 /* LoadingStateManager.swift */,
+			);
+			name = Utils;
+			path = Utils;
+			sourceTree = "<group>";
+		};
 		68DED6E1BE7EF7CBB25CCD67 /* SwiftUI */ = {
 			isa = PBXGroup;
 			children = (
@@ -280,6 +308,7 @@
 				A95F904D2515D94A00A73E40 /* controllers */,
 				17EF5E672EB6529300217675 /* PackPlanner.xcdatamodeld */,
 				171FEAE72EB66AA6000DD99E /* CoreData */,
+				6427547F1F97EC325BE6F50E /* Utils */,
 			);
 			path = PackPlanner;
 			sourceTree = "<group>";
@@ -333,6 +362,10 @@
 				790157A02AA13CA30336A356 /* HikeListView.swift */,
 				E266E77F7461DF375368BD29 /* AddHikeView.swift */,
 				FA4588F675ED25BC105FFCF6 /* HikeDetailView.swift */,
+				7DDAE702787747628B236BAA /* CategoryHelper.swift */,
+				0A0DD93C8A13A48CA736B30D /* HikeReportView.swift */,
+				4D9627FD0DB5FF789F38E8C0 /* EditHikeGearView.swift */,
+				D5B1ACE9576504A5DF85FE7E /* AddGearToHikeView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -496,13 +529,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PackPlanner/Pods-PackPlanner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PackPlanner/Pods-PackPlanner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -570,6 +599,14 @@
 				DA738FA3DDE4318430BA60CE /* HikeListView.swift in Sources */,
 				644D3CEB162E2C1A575FB2C3 /* AddHikeView.swift in Sources */,
 				8E64706CD5404B5894FBFA8D /* HikeDetailView.swift in Sources */,
+				1D481065C6CF90B17718CDD7 /* Log.swift in Sources */,
+				ADAACF6B347CD1759DDAAA05 /* ErrorHandler.swift in Sources */,
+				A6CE04C4C1B68DCA1040FBB4 /* DependencyContainer.swift in Sources */,
+				47940889E8F657CF56E675A5 /* LoadingStateManager.swift in Sources */,
+				D0C95433BDCE36EF3EBE3208 /* CategoryHelper.swift in Sources */,
+				926EB89EE524EE1D6D496379 /* HikeReportView.swift in Sources */,
+				E8710B67B81CDAF40BBDFAB3 /* EditHikeGearView.swift in Sources */,
+				1B7A64C71A6633A3F7BCB8CE /* AddGearToHikeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

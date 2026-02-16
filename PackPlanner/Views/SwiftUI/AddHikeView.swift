@@ -10,7 +10,7 @@ import SwiftUI
 struct AddHikeView: View {
     let hike: HikeSwiftUI?
 
-    @StateObject private var dataService = DataService.shared
+    @ObservedObject private var dataService = DataService.shared
     @State private var name = ""
     @State private var description = ""
     @State private var location = ""

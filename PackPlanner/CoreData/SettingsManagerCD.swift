@@ -7,6 +7,10 @@
 
 import Foundation
 import CoreData
+import os
+
+// Typealias for DependencyContainer compatibility
+typealias SettingsManager = SettingsManagerCD
 
 class SettingsManagerCD {
 
@@ -19,13 +23,13 @@ class SettingsManagerCD {
     var settings: SettingsEntity
 
     private init() {
-        print("SettingsManagerCD initializing...")
+        Logger.coreData.debug("SettingsManagerCD initializing...")
 
         // Initialize settings using explicit context to satisfy Swift's initialization rules
         let coreDataContext = CoreDataStack.shared.viewContext
         self.settings = SettingsEntity.fetchOrCreate(context: coreDataContext)
 
-        print("✅ SettingsManagerCD initialized successfully")
+        Logger.coreData.info("SettingsManagerCD initialized successfully")
     }
 
     // MARK: - Helper Methods
@@ -39,9 +43,9 @@ class SettingsManagerCD {
 
         do {
             try context.save()
-            print("✅ First time user flag updated")
+            Logger.coreData.info("First time user flag updated")
         } catch {
-            print("❌ Error updating first time user: \(error)")
+            Logger.coreData.error("Error updating first time user: \(error)")
         }
     }
 
@@ -50,9 +54,9 @@ class SettingsManagerCD {
 
         do {
             try context.save()
-            print("✅ Units toggled to: \(self.settings.imperial ? "Imperial" : "Metric")")
+            Logger.coreData.info("Units toggled to: \(self.settings.imperial ? "Imperial" : "Metric")")
         } catch {
-            print("❌ Error toggling units: \(error)")
+            Logger.coreData.error("Error toggling units: \(error)")
             context.rollback()
         }
     }
@@ -61,9 +65,9 @@ class SettingsManagerCD {
     func save() {
         do {
             try context.save()
-            print("✅ Settings saved")
+            Logger.coreData.info("Settings saved")
         } catch {
-            print("❌ Error saving settings: \(error)")
+            Logger.coreData.error("Error saving settings: \(error)")
         }
     }
 
@@ -71,6 +75,6 @@ class SettingsManagerCD {
     func reload() {
         context.refreshAllObjects()
         self.settings = SettingsEntity.fetchOrCreate(context: context)
-        print("✅ Settings reloaded from Core Data")
+        Logger.coreData.info("Settings reloaded from Core Data")
     }
 }

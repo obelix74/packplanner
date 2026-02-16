@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import os
 
 /**
  * ErrorHandler - Centralized error handling system for PackPlanner
@@ -17,14 +18,14 @@ import UIKit
  * - Typed error system with specific error categories
  * - Centralized error logging with context information
  * - User-friendly error presentation with recovery suggestions
- * - Realm database error handling with safe fallbacks
+ * - Core Data error handling with safe fallbacks
  * - Input validation with descriptive error messages
- * 
+ *
  * Usage:
  * - Use PackPlannerError enum for application-specific errors
  * - Call ErrorHandler.shared methods for consistent error handling
  * - Use UIViewController extension methods for convenient error presentation
- * - Wrap Realm operations with safeRealmWrite for automatic error handling
+ * - Wrap Core Data operations with safeCoreDataWrite for automatic error handling
  */
 
 // MARK: - Error Types
@@ -86,7 +87,7 @@ class ErrorHandler {
         let contextInfo = context != nil ? " Context: \(context!)" : ""
         let errorMessage = "ERROR in \(fileName):\(function):\(line) - \(error.localizedDescription)\(contextInfo)"
         
-        print("📱 \(errorMessage)")
+        Logger.app.error("\(errorMessage)")
         
         // In production, you might want to log to a crash reporting service
         // CrashReporting.log(errorMessage)
@@ -112,24 +113,25 @@ class ErrorHandler {
         }
     }
     
-    // MARK: - Realm Error Handling
-    
-    func handleRealmError(_ error: Error, operation: String) -> PackPlannerError {
-        logError(error, context: "Realm operation: \(operation)")
-        
-        if error is Realm.Error {
-            return .databaseError("Failed to \(operation). The database may be corrupted.")
+    // MARK: - Core Data Error Handling
+
+    func handleCoreDataError(_ error: Error, operation: String) -> PackPlannerError {
+        logError(error, context: "Core Data operation: \(operation)")
+
+        let nsError = error as NSError
+        if nsError.domain == NSCocoaErrorDomain {
+            return .databaseError("Failed to \(operation). The database may need repair.")
         } else {
             return .databaseError("Failed to \(operation): \(error.localizedDescription)")
         }
     }
-    
-    func safeRealmWrite<T>(_ operation: () throws -> T, errorContext: String = "write operation") -> Result<T, PackPlannerError> {
+
+    func safeCoreDataWrite<T>(_ operation: () throws -> T, errorContext: String = "write operation") -> Result<T, PackPlannerError> {
         do {
             let result = try operation()
             return .success(result)
         } catch {
-            let wrappedError = handleRealmError(error, operation: errorContext)
+            let wrappedError = handleCoreDataError(error, operation: errorContext)
             return .failure(wrappedError)
         }
     }

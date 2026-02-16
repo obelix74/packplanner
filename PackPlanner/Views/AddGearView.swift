@@ -15,7 +15,7 @@ struct AddGearViewBridge: View {
     @State private var weight = ""
     @State private var category = "Backpack"
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
 
     private let categories = Categories.SINGLETON.list
     private let context = CoreDataStack.shared.viewContext

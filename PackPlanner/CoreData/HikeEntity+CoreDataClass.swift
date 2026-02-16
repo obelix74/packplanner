@@ -15,6 +15,7 @@ public class HikeEntity: NSManagedObject {
 
     convenience init(context: NSManagedObjectContext, name: String, desc: String, distance: String, location: String) {
         self.init(context: context)
+        self.uuid = UUID().uuidString
         self.name = name
         self.desc = desc
         self.distance = distance
@@ -43,5 +44,23 @@ public class HikeEntity: NSManagedObject {
     /// Returns count of gear items
     var gearCount: Int {
         return hikeGears?.count ?? 0
+    }
+
+    /// Backfill UUIDs for existing records that don't have one
+    static func backfillUUIDs(context: NSManagedObjectContext) {
+        let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "uuid == nil OR uuid == %@", "")
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            guard !results.isEmpty else { return }
+
+            for hike in results {
+                hike.uuid = UUID().uuidString
+            }
+            try context.save()
+        } catch {
+            // Backfill is best-effort; errors are non-fatal
+        }
     }
 }

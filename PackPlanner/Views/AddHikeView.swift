@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import os
 
 struct AddHikeViewBridge: View {
     let hike: HikeSwiftUI?
@@ -108,7 +109,7 @@ struct AddHikeViewBridge: View {
         if let existingHike = hike {
             // Update existing hike - need to fetch from Core Data
             let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "name == %@", existingHike.name)
+            fetchRequest.predicate = NSPredicate(format: "uuid == %@", existingHike.id)
 
             do {
                 let results = try context.fetch(fetchRequest)
@@ -117,14 +118,15 @@ struct AddHikeViewBridge: View {
                 } else {
                     // If not found, create new
                     hikeEntity = HikeEntity(context: context)
+                    hikeEntity.uuid = UUID().uuidString
                 }
             } catch {
-                print("Error fetching existing hike: \(error)")
                 return
             }
         } else {
             // Create new hike
             hikeEntity = HikeEntity(context: context)
+            hikeEntity.uuid = UUID().uuidString
         }
 
         // Set values
@@ -146,7 +148,7 @@ struct AddHikeViewBridge: View {
         // Save to Core Data
         do {
             try context.save()
-            print("✅ Hike saved to Core Data successfully")
+            Logger.coreData.info("Hike saved to Core Data successfully")
 
             // Notify parent controller that hike was saved
             NotificationCenter.default.post(name: NSNotification.Name("HikeSaved"), object: nil)
@@ -161,7 +163,7 @@ struct AddHikeViewBridge: View {
                 }
             }
         } catch {
-            print("❌ Error saving hike to Core Data: \(error)")
+            Logger.coreData.error("Error saving hike to Core Data: \(error)")
         }
     }
     

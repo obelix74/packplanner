@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import CoreData
 import Combine
+import os
 
 class DataService: ObservableObject {
     static let shared = DataService()
@@ -37,6 +38,7 @@ class DataService: ObservableObject {
             let results = try context.fetch(fetchRequest)
             self.gears = results.map { GearSwiftUI(fromCoreData: $0) }
         } catch {
+            Logger.coreData.error("Error loading gears: \(error)")
             self.gears = []
         }
     }
@@ -49,6 +51,7 @@ class DataService: ObservableObject {
             let results = try context.fetch(fetchRequest)
             self.hikes = results.map { HikeSwiftUI(fromCoreData: $0) }
         } catch {
+            Logger.coreData.error("Error loading hikes: \(error)")
             self.hikes = []
         }
     }
@@ -69,6 +72,7 @@ class DataService: ObservableObject {
             loadGears()
             return newGear
         } catch {
+            Logger.coreData.error("Error creating gear '\(name)': \(error)")
             return nil
         }
     }
@@ -89,7 +93,7 @@ class DataService: ObservableObject {
                 loadGears()
             }
         } catch {
-            // Silently handle error
+            Logger.coreData.error("Error updating gear: \(error)")
         }
     }
 
@@ -105,7 +109,7 @@ class DataService: ObservableObject {
                 loadGears()
             }
         } catch {
-            // Silently handle error
+            Logger.coreData.error("Error deleting gear: \(error)")
         }
     }
 
@@ -113,6 +117,7 @@ class DataService: ObservableObject {
 
     func createHike(name: String, desc: String = "", distance: String = "", location: String = "") -> HikeSwiftUI? {
         let hikeEntity = HikeEntity(context: context)
+        hikeEntity.uuid = UUID().uuidString
         hikeEntity.name = name
         hikeEntity.desc = desc
         hikeEntity.distance = distance
@@ -125,13 +130,14 @@ class DataService: ObservableObject {
             loadHikes()
             return newHike
         } catch {
+            Logger.coreData.error("Error creating hike '\(name)': \(error)")
             return nil
         }
     }
 
     func updateHike(_ hike: HikeSwiftUI) {
         let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+        fetchRequest.predicate = NSPredicate(format: "uuid == %@", hike.id)
 
         do {
             let results = try context.fetch(fetchRequest)
@@ -178,13 +184,13 @@ class DataService: ObservableObject {
                 loadHikes()
             }
         } catch {
-            // Silently handle error
+            Logger.coreData.error("Error updating hike: \(error)")
         }
     }
 
     func deleteHike(_ hike: HikeSwiftUI) {
         let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+        fetchRequest.predicate = NSPredicate(format: "uuid == %@", hike.id)
 
         do {
             let results = try context.fetch(fetchRequest)
@@ -194,7 +200,7 @@ class DataService: ObservableObject {
                 loadHikes()
             }
         } catch {
-            // Silently handle error
+            Logger.coreData.error("Error deleting hike: \(error)")
         }
     }
 
@@ -202,7 +208,7 @@ class DataService: ObservableObject {
 
     func addGearToHike(_ gear: GearSwiftUI, hike: HikeSwiftUI, quantity: Int = 1) {
         let hikeFetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-        hikeFetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+        hikeFetchRequest.predicate = NSPredicate(format: "uuid == %@", hike.id)
 
         let gearFetchRequest: NSFetchRequest<GearEntity> = GearEntity.fetchRequest()
         gearFetchRequest.predicate = NSPredicate(format: "uuid == %@", gear.id)
@@ -224,13 +230,13 @@ class DataService: ObservableObject {
                 loadHikes()
             }
         } catch {
-            // Silently handle error
+            Logger.coreData.error("Error adding gear to hike: \(error)")
         }
     }
 
     func removeGearFromHike(_ gear: GearSwiftUI, hike: HikeSwiftUI) {
         let fetchRequest: NSFetchRequest<HikeGearEntity> = HikeGearEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "hike.name == %@ AND gear.uuid == %@", hike.name, gear.id)
+        fetchRequest.predicate = NSPredicate(format: "hike.uuid == %@ AND gear.uuid == %@", hike.id, gear.id)
 
         do {
             let results = try context.fetch(fetchRequest)
@@ -240,7 +246,7 @@ class DataService: ObservableObject {
             try context.save()
             loadHikes()
         } catch {
-            // Silently handle error
+            Logger.coreData.error("Error removing gear from hike: \(error)")
         }
     }
 }

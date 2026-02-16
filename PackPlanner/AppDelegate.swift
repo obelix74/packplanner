@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreData
+import os
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,21 +18,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
 
         // Initialize Core Data stack
-        _ = CoreDataStack.shared.viewContext
-        print("✅ Core Data loaded successfully")
+        let context = CoreDataStack.shared.viewContext
+
+        // Backfill UUIDs for any hikes created before UUID support
+        HikeEntity.backfillUUIDs(context: context)
 
         // Initialize database with proper fallback handling
         return initializeDatabase()
     }
 
     private func initializeDatabase() -> Bool {
-        print("Database initialized successfully")
+        Logger.app.info("Database initialized successfully")
         return true
     }
     
     private func handleDatabaseFailure() -> Bool {
         // Log the failure for debugging
-        print("Critical: Database initialization failed. App will continue with limited functionality.")
+        Logger.app.error("Database initialization failed. App will continue with limited functionality.")
         
         // Present user-friendly error after a delay to allow UI to load
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
@@ -46,7 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func presentDatabaseErrorAlert() {
         guard let window = UIApplication.shared.windows.first,
               let rootViewController = window.rootViewController else {
-            print("No root view controller available for error alert")
+            Logger.app.warning("No root view controller available for error alert")
             return
         }
         
@@ -56,14 +59,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             preferredStyle: .alert
         )
         
-        alert.addAction(UIAlertAction(title: "Restart App", style: .default) { _ in
-            exit(0) // Graceful restart - iOS will handle restart
-        })
-        
-        alert.addAction(UIAlertAction(title: "Continue", style: .cancel) { _ in
-            // Let user continue with limited functionality
-            print("User chose to continue with database error")
-        })
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+
+        alert.addAction(UIAlertAction(title: "Continue", style: .cancel))
         
         // Present from the top-most view controller
         var topController = rootViewController

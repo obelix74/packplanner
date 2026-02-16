@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import os
 
 class GearBrainCD {
 
@@ -67,10 +68,10 @@ class GearBrainCD {
 
             if !duplicatesToDelete.isEmpty {
                 try context.save()
-                print("✅ Cleaned up \(duplicatesToDelete.count) duplicate gears")
+                Logger.coreData.info("Cleaned up \(duplicatesToDelete.count) duplicate gears")
             }
         } catch {
-            print("❌ Error cleaning up duplicates: \(error)")
+            Logger.coreData.error("Error cleaning up duplicates: \(error)")
         }
     }
 
@@ -88,7 +89,7 @@ class GearBrainCD {
             let gears = try context.fetch(fetchRequest)
             return GearBrainCD(gears)
         } catch {
-            print("❌ Error fetching filtered gears: \(error)")
+            Logger.coreData.error("Error fetching filtered gears: \(error)")
             return GearBrainCD([])
         }
     }
@@ -122,7 +123,7 @@ class GearBrainCD {
 
             return GearBrainCD(filteredGears)
         } catch {
-            print("❌ Error fetching gears for hike: \(error)")
+            Logger.coreData.error("Error fetching gears for hike: \(error)")
             return GearBrainCD([])
         }
     }
@@ -140,9 +141,9 @@ class GearBrainCD {
 
         do {
             try context.save()
-            print("✅ Gear copied successfully")
+            Logger.coreData.info("Gear copied successfully")
         } catch {
-            print("❌ Error copying gear: \(error)")
+            Logger.coreData.error("Error copying gear: \(error)")
         }
     }
 
@@ -187,9 +188,9 @@ class GearBrainCD {
 
         do {
             try context.save()
-            print("✅ Gear deleted successfully")
+            Logger.coreData.info("Gear deleted successfully")
         } catch {
-            print("❌ Error deleting gear: \(error)")
+            Logger.coreData.error("Error deleting gear: \(error)")
         }
     }
 

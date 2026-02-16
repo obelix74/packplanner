@@ -17,6 +17,7 @@
         <attribute name="externalLink3" optional="YES" attributeType="String"/>
         <attribute name="location" attributeType="String" defaultValueString=""/>
         <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="uuid" optional="YES" attributeType="String"/>
         <relationship name="hikeGears" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="HikeGearEntity" inverseName="hike" inverseEntity="HikeGearEntity"/>
     </entity>
     <entity name="HikeGearEntity" representedClassName="HikeGearEntity" syncable="YES">

@@ -8,6 +8,7 @@
 import Foundation
 import CoreData
 import CloudKit
+import os
 
 class CoreDataStack {
     static let shared = CoreDataStack()
@@ -37,15 +38,15 @@ class CoreDataStack {
             if let error = error as NSError? {
                 // In production, handle this error appropriately
                 // For now, we'll log it
-                print("❌ Core Data failed to load: \(error), \(error.userInfo)")
+                Logger.coreData.error("Core Data failed to load: \(error), \(error.userInfo)")
 
                 // Check for common CloudKit errors
                 if let ckError = error.userInfo[NSUnderlyingErrorKey] as? CKError {
                     self.handleCloudKitError(ckError)
                 }
             } else {
-                print("✅ Core Data loaded successfully")
-                print("📍 Store URL: \(storeDescription.url?.path ?? "unknown")")
+                Logger.coreData.info("Core Data loaded successfully")
+                Logger.coreData.debug("Store URL: \(storeDescription.url?.path ?? "unknown")")
             }
         }
 
@@ -83,10 +84,10 @@ class CoreDataStack {
         if context.hasChanges {
             do {
                 try context.save()
-                print("✅ Core Data context saved successfully")
+                Logger.coreData.debug("Context saved")
             } catch {
                 let nsError = error as NSError
-                print("❌ Failed to save context: \(nsError), \(nsError.userInfo)")
+                Logger.coreData.error("Failed to save context: \(nsError), \(nsError.userInfo)")
                 // In production, handle this appropriately
             }
         }
@@ -96,10 +97,10 @@ class CoreDataStack {
         if context.hasChanges {
             do {
                 try context.save()
-                print("✅ Core Data context saved successfully")
+                Logger.coreData.debug("Context saved")
             } catch {
                 let nsError = error as NSError
-                print("❌ Failed to save context: \(nsError), \(nsError.userInfo)")
+                Logger.coreData.error("Failed to save context: \(nsError), \(nsError.userInfo)")
             }
         }
     }
@@ -111,22 +112,22 @@ class CoreDataStack {
             DispatchQueue.main.async {
                 switch status {
                 case .available:
-                    print("✅ iCloud is available")
+                    Logger.cloudKit.info("iCloud is available")
                     completion(true, nil)
                 case .noAccount:
-                    print("⚠️ No iCloud account")
+                    Logger.cloudKit.warning("No iCloud account")
                     completion(false, NSError(domain: "PackPlanner", code: 1, userInfo: [NSLocalizedDescriptionKey: "Please sign in to iCloud in Settings"]))
                 case .restricted:
-                    print("⚠️ iCloud is restricted")
+                    Logger.cloudKit.warning("iCloud is restricted")
                     completion(false, NSError(domain: "PackPlanner", code: 2, userInfo: [NSLocalizedDescriptionKey: "iCloud access is restricted"]))
                 case .couldNotDetermine:
-                    print("⚠️ Could not determine iCloud status")
+                    Logger.cloudKit.warning("Could not determine iCloud status")
                     completion(false, error)
                 case .temporarilyUnavailable:
-                    print("⚠️ iCloud temporarily unavailable")
+                    Logger.cloudKit.warning("iCloud temporarily unavailable")
                     completion(false, NSError(domain: "PackPlanner", code: 3, userInfo: [NSLocalizedDescriptionKey: "iCloud is temporarily unavailable"]))
                 @unknown default:
-                    print("⚠️ Unknown iCloud status")
+                    Logger.cloudKit.warning("Unknown iCloud status")
                     completion(false, error)
                 }
             }
@@ -138,22 +139,22 @@ class CoreDataStack {
     private func handleCloudKitError(_ error: CKError) {
         switch error.code {
         case .notAuthenticated:
-            print("⚠️ User is not signed into iCloud")
+            Logger.cloudKit.warning("User is not signed into iCloud")
         case .networkUnavailable, .networkFailure:
-            print("⚠️ Network unavailable")
+            Logger.cloudKit.warning("Network unavailable")
         case .quotaExceeded:
-            print("⚠️ iCloud storage quota exceeded")
+            Logger.cloudKit.warning("iCloud storage quota exceeded")
         case .managedAccountRestricted:
-            print("⚠️ iCloud account is restricted")
+            Logger.cloudKit.warning("iCloud account is restricted")
         default:
-            print("⚠️ CloudKit error: \(error.localizedDescription)")
+            Logger.cloudKit.warning("CloudKit error: \(error.localizedDescription)")
         }
     }
 
     // MARK: - Remote Change Notification
 
     @objc private func handleRemoteChange(_ notification: Notification) {
-        print("📡 Remote changes received from CloudKit")
+        Logger.cloudKit.info("Remote changes received from CloudKit")
         // Post a notification that the app can observe
         NotificationCenter.default.post(name: .cloudKitDataChanged, object: nil)
     }
@@ -166,16 +167,18 @@ class CoreDataStack {
         for entity in entities {
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entity)
             let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+            batchDeleteRequest.resultType = .resultTypeObjectIDs
 
             do {
-                try viewContext.execute(batchDeleteRequest)
-                print("✅ Deleted all \(entity) objects")
+                let result = try viewContext.execute(batchDeleteRequest) as? NSBatchDeleteResult
+                if let objectIDs = result?.result as? [NSManagedObjectID] {
+                    let changes = [NSDeletedObjectsKey: objectIDs]
+                    NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [viewContext])
+                }
             } catch {
-                print("❌ Failed to delete \(entity): \(error)")
+                // Batch delete failed for this entity; continue with others
             }
         }
-
-        saveContext()
     }
 }
 

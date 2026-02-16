@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import Combine
 import CoreData
+import os
 
 class SettingsManagerSwiftUI: ObservableObject {
     static let shared = SettingsManagerSwiftUI()
@@ -31,7 +32,7 @@ class SettingsManagerSwiftUI: ObservableObject {
                 saveSettings()
             }
         } catch {
-            print("Error loading settings from Core Data: \(error)")
+            Logger.app.error("Error loading settings from Core Data: \(error)")
             // Fallback to defaults
             self.settings = SettingsSwiftUI()
             self.settings.imperial = true
@@ -67,7 +68,7 @@ class SettingsManagerSwiftUI: ObservableObject {
 
             try context.save()
         } catch {
-            print("Error saving settings to Core Data: \(error)")
+            Logger.app.error("Error saving settings to Core Data: \(error)")
         }
     }
 

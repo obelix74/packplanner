@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import os
 
 class HikeBrainCD {
 
@@ -75,7 +76,7 @@ class HikeBrainCD {
 
         allHikeGears.forEach { hikeGear in
             guard let gear = hikeGear.gear else {
-                print("Warning: HikeGear has no associated gear")
+                Logger.coreData.warning("HikeGear has no associated gear")
                 return
             }
             let number = hikeGear.numberUnits
@@ -111,7 +112,7 @@ class HikeBrainCD {
         // Build category map
         self.hikeGears.forEach { hikeGear in
             guard let gear = hikeGear.gear else {
-                print("Warning: HikeGear has no associated gear")
+                Logger.coreData.warning("HikeGear has no associated gear")
                 return
             }
             var gearArray = self.categoryMap[gear.category]
@@ -186,9 +187,9 @@ class HikeBrainCD {
         do {
             try context.save()
             initializeHike()
-            print("✅ HikeGear deleted successfully")
+            Logger.coreData.info("HikeGear deleted successfully")
         } catch {
-            print("❌ Error deleting HikeGear: \(error)")
+            Logger.coreData.error("Error deleting HikeGear: \(error)")
         }
     }
 
@@ -199,9 +200,9 @@ class HikeBrainCD {
 
         do {
             try context.save()
-            print("✅ HikeGear created successfully")
+            Logger.coreData.info("HikeGear created successfully")
         } catch {
-            print("❌ Error creating HikeGear: \(error)")
+            Logger.coreData.error("Error creating HikeGear: \(error)")
         }
     }
 
@@ -211,9 +212,9 @@ class HikeBrainCD {
         do {
             try context.save()
             initializeHike()
-            print("✅ Worn toggle updated")
+            Logger.coreData.info("Worn toggle updated")
         } catch {
-            print("❌ Error updating worn toggle: \(error)")
+            Logger.coreData.error("Error updating worn toggle: \(error)")
             context.rollback()
         }
     }
@@ -224,9 +225,9 @@ class HikeBrainCD {
         do {
             try context.save()
             initializeHike()
-            print("✅ Consumable toggle updated")
+            Logger.coreData.info("Consumable toggle updated")
         } catch {
-            print("❌ Error updating consumable toggle: \(error)")
+            Logger.coreData.error("Error updating consumable toggle: \(error)")
             context.rollback()
         }
     }
@@ -237,9 +238,9 @@ class HikeBrainCD {
         do {
             try context.save()
             initializeHike()
-            print("✅ Number updated")
+            Logger.coreData.info("Number updated")
         } catch {
-            print("❌ Error updating number: \(error)")
+            Logger.coreData.error("Error updating number: \(error)")
             context.rollback()
         }
     }
@@ -250,9 +251,9 @@ class HikeBrainCD {
         do {
             try context.save()
             initializeHike()
-            print("✅ Verified toggle updated")
+            Logger.coreData.info("Verified toggle updated")
         } catch {
-            print("❌ Error updating verified toggle: \(error)")
+            Logger.coreData.error("Error updating verified toggle: \(error)")
             context.rollback()
         }
     }
@@ -263,6 +264,7 @@ class HikeBrainCD {
         let context = CoreDataStack.shared.viewContext
 
         let newHike = HikeEntity(context: context)
+        newHike.uuid = UUID().uuidString
         newHike.name = "Copy of " + hike.name
         newHike.desc = hike.desc
         newHike.completed = false
@@ -289,9 +291,9 @@ class HikeBrainCD {
 
         do {
             try context.save()
-            print("✅ Hike copied successfully")
+            Logger.coreData.info("Hike copied successfully")
         } catch {
-            print("❌ Error copying hike: \(error)")
+            Logger.coreData.error("Error copying hike: \(error)")
         }
     }
 }

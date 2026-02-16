@@ -19,6 +19,7 @@ extension HikeEntity {
     @NSManaged public var distance: String
     @NSManaged public var location: String
     @NSManaged public var completed: Bool
+    @NSManaged public var uuid: String?
     @NSManaged public var externalLink1: String?
     @NSManaged public var externalLink2: String?
     @NSManaged public var externalLink3: String?

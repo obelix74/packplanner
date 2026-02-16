@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct HikeListView: View {
-    @StateObject private var dataService = DataService.shared
-    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var dataService = DataService.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     @State private var searchText = ""
     @State private var showingAddHike = false
     @State private var selectedHikeForEdit: HikeSwiftUI?
@@ -137,7 +137,7 @@ struct HikeListView: View {
 
 struct HikeRowView: View {
     let hike: HikeSwiftUI
-    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {

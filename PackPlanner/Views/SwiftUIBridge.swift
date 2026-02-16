@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import UIKit
 import CoreData
+import os
 
 // Import SwiftUI views from SwiftUI folder
 // Note: These views are located in Views/SwiftUI/ folder
@@ -17,7 +18,7 @@ import CoreData
 
 public struct HikeDetailViewBridge: View {
     @ObservedObject var hike: HikeSwiftUI
-    @State private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     @State private var showingAddGear = false
     @State private var showPendingOnly = false
     @State private var refreshTrigger = false
@@ -166,7 +167,7 @@ public struct HikeDetailViewBridge: View {
     private func refreshHikeData() {
         // Reload from Core Data
         let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+        fetchRequest.predicate = NSPredicate(format: "uuid == %@", hike.id)
 
         do {
             let results = try context.fetch(fetchRequest)
@@ -175,13 +176,13 @@ public struct HikeDetailViewBridge: View {
                 self.hike.hikeGears = updatedHike.hikeGears
             }
         } catch {
-            print("Error refreshing hike data: \(error)")
+            Logger.coreData.error("Error refreshing hike data: \(error)")
         }
     }
 
     private func saveHikeToCoreData() {
         let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+        fetchRequest.predicate = NSPredicate(format: "uuid == %@", hike.id)
 
         do {
             let results = try context.fetch(fetchRequest)
@@ -217,7 +218,7 @@ public struct HikeDetailViewBridge: View {
                 try context.save()
             }
         } catch {
-            print("Error saving hike to Core Data: \(error)")
+            Logger.coreData.error("Error saving hike to Core Data: \(error)")
         }
     }
 
@@ -226,7 +227,7 @@ public struct HikeDetailViewBridge: View {
 public struct HikeHeaderViewBridge: View {
     let hike: HikeSwiftUI
     let refreshTrigger: Bool
-    @State private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -299,7 +300,7 @@ public struct WeightSummaryItemBridge: View {
     let title: String
     let weight: Double
     let color: Color
-    @State private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -318,7 +319,7 @@ public struct HikeGearRowViewBridge: View {
     @ObservedObject var hikeGear: HikeGearSwiftUI
     let hike: HikeSwiftUI
     @Binding var refreshTrigger: Bool
-    @State private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     private let context = CoreDataStack.shared.viewContext
     
     public var body: some View {
@@ -394,7 +395,7 @@ public struct HikeGearRowViewBridge: View {
 
     private func saveHikeGearToCoreData() {
         let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+        fetchRequest.predicate = NSPredicate(format: "uuid == %@", hike.id)
 
         do {
             let results = try context.fetch(fetchRequest)
@@ -414,14 +415,14 @@ public struct HikeGearRowViewBridge: View {
                 try context.save()
             }
         } catch {
-            print("Error saving hike gear to Core Data: \(error)")
+            Logger.coreData.error("Error saving hike gear to Core Data: \(error)")
         }
     }
 }
 
 
 public struct HikeListViewBridge: View {
-    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     @State private var searchText = ""
     @State private var showingAddHike = false
     @State private var selectedHike: HikeSwiftUI?
@@ -525,13 +526,13 @@ public struct HikeListViewBridge: View {
             let results = try context.fetch(fetchRequest)
             hikes = results.map { HikeSwiftUI(fromCoreData: $0) }
         } catch {
-            print("Error loading hikes: \(error)")
+            Logger.coreData.error("Error loading hikes: \(error)")
         }
     }
 
     private func deleteHike(_ hike: HikeSwiftUI) {
         let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+        fetchRequest.predicate = NSPredicate(format: "uuid == %@", hike.id)
 
         do {
             let results = try context.fetch(fetchRequest)
@@ -541,12 +542,13 @@ public struct HikeListViewBridge: View {
                 loadHikesFromCoreData()
             }
         } catch {
-            print("Error deleting hike: \(error)")
+            Logger.coreData.error("Error deleting hike: \(error)")
         }
     }
 
     private func copyHike(_ hike: HikeSwiftUI) {
         let hikeEntity = HikeEntity(context: context)
+        hikeEntity.uuid = UUID().uuidString
         hikeEntity.name = "\(hike.name) (Copy)"
         hikeEntity.desc = hike.desc
         hikeEntity.distance = hike.distance
@@ -580,7 +582,7 @@ public struct HikeListViewBridge: View {
             try context.save()
             loadHikesFromCoreData()
         } catch {
-            print("Error copying hike: \(error)")
+            Logger.coreData.error("Error copying hike: \(error)")
         }
     }
 }
@@ -653,524 +655,6 @@ public struct HikeRowViewBridge: View {
             }
         }
         .padding(.vertical, 4)
-    }
-}
-
-public struct HikeReportView: View {
-    let hike: HikeSwiftUI
-    @State private var selectedFilter = "Total weight"
-    @State private var reportData: [String: Double] = [:]
-    @State private var sortedKeys: [String] = []
-    @Environment(\.dismiss) private var dismiss
-    
-    private let filters = ["Total weight", "Base weight", "Consumable weight", "Worn weight"]
-    
-    public var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                // Title and Summary
-                VStack(spacing: 10) {
-                    Text("Weight Report")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-                    
-                    Text(formatWeight(totalWeight))
-                        .font(.title3)
-                        .font(.body.weight(.semibold))
-                        .foregroundColor(.red)
-                }
-                .padding()
-                
-                // Filter Picker
-                Picker("Filter", selection: $selectedFilter) {
-                    ForEach(filters, id: \.self) { filter in
-                        Text(filter).tag(filter)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
-                
-                // Report List
-                List {
-                    ForEach(sortedKeys, id: \.self) { key in
-                        HStack {
-                            Text(key)
-                                .font(.body)
-                                .foregroundColor(.primary)
-                            
-                            Spacer()
-                            
-                            Text(formatWeight(reportData[key] ?? 0))
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundColor(.blue)
-                        }
-                        .padding(.vertical, 4)
-                    }
-                }
-                .listStyle(PlainListStyle())
-            }
-            .navigationTitle("Report for \(hike.name)")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .foregroundColor(.blue)
-                }
-            }
-        }
-        .onAppear {
-            loadReportData()
-        }
-        .onChange(of: selectedFilter) { _ in
-            loadReportData()
-        }
-    }
-    
-    private var totalWeight: Double {
-        return hike.hikeGears.reduce(0) { total, hikeGear in
-            let gearWeight = hikeGear.gear?.weightInGrams ?? 0
-            return total + (gearWeight * Double(hikeGear.numberUnits))
-        }
-    }
-    
-    private func loadReportData() {
-        var data: [String: Double] = [:]
-        
-        // Group gear by category
-        let groupedGear = Dictionary(grouping: hike.hikeGears) { hikeGear in
-            hikeGear.gear?.category ?? "Unknown"
-        }
-        
-        // Calculate weights by category based on selected filter
-        for (category, gears) in groupedGear {
-            let categoryWeight = gears.reduce(0.0) { total, hikeGear in
-                guard let gear = hikeGear.gear else { return total }
-                let unitWeight = gear.weightInGrams * Double(hikeGear.numberUnits)
-                
-                switch selectedFilter {
-                case "Base weight":
-                    return hikeGear.consumable || hikeGear.worn ? total : total + unitWeight
-                case "Consumable weight":
-                    return hikeGear.consumable ? total + unitWeight : total
-                case "Worn weight":
-                    return hikeGear.worn ? total + unitWeight : total
-                default: // Total weight
-                    return total + unitWeight
-                }
-            }
-            
-            if categoryWeight > 0 {
-                data[category] = categoryWeight
-            }
-        }
-        
-        reportData = data
-        sortedKeys = data.keys.sorted { data[$0] ?? 0 > data[$1] ?? 0 }
-    }
-    
-    private func formatWeight(_ weightInGrams: Double) -> String {
-        let settings = SettingsManagerSwiftUI.shared.settings
-        
-        if settings.imperial {
-            let ounces = weightInGrams * 0.035274
-            return String(format: "%.2f oz", ounces)
-        } else {
-            return String(format: "%.1f g", weightInGrams)
-        }
-    }
-}
-
-public struct EditHikeGearView: View {
-    @Binding var hikeGear: HikeGearSwiftUI
-    let hike: HikeSwiftUI
-    @State private var numberUnits: String = ""
-    @State private var notes: String = ""
-    @State private var consumable: Bool = false
-    @State private var worn: Bool = false
-    @State private var verified: Bool = false
-    @Environment(\.dismiss) private var dismiss
-    private let context = CoreDataStack.shared.viewContext
-    
-    public var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Gear Information")) {
-                    HStack {
-                        Text("Name:")
-                            .fontWeight(.medium)
-                        Spacer()
-                        Text(hikeGear.gear?.name ?? "Unknown Gear")
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack {
-                        Text("Description:")
-                            .fontWeight(.medium)
-                        Spacer()
-                        Text(hikeGear.gear?.desc ?? "")
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.trailing)
-                    }
-                    
-                    HStack {
-                        Text("Weight:")
-                            .fontWeight(.medium)
-                        Spacer()
-                        Text(formatWeight(hikeGear.gear?.weightInGrams ?? 0))
-                            .foregroundColor(.blue)
-                    }
-                    
-                    HStack {
-                        Text("Category:")
-                            .fontWeight(.medium)
-                        Spacer()
-                        Text(hikeGear.gear?.category ?? "")
-                            .foregroundColor(.secondary)
-                    }
-                }
-                
-                Section(header: Text("Quantity")) {
-                    HStack {
-                        Text("Number of Units:")
-                            .fontWeight(.medium)
-                        
-                        Spacer()
-                        
-                        TextField("1", text: $numberUnits)
-                            .keyboardType(.numberPad)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .frame(width: 80)
-                            .multilineTextAlignment(.center)
-                    }
-                }
-                
-                Section(header: Text("Properties")) {
-                    Toggle("Consumable", isOn: $consumable)
-                        .tint(.orange)
-                    
-                    Toggle("Worn", isOn: $worn)
-                        .tint(.green)
-                    
-                    Toggle("Verified", isOn: $verified)
-                        .tint(.blue)
-                }
-                
-                Section(header: Text("Notes")) {
-                    TextEditor(text: $notes)
-                        .frame(minHeight: 100)
-                }
-                
-                Section {
-                    HStack {
-                        Text("Total Weight:")
-                            .font(.body.weight(.semibold))
-                        Spacer()
-                        Text(formatWeight(totalWeight))
-                            .fontWeight(.bold)
-                            .foregroundColor(.red)
-                    }
-                }
-            }
-            .navigationTitle("Edit Gear")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                    .foregroundColor(.blue)
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        saveChanges()
-                    }
-                    .foregroundColor(.blue)
-                    .font(.body.weight(.semibold))
-                }
-            }
-        }
-        .onAppear {
-            loadCurrentValues()
-        }
-    }
-    
-    private var totalWeight: Double {
-        let units = Double(numberUnits) ?? 1.0
-        let unitWeight = hikeGear.gear?.weightInGrams ?? 0
-        return unitWeight * units
-    }
-    
-    private func loadCurrentValues() {
-        numberUnits = String(hikeGear.numberUnits)
-        notes = hikeGear.notes
-        consumable = hikeGear.consumable
-        worn = hikeGear.worn
-        verified = hikeGear.verified
-    }
-    
-    private func saveChanges() {
-        // Update the hikeGear object
-        hikeGear.numberUnits = Int(numberUnits) ?? 1
-        hikeGear.notes = notes
-        hikeGear.consumable = consumable
-        hikeGear.worn = worn
-        hikeGear.verified = verified
-
-        // Update in Core Data
-        let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
-
-        do {
-            let results = try context.fetch(fetchRequest)
-            if let hikeEntity = results.first {
-                // Find the specific HikeGearEntity to update
-                if let hikeGearSet = hikeEntity.hikeGears as? Set<HikeGearEntity> {
-                    for hikeGearEntity in hikeGearSet {
-                        if let gearEntity = hikeGearEntity.gear, gearEntity.uuid == hikeGear.gear?.id {
-                            hikeGearEntity.numberUnits = Int32(hikeGear.numberUnits)
-                            hikeGearEntity.notes = hikeGear.notes
-                            hikeGearEntity.consumable = hikeGear.consumable
-                            hikeGearEntity.worn = hikeGear.worn
-                            hikeGearEntity.verified = hikeGear.verified
-                            break
-                        }
-                    }
-                }
-                try context.save()
-            }
-        } catch {
-            print("Error saving changes: \(error)")
-        }
-
-        dismiss()
-    }
-    
-    private func formatWeight(_ weightInGrams: Double) -> String {
-        let settings = SettingsManagerSwiftUI.shared.settings
-        
-        if settings.imperial {
-            let ounces = weightInGrams * 0.035274
-            return String(format: "%.2f oz", ounces)
-        } else {
-            return String(format: "%.1f g", weightInGrams)
-        }
-    }
-}
-
-public struct AddGearToHikeView: View {
-    let hike: HikeSwiftUI
-    @State private var searchText = ""
-    @State private var selectedGear: Set<String> = []
-    @State private var gearList: [GearSwiftUI] = []
-    @State private var categorizedGear: [String: [GearSwiftUI]] = [:]
-    @Environment(\.dismiss) private var dismiss
-    private let context = CoreDataStack.shared.viewContext
-
-    init(hike: HikeSwiftUI) {
-        self.hike = hike
-    }
-    
-    public var body: some View {
-        NavigationView {
-            VStack {
-                // Search Bar
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                    
-                    TextField("Search gear...", text: $searchText)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                }
-                .padding()
-                
-                // Gear List
-                List {
-                    ForEach(sortedCategories, id: \.self) { category in
-                        Section(header: Text(category).font(.headline)) {
-                            ForEach(filteredGear(for: category), id: \.id) { gear in
-                                GearSelectionRow(
-                                    gear: gear,
-                                    isSelected: selectedGear.contains(gear.id)
-                                ) {
-                                    toggleGearSelection(gear)
-                                }
-                            }
-                        }
-                    }
-                }
-                .listStyle(PlainListStyle())
-            }
-            .navigationTitle("Add Gear to \(hike.name)")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                    .foregroundColor(.blue)
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        saveSelectedGear()
-                    }
-                    .foregroundColor(.blue)
-                    .font(.body.weight(.semibold))
-                }
-            }
-        }
-        .onAppear {
-            loadGear()
-            loadExistingGearSelections()
-        }
-    }
-    
-    private var sortedCategories: [String] {
-        return categorizedGear.keys.sorted()
-    }
-    
-    private func filteredGear(for category: String) -> [GearSwiftUI] {
-        let categoryGear = categorizedGear[category] ?? []
-        
-        if searchText.isEmpty {
-            return categoryGear
-        } else {
-            return categoryGear.filter { gear in
-                gear.name.localizedCaseInsensitiveContains(searchText) ||
-                gear.desc.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-    }
-    
-    private func loadGear() {
-        let fetchRequest: NSFetchRequest<GearEntity> = GearEntity.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
-
-        do {
-            let results = try context.fetch(fetchRequest)
-            gearList = results.map { GearSwiftUI(fromCoreData: $0) }
-            categorizedGear = Dictionary(grouping: gearList) { $0.category }
-        } catch {
-            print("Error loading gear: \(error)")
-        }
-    }
-    
-    private func loadExistingGearSelections() {
-        // Mark gear that's already associated with this hike
-        selectedGear = Set(hike.hikeGears.compactMap { $0.gear?.id })
-    }
-    
-    private func toggleGearSelection(_ gear: GearSwiftUI) {
-        if selectedGear.contains(gear.id) {
-            selectedGear.remove(gear.id)
-        } else {
-            selectedGear.insert(gear.id)
-        }
-    }
-    
-    private func saveSelectedGear() {
-        let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
-
-        do {
-            let results = try context.fetch(fetchRequest)
-            guard let hikeEntity = results.first else { return }
-
-            // Remove existing relationships
-            if let existingGears = hikeEntity.hikeGears as? Set<HikeGearEntity> {
-                for gear in existingGears {
-                    context.delete(gear)
-                }
-            }
-
-            // Add selected gear
-            for gearId in selectedGear {
-                if let gearSwiftUI = gearList.first(where: { $0.id == gearId }) {
-                    let hikeGearEntity = HikeGearEntity(context: context)
-                    hikeGearEntity.consumable = false
-                    hikeGearEntity.numberUnits = 1
-                    hikeGearEntity.notes = ""
-                    hikeGearEntity.verified = false
-                    hikeGearEntity.worn = false
-                    hikeGearEntity.hike = hikeEntity
-
-                    // Find the gear entity
-                    let gearFetch: NSFetchRequest<GearEntity> = GearEntity.fetchRequest()
-                    gearFetch.predicate = NSPredicate(format: "uuid == %@", gearId)
-                    if let gearEntity = try? context.fetch(gearFetch).first {
-                        hikeGearEntity.gear = gearEntity
-                    }
-                }
-            }
-
-            try context.save()
-            dismiss()
-        } catch {
-            print("Error saving selected gear: \(error)")
-        }
-    }
-}
-
-public struct GearSelectionRow: View {
-    let gear: GearSwiftUI
-    let isSelected: Bool
-    let onTap: () -> Void
-    
-    public var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(gear.name)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
-                
-                if !gear.desc.isEmpty {
-                    Text(gear.desc)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
-                }
-                
-                Text(formatWeight(gear.weightInGrams))
-                    .font(.caption)
-                    .foregroundColor(.blue)
-            }
-            
-            Spacer()
-            
-            if isSelected {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.blue)
-                    .font(.title3)
-            } else {
-                Image(systemName: "circle")
-                    .foregroundColor(.secondary)
-                    .font(.title3)
-            }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onTap()
-        }
-        .padding(.vertical, 4)
-    }
-    
-    private func formatWeight(_ weightInGrams: Double) -> String {
-        let settings = SettingsManagerSwiftUI.shared.settings
-        
-        if settings.imperial {
-            let ounces = weightInGrams * 0.035274
-            return String(format: "%.2f oz", ounces)
-        } else {
-            return String(format: "%.1f g", weightInGrams)
-        }
     }
 }
 
@@ -1432,37 +916,3 @@ enum SwiftUIFeature {
     case settings
 }
 
-// MARK: - Migration Status Tracker
-
-class MigrationStatusTracker {
-    static let shared = MigrationStatusTracker()
-    private init() {}
-    
-    // Simplified migration tracking
-    var completionPercentage: Double { return 100.0 } // Migration is complete
-    
-    func printMigrationStatus() {
-        #if DEBUG
-        print("SwiftUI Migration: 100% Complete")
-        #endif
-    }
-}
-
-// MARK: - SwiftUI Integration Test Helper
-
-class SwiftUIIntegrationTestHelper {
-    static let shared = SwiftUIIntegrationTestHelper()
-    private init() {}
-
-    func validateSwiftUIIntegration() -> Bool {
-        // Simple validation - just try to create key components
-        do {
-            let _ = SettingsManagerSwiftUI.shared
-            let _ = SwiftUIMigrationHelper.shared.createGearListViewController()
-            let _ = CoreDataStack.shared.viewContext
-            return true
-        } catch {
-            return false
-        }
-    }
-}

@@ -17,8 +17,9 @@ struct EditHikeGearView: View {
     @State private var verified: Bool = false
     @Environment(\.dismiss) private var dismiss
     
-    private var dataService = DataService.shared
-    
+    @ObservedObject private var dataService = DataService.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
+
     var body: some View {
         NavigationView {
             Form {
@@ -153,14 +154,7 @@ struct EditHikeGearView: View {
     }
     
     private func formatWeight(_ weightInGrams: Double) -> String {
-        let settings = SettingsManagerSwiftUI.shared.settings
-        
-        if settings.useImperialUnits {
-            let ounces = weightInGrams * 0.035274
-            return String(format: "%.2f oz", ounces)
-        } else {
-            return String(format: "%.1f g", weightInGrams)
-        }
+        settingsManager.formatWeight(weightInGrams)
     }
 }
 

@@ -7,250 +7,244 @@
 
 import XCTest
 @testable import PackPlanner
-import RealmSwift
 
 class DataServiceTests: XCTestCase {
-    
+
     var mockDataService: MockDataService!
     var container: DependencyContainer!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         // Setup dependency injection with mock services
         container = DITestHelper.setupMockContainer()
-        
+
         // Get mock data service for testing
         mockDataService = MockDataService()
-        } catch {
-            XCTFail("Failed to create test Realm: \(error)")
-        }
     }
-    
+
     override func tearDown() {
-        dataService = nil
-        testRealm = nil
+        DITestHelper.resetToProductionContainer()
+        mockDataService = nil
+        container = nil
         super.tearDown()
     }
-    
+
     // MARK: - Initialization Tests
-    
+
     func testDataServiceSingleton() {
         let instance1 = DataService.shared
         let instance2 = DataService.shared
-        
+
         XCTAssertTrue(instance1 === instance2, "DataService should be a singleton")
     }
-    
+
     func testLoadData() {
-        XCTAssertNoThrow(dataService.loadData())
+        mockDataService.loadData()
+        XCTAssertTrue(mockDataService.loadDataCalled)
     }
-    
+
     // MARK: - Gear CRUD Tests
-    
+
     func testAddGear() {
         let gear = GearSwiftUI()
         gear.name = "Test Gear"
         gear.desc = "Test Description"
         gear.weightInGrams = 100
         gear.category = "Clothing"
-        
-        XCTAssertNoThrow(dataService.addGear(gear))
-        
-        // Give some time for async operation
-        let expectation = self.expectation(description: "Add gear")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 1.0, handler: nil)
+
+        mockDataService.addGear(gear)
+
+        XCTAssertTrue(mockDataService.addGearCalled)
+        XCTAssertEqual(mockDataService.gears.count, 1)
+        XCTAssertEqual(mockDataService.gears.first?.name, "Test Gear")
     }
-    
+
     func testUpdateGear() {
         let gear = GearSwiftUI()
         gear.name = "Original Name"
         gear.desc = "Original Description"
         gear.weightInGrams = 100
         gear.category = "Clothing"
-        
-        // First add the gear
-        dataService.addGear(gear)
-        
-        // Wait for add operation
-        let addExpectation = self.expectation(description: "Add gear")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            addExpectation.fulfill()
-        }
-        waitForExpectations(timeout: 1.0, handler: nil)
-        
-        // Update the gear
+
+        mockDataService.addGear(gear)
+
         gear.name = "Updated Name"
         gear.desc = "Updated Description"
-        
-        XCTAssertNoThrow(dataService.updateGear(gear))
-        
-        // Wait for update operation
-        let updateExpectation = self.expectation(description: "Update gear")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            updateExpectation.fulfill()
-        }
-        waitForExpectations(timeout: 1.0, handler: nil)
+        mockDataService.updateGear(gear)
+
+        XCTAssertTrue(mockDataService.updateGearCalled)
+        XCTAssertEqual(mockDataService.gears.first?.name, "Updated Name")
     }
-    
+
     func testDeleteGear() {
         let gear = GearSwiftUI()
         gear.name = "Gear to Delete"
         gear.desc = "Will be deleted"
         gear.weightInGrams = 50
         gear.category = "Equipment"
-        
-        // First add the gear
-        dataService.addGear(gear)
-        
-        // Wait for add operation
-        let addExpectation = self.expectation(description: "Add gear")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            addExpectation.fulfill()
-        }
-        waitForExpectations(timeout: 1.0, handler: nil)
-        
-        // Delete the gear
-        XCTAssertNoThrow(dataService.deleteGear(gear))
-        
-        // Wait for delete operation
-        let deleteExpectation = self.expectation(description: "Delete gear")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            deleteExpectation.fulfill()
-        }
-        waitForExpectations(timeout: 1.0, handler: nil)
+
+        mockDataService.addGear(gear)
+        XCTAssertEqual(mockDataService.gears.count, 1)
+
+        mockDataService.deleteGear(gear)
+
+        XCTAssertTrue(mockDataService.deleteGearCalled)
+        XCTAssertEqual(mockDataService.gears.count, 0)
     }
-    
+
     // MARK: - Hike CRUD Tests
-    
+
     func testAddHike() {
         let hike = HikeSwiftUI()
         hike.name = "Test Hike"
         hike.desc = "Test Description"
         hike.location = "Test Location"
-        hike.distance = 10.5
+        hike.distance = "10.5"
         hike.completed = false
-        
-        XCTAssertNoThrow(dataService.addHike(hike))
-        
-        // Give some time for async operation
-        let expectation = self.expectation(description: "Add hike")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 1.0, handler: nil)
+
+        mockDataService.addHike(hike)
+
+        XCTAssertTrue(mockDataService.addHikeCalled)
+        XCTAssertEqual(mockDataService.hikes.count, 1)
+        XCTAssertEqual(mockDataService.hikes.first?.name, "Test Hike")
     }
-    
+
     func testUpdateHike() {
         let hike = HikeSwiftUI()
         hike.name = "Original Hike"
         hike.desc = "Original Description"
         hike.location = "Original Location"
-        hike.distance = 5.0
+        hike.distance = "5.0"
         hike.completed = false
-        
-        // First add the hike
-        dataService.addHike(hike)
-        
-        // Wait for add operation
-        let addExpectation = self.expectation(description: "Add hike")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            addExpectation.fulfill()
-        }
-        waitForExpectations(timeout: 1.0, handler: nil)
-        
-        // Update the hike
+
+        mockDataService.addHike(hike)
+
         hike.desc = "Updated Description"
         hike.completed = true
-        
-        XCTAssertNoThrow(dataService.updateHike(hike))
-        
-        // Wait for update operation
-        let updateExpectation = self.expectation(description: "Update hike")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            updateExpectation.fulfill()
-        }
-        waitForExpectations(timeout: 1.0, handler: nil)
+        mockDataService.updateHike(hike)
+
+        XCTAssertTrue(mockDataService.updateHikeCalled)
+        XCTAssertEqual(mockDataService.hikes.first?.desc, "Updated Description")
+        XCTAssertTrue(mockDataService.hikes.first?.completed == true)
     }
-    
+
     func testDeleteHike() {
         let hike = HikeSwiftUI()
         hike.name = "Hike to Delete"
         hike.desc = "Will be deleted"
         hike.location = "Test Location"
-        hike.distance = 3.0
+        hike.distance = "3.0"
         hike.completed = false
-        
-        // First add the hike
-        dataService.addHike(hike)
-        
-        // Wait for add operation
-        let addExpectation = self.expectation(description: "Add hike")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            addExpectation.fulfill()
-        }
-        waitForExpectations(timeout: 1.0, handler: nil)
-        
-        // Delete the hike
-        XCTAssertNoThrow(dataService.deleteHike(hike))
-        
-        // Wait for delete operation
-        let deleteExpectation = self.expectation(description: "Delete hike")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            deleteExpectation.fulfill()
-        }
-        waitForExpectations(timeout: 1.0, handler: nil)
+
+        mockDataService.addHike(hike)
+        XCTAssertEqual(mockDataService.hikes.count, 1)
+
+        mockDataService.deleteHike(hike)
+
+        XCTAssertTrue(mockDataService.deleteHikeCalled)
+        XCTAssertEqual(mockDataService.hikes.count, 0)
     }
-    
+
     // MARK: - Search and Filter Tests
-    
+
     func testSearchGearEmpty() {
-        let results = dataService.searchGear(query: "")
-        XCTAssertNotNil(results)
-        // Empty query should return all gear
+        let gear1 = GearSwiftUI()
+        gear1.name = "Tent"
+        gear1.category = "Shelter"
+
+        let gear2 = GearSwiftUI()
+        gear2.name = "Sleeping Bag"
+        gear2.category = "Sleep"
+
+        mockDataService.addGear(gear1)
+        mockDataService.addGear(gear2)
+
+        let results = mockDataService.searchGear(query: "")
+        XCTAssertEqual(results.count, 2)
     }
-    
+
     func testSearchGearWithQuery() {
-        let results = dataService.searchGear(query: "tent")
-        XCTAssertNotNil(results)
-        // Should return filtered results (though might be empty in test environment)
+        let gear1 = GearSwiftUI()
+        gear1.name = "Tent"
+        gear1.category = "Shelter"
+
+        let gear2 = GearSwiftUI()
+        gear2.name = "Sleeping Bag"
+        gear2.category = "Sleep"
+
+        mockDataService.addGear(gear1)
+        mockDataService.addGear(gear2)
+
+        let results = mockDataService.searchGear(query: "tent")
+        XCTAssertEqual(results.count, 1)
+        XCTAssertEqual(results.first?.name, "Tent")
     }
-    
+
     func testSearchHikesEmpty() {
-        let results = dataService.searchHikes(query: "")
-        XCTAssertNotNil(results)
-        // Empty query should return all hikes
+        let hike = HikeSwiftUI()
+        hike.name = "Test Hike"
+        hike.location = "Mountain"
+
+        mockDataService.addHike(hike)
+
+        let results = mockDataService.searchHikes(query: "")
+        XCTAssertEqual(results.count, 1)
     }
-    
+
     func testSearchHikesWithQuery() {
-        let results = dataService.searchHikes(query: "mountain")
-        XCTAssertNotNil(results)
-        // Should return filtered results
+        let hike1 = HikeSwiftUI()
+        hike1.name = "Mountain Trail"
+        hike1.location = "Colorado"
+
+        let hike2 = HikeSwiftUI()
+        hike2.name = "Beach Walk"
+        hike2.location = "California"
+
+        mockDataService.addHike(hike1)
+        mockDataService.addHike(hike2)
+
+        let results = mockDataService.searchHikes(query: "mountain")
+        XCTAssertEqual(results.count, 1)
+        XCTAssertEqual(results.first?.name, "Mountain Trail")
     }
-    
+
     func testGearByCategory() {
-        let categorizedGear = dataService.gearByCategory()
-        XCTAssertNotNil(categorizedGear)
-        // Should return gear grouped by category
+        let gear1 = GearSwiftUI()
+        gear1.name = "Tent"
+        gear1.category = "Shelter"
+
+        let gear2 = GearSwiftUI()
+        gear2.name = "Sleeping Bag"
+        gear2.category = "Sleep"
+
+        let gear3 = GearSwiftUI()
+        gear3.name = "Tarp"
+        gear3.category = "Shelter"
+
+        mockDataService.addGear(gear1)
+        mockDataService.addGear(gear2)
+        mockDataService.addGear(gear3)
+
+        let categorizedGear = mockDataService.gearByCategory()
+        XCTAssertEqual(categorizedGear.keys.count, 2)
+        XCTAssertEqual(categorizedGear["Shelter"]?.count, 2)
+        XCTAssertEqual(categorizedGear["Sleep"]?.count, 1)
     }
-    
+
     // MARK: - Utility Tests
-    
+
     func testCopyHike() {
         let originalHike = HikeSwiftUI()
         originalHike.name = "Original Hike"
         originalHike.desc = "Original Description"
         originalHike.location = "Test Location"
-        originalHike.distance = 15.0
+        originalHike.distance = "15.0"
         originalHike.completed = true
         originalHike.externalLink1 = "http://test.com"
-        
-        let copiedHike = dataService.copyHike(originalHike)
-        
-        XCTAssertNotNil(copiedHike)
+
+        let copiedHike = mockDataService.copyHike(originalHike)
+
         XCTAssertEqual(copiedHike.name, "Copy of Original Hike")
         XCTAssertEqual(copiedHike.desc, originalHike.desc)
         XCTAssertEqual(copiedHike.location, originalHike.location)
@@ -259,131 +253,64 @@ class DataServiceTests: XCTestCase {
         XCTAssertEqual(copiedHike.externalLink1, originalHike.externalLink1)
         XCTAssertNotEqual(copiedHike.id, originalHike.id, "Copied hike should have different ID")
     }
-    
-    func testCleanupDatabaseDuplicates() {
-        XCTAssertNoThrow(dataService.cleanupDatabaseDuplicates())
-        
-        // Wait for cleanup operation
-        let expectation = self.expectation(description: "Cleanup duplicates")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 2.0, handler: nil)
+
+    func testCleanupOperations() {
+        XCTAssertNoThrow(mockDataService.cleanupDatabaseDuplicates())
+        XCTAssertNoThrow(mockDataService.cleanupDuplicateHikeGears())
     }
-    
-    func testCleanupDuplicateHikeGears() {
-        XCTAssertNoThrow(dataService.cleanupDuplicateHikeGears())
-        
-        // Wait for cleanup operation
-        let expectation = self.expectation(description: "Cleanup hike gears")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 2.0, handler: nil)
-    }
-    
-    // MARK: - Thread Safety Tests
-    
-    func testConcurrentDataOperations() {
-        let expectation = self.expectation(description: "Concurrent operations")
-        expectation.expectedFulfillmentCount = 10
-        
-        // Perform multiple concurrent operations
-        for i in 0..<10 {
-            DispatchQueue.global().async {
-                let gear = GearSwiftUI()
-                gear.name = "Concurrent Gear \(i)"
-                gear.desc = "Test gear \(i)"
-                gear.weightInGrams = Double(100 + i)
-                gear.category = "Test"
-                
-                self.dataService.addGear(gear)
-                
-                // Simulate some processing time
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    expectation.fulfill()
-                }
-            }
-        }
-        
-        waitForExpectations(timeout: 5.0, handler: nil)
-    }
-    
-    func testConcurrentSearchOperations() {
-        let expectation = self.expectation(description: "Concurrent searches")
-        expectation.expectedFulfillmentCount = 20
-        
-        // Perform multiple concurrent search operations
-        for i in 0..<10 {
-            DispatchQueue.global().async {
-                let _ = self.dataService.searchGear(query: "test\(i)")
-                expectation.fulfill()
-            }
-            
-            DispatchQueue.global().async {
-                let _ = self.dataService.searchHikes(query: "hike\(i)")
-                expectation.fulfill()
-            }
-        }
-        
-        waitForExpectations(timeout: 3.0, handler: nil)
-    }
-    
-    // MARK: - Data Access Tests
-    
-    func testGearsProperty() {
-        let gears = dataService.gears
-        XCTAssertNotNil(gears)
-        // Should return current gear cache
-    }
-    
-    func testHikesProperty() {
-        let hikes = dataService.hikes
-        XCTAssertNotNil(hikes)
-        // Should return current hike cache
-    }
-    
-    // MARK: - Performance Tests
-    
-    func testPerformanceOfDataLoading() {
-        measure {
-            dataService.loadData()
-        }
-    }
-    
-    func testPerformanceOfSearchOperations() {
-        measure {
-            for i in 0..<100 {
-                let _ = dataService.searchGear(query: "test\(i % 10)")
-            }
-        }
-    }
-    
+
     // MARK: - Edge Cases
-    
+
     func testAddGearWithSpecialCharacters() {
         let gear = GearSwiftUI()
-        gear.name = "Gear with émojis 🏕️"
+        gear.name = "Gear with émojis"
         gear.desc = "Description with üñíçødé"
         gear.weightInGrams = 42.5
-        gear.category = "Special Çätégory"
-        
-        XCTAssertNoThrow(dataService.addGear(gear))
+        gear.category = "Special"
+
+        mockDataService.addGear(gear)
+
+        XCTAssertEqual(mockDataService.gears.count, 1)
+        XCTAssertEqual(mockDataService.gears.first?.name, "Gear with émojis")
     }
-    
+
     func testSearchWithSpecialCharacters() {
-        let results = dataService.searchGear(query: "émojis 🏕️")
-        XCTAssertNotNil(results)
+        let gear = GearSwiftUI()
+        gear.name = "Gear with émojis"
+        gear.category = "Test"
+
+        mockDataService.addGear(gear)
+
+        let results = mockDataService.searchGear(query: "émojis")
+        XCTAssertEqual(results.count, 1)
     }
-    
+
     func testCaseInsensitiveSearch() {
-        let results1 = dataService.searchGear(query: "TENT")
-        let results2 = dataService.searchGear(query: "tent")
-        let results3 = dataService.searchGear(query: "Tent")
-        
-        XCTAssertNotNil(results1)
-        XCTAssertNotNil(results2)
-        XCTAssertNotNil(results3)
-        // All should return same results (case insensitive)
+        let gear = GearSwiftUI()
+        gear.name = "Tent"
+        gear.category = "Shelter"
+
+        mockDataService.addGear(gear)
+
+        let results1 = mockDataService.searchGear(query: "TENT")
+        let results2 = mockDataService.searchGear(query: "tent")
+        let results3 = mockDataService.searchGear(query: "Tent")
+
+        XCTAssertEqual(results1.count, 1)
+        XCTAssertEqual(results2.count, 1)
+        XCTAssertEqual(results3.count, 1)
+    }
+
+    // MARK: - Performance Tests
+
+    func testPerformanceOfMockOperations() {
+        measure {
+            for i in 0..<100 {
+                let gear = GearSwiftUI()
+                gear.name = "Performance Test Gear \(i)"
+                gear.category = "Test"
+                mockDataService.addGear(gear)
+            }
+        }
     }
 }

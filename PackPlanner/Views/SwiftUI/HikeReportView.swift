@@ -9,13 +9,14 @@ import SwiftUI
 
 struct HikeReportView: View {
     let hike: HikeSwiftUI
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     @State private var selectedFilter = "Total weight"
     @State private var reportData: [String: Double] = [:]
     @State private var sortedKeys: [String] = []
     @Environment(\.dismiss) private var dismiss
-    
+
     private let filters = ["Total weight", "Base weight", "Consumable weight", "Worn weight"]
-    
+
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
@@ -25,8 +26,8 @@ struct HikeReportView: View {
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
-                    
-                    Text(formatWeight(totalWeight))
+
+                    Text(settingsManager.formatWeight(totalWeight))
                         .font(.title)
                         .fontWeight(.heavy)
                         .foregroundColor(.red)
@@ -34,13 +35,13 @@ struct HikeReportView: View {
                 .padding()
                 .background(Color(.systemGray6))
                 .cornerRadius(12)
-                
+
                 // Filter Picker
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Filter by:")
                         .font(.headline)
                         .foregroundColor(.secondary)
-                    
+
                     Picker("Weight Filter", selection: $selectedFilter) {
                         ForEach(filters, id: \.self) { filter in
                             Text(filter).tag(filter)
@@ -49,7 +50,7 @@ struct HikeReportView: View {
                     .pickerStyle(SegmentedPickerStyle())
                 }
                 .padding(.horizontal)
-                
+
                 // Report Table
                 List {
                     ForEach(sortedKeys, id: \.self) { key in
@@ -57,10 +58,10 @@ struct HikeReportView: View {
                             Text(key)
                                 .font(.body)
                                 .foregroundColor(.primary)
-                            
+
                             Spacer()
-                            
-                            Text(formatWeight(reportData[key] ?? 0))
+
+                            Text(settingsManager.formatWeight(reportData[key] ?? 0))
                                 .font(.body)
                                 .fontWeight(.medium)
                                 .foregroundColor(.secondary)
@@ -69,7 +70,7 @@ struct HikeReportView: View {
                     }
                 }
                 .listStyle(PlainListStyle())
-                
+
                 Spacer()
             }
             .padding()
@@ -81,7 +82,6 @@ struct HikeReportView: View {
                     Button("Dismiss") {
                         dismiss()
                     }
-                    .foregroundColor(.white)
                 }
             }
             .background(Color(.systemBackground))
@@ -93,69 +93,68 @@ struct HikeReportView: View {
             updateReportData()
         }
     }
-    
+
     private var totalWeight: Double {
         return calculateTotalWeight()
     }
-    
+
     private func updateReportData() {
-        let hikeBrain = HikeBrain(hike: hike.toLegacyHike())
-        var newReportData: [String: Double] = [:]
-        
-        switch selectedFilter {
-        case "Total weight":
-            newReportData = hikeBrain.getTotalWeightByCategoryInGrams()
-        case "Base weight":
-            newReportData = hikeBrain.getBaseWeightByCategoryInGrams()
-        case "Consumable weight":
-            newReportData = hikeBrain.getConsumableWeightByCategoryInGrams()
-        case "Worn weight":
-            newReportData = hikeBrain.getWornWeightByCategoryInGrams()
-        default:
-            newReportData = hikeBrain.getTotalWeightByCategoryInGrams()
+        var data: [String: Double] = [:]
+        let groupedGear = Dictionary(grouping: hike.hikeGears) { hikeGear in
+            hikeGear.gear?.category ?? "Unknown"
         }
-        
-        reportData = newReportData
-        sortedKeys = newReportData.keys.sorted()
+
+        for (category, gears) in groupedGear {
+            let categoryWeight = gears.reduce(0.0) { total, hikeGear in
+                guard let gear = hikeGear.gear else { return total }
+                let unitWeight = gear.weightInGrams * Double(hikeGear.numberUnits)
+
+                switch selectedFilter {
+                case "Base weight":
+                    return hikeGear.consumable || hikeGear.worn ? total : total + unitWeight
+                case "Consumable weight":
+                    return hikeGear.consumable ? total + unitWeight : total
+                case "Worn weight":
+                    return hikeGear.worn ? total + unitWeight : total
+                default:
+                    return total + unitWeight
+                }
+            }
+
+            if categoryWeight > 0 {
+                data[category] = categoryWeight
+            }
+        }
+
+        reportData = data
+        sortedKeys = data.keys.sorted { data[$0] ?? 0 > data[$1] ?? 0 }
     }
-    
+
     private func calculateTotalWeight() -> Double {
-        let hikeBrain = HikeBrain(hike: hike.toLegacyHike())
-        
-        switch selectedFilter {
-        case "Total weight":
-            return hikeBrain.getTotalWeightInGrams()
-        case "Base weight":
-            return hikeBrain.getBaseWeightInGrams()
-        case "Consumable weight":
-            return hikeBrain.getConsumableWeightInGrams()
-        case "Worn weight":
-            return hikeBrain.getWornWeightInGrams()
-        default:
-            return hikeBrain.getTotalWeightInGrams()
-        }
-    }
-    
-    private func formatWeight(_ weightInGrams: Double) -> String {
-        let settings = SettingsManagerSwiftUI.shared.settings
-        
-        if settings.useImperialUnits {
-            let ounces = weightInGrams * 0.035274
-            return String(format: "%.2f oz", ounces)
-        } else {
-            return String(format: "%.1f g", weightInGrams)
+        return hike.hikeGears.reduce(0) { total, hikeGear in
+            guard let gear = hikeGear.gear else { return total }
+            let unitWeight = gear.weightInGrams * Double(hikeGear.numberUnits)
+
+            switch selectedFilter {
+            case "Base weight":
+                return hikeGear.consumable || hikeGear.worn ? total : total + unitWeight
+            case "Consumable weight":
+                return hikeGear.consumable ? total + unitWeight : total
+            case "Worn weight":
+                return hikeGear.worn ? total + unitWeight : total
+            default:
+                return total + unitWeight
+            }
         }
     }
 }
 
-struct HikeReportView_Previews: PreviewProvider {
-    static var previews: some View {
-        let sampleHike = HikeSwiftUI()
-        sampleHike.name = "Sample Hike"
-        sampleHike.desc = "A sample hike for preview"
-        sampleHike.location = "Sample Location"
-        sampleHike.distance = 10.5
-        
-        return HikeReportView(hike: sampleHike)
-    }
+#Preview {
+    let sampleHike = HikeSwiftUI()
+    sampleHike.name = "Sample Hike"
+    sampleHike.desc = "A sample hike for preview"
+    sampleHike.location = "Sample Location"
+    sampleHike.distance = "10.5"
+
+    return HikeReportView(hike: sampleHike)
 }

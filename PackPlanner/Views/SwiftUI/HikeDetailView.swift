@@ -10,8 +10,8 @@ import CoreData
 
 struct HikeDetailView: View {
     @ObservedObject var hike: HikeSwiftUI
-    @StateObject private var dataService = DataService.shared
-    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var dataService = DataService.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     @State private var showingAddGear = false
     @State private var showPendingOnly = false
 
@@ -28,42 +28,6 @@ struct HikeDetailView: View {
     private var gearByCategory: [String: [HikeGearSwiftUI]] {
         Dictionary(grouping: filteredGears) { hikeGear in
             hikeGear.gear?.category ?? "Unknown"
-        }
-    }
-    
-    // Category icon helper
-    private func categoryIcon(for category: String) -> String {
-        switch category.lowercased() {
-        case "shelter": return "tent.fill"
-        case "sleeping": return "bed.double.fill"
-        case "cooking": return "flame.fill"
-        case "clothing": return "tshirt.fill"
-        case "hygiene": return "drop.fill"
-        case "electronics": return "bolt.fill"
-        case "safety", "first aid": return "cross.fill"
-        case "water": return "drop.triangle.fill"
-        case "food": return "fork.knife"
-        case "navigation": return "map.fill"
-        case "tools": return "wrench.and.screwdriver.fill"
-        default: return "square.grid.2x2.fill"
-        }
-    }
-    
-    // Category color helper
-    private func categoryColor(for category: String) -> Color {
-        switch category.lowercased() {
-        case "shelter": return .pink
-        case "sleeping": return .purple
-        case "cooking": return .orange
-        case "clothing": return .cyan
-        case "hygiene": return .green
-        case "electronics": return .yellow
-        case "safety", "first aid": return .red
-        case "water": return .blue
-        case "food": return .brown
-        case "navigation": return .indigo
-        case "tools": return .gray
-        default: return .gray
         }
     }
     
@@ -118,8 +82,8 @@ struct HikeDetailView: View {
                                     HikeGearRowView(
                                         hikeGear: hikeGear,
                                         hike: hike,
-                                        categoryIcon: categoryIcon(for: category),
-                                        categoryColor: categoryColor(for: category)
+                                        categoryIcon: category.categoryIcon,
+                                        categoryColor: category.categoryColor
                                     )
                                     .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                                     .listRowSeparator(.hidden)
@@ -131,8 +95,8 @@ struct HikeDetailView: View {
                                 }
                             } header: {
                                 HStack(spacing: 8) {
-                                    Image(systemName: categoryIcon(for: category))
-                                        .foregroundStyle(categoryColor(for: category))
+                                    Image(systemName: category.categoryIcon)
+                                        .foregroundStyle(category.categoryColor)
                                         .font(.headline)
                                     
                                     Text(category)
@@ -191,7 +155,7 @@ struct HikeDetailView: View {
         // Fetch the hike from Core Data to get updated gear list
         let context = CoreDataStack.shared.viewContext
         let fetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+        fetchRequest.predicate = NSPredicate(format: "uuid == %@", hike.id)
 
         do {
             if let hikeEntity = try context.fetch(fetchRequest).first {
@@ -226,7 +190,7 @@ struct HikeDetailView: View {
 
 struct HikeHeaderView: View {
     @ObservedObject var hike: HikeSwiftUI
-    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -295,7 +259,7 @@ struct WeightSummaryCard: View {
     let title: String
     let weight: Double
     let color: Color
-    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     
     var body: some View {
         VStack(spacing: 8) {
@@ -323,8 +287,8 @@ struct HikeGearRowView: View {
     let hike: HikeSwiftUI
     let categoryIcon: String
     let categoryColor: Color
-    @StateObject private var dataService = DataService.shared
-    @StateObject private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var dataService = DataService.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
 
     var body: some View {
         HStack(spacing: 12) {

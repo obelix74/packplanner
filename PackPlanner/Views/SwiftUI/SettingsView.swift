@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @State private var settingsManager = SettingsManagerSwiftUI.shared
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {

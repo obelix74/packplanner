@@ -151,6 +151,7 @@ class HikeSwiftUI: ObservableObject, Identifiable {
 extension HikeSwiftUI {
     convenience init(fromCoreData hike: HikeEntity) {
         self.init()
+        self.id = hike.uuid ?? UUID().uuidString
         self.name = hike.name
         self.desc = hike.desc
         self.distance = hike.distance

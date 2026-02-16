@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import os
 
 struct SwiftUIDemo: View {
     @State private var selectedTab = 0
@@ -33,24 +34,6 @@ struct SwiftUIDemo: View {
                 }
                 .tag(2)
         }
-        .onAppear {
-            // Test integration when view appears
-            testSwiftUIIntegration()
-        }
-    }
-    
-    private func testSwiftUIIntegration() {
-        let testHelper = SwiftUIIntegrationTestHelper.shared
-        let success = testHelper.validateSwiftUIIntegration()
-        
-        if success {
-            print("🎉 SwiftUI Integration Test PASSED!")
-        } else {
-            print("⚠️ SwiftUI Integration Test FAILED!")
-        }
-        
-        // Print migration status
-        MigrationStatusTracker.shared.printMigrationStatus()
     }
 }
 

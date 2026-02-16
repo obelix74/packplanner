@@ -125,7 +125,7 @@ struct AddGearToHikeView: View {
     private func saveSelectedGear() {
         // Find the hike in Core Data
         let hikeFetchRequest: NSFetchRequest<HikeEntity> = HikeEntity.fetchRequest()
-        hikeFetchRequest.predicate = NSPredicate(format: "name == %@", hike.name)
+        hikeFetchRequest.predicate = NSPredicate(format: "uuid == %@", hike.id)
 
         do {
             guard let hikeEntity = try context.fetch(hikeFetchRequest).first else {
@@ -133,17 +133,29 @@ struct AddGearToHikeView: View {
                 return
             }
 
-            // Get existing HikeGear relationships
             let existingHikeGears = (hikeEntity.hikeGears as? Set<HikeGearEntity>) ?? []
 
-            // Delete all existing HikeGear relationships
+            // Build a map of existing gear ID -> HikeGearEntity to preserve metadata
+            var existingByGearId: [String: HikeGearEntity] = [:]
             for hikeGear in existingHikeGears {
-                context.delete(hikeGear)
+                if let gearUUID = hikeGear.gear?.uuid {
+                    existingByGearId[gearUUID] = hikeGear
+                }
             }
 
-            // Create new HikeGear relationships for selected gear
+            // Delete only deselected gear (preserving metadata on kept items)
+            for (gearId, hikeGearEntity) in existingByGearId {
+                if !selectedGear.contains(gearId) {
+                    context.delete(hikeGearEntity)
+                }
+            }
+
+            // Add only newly selected gear
             for gearId in selectedGear {
-                // Find the gear in Core Data
+                if existingByGearId[gearId] != nil {
+                    continue // Already exists, keep it with its metadata
+                }
+
                 let gearFetchRequest: NSFetchRequest<GearEntity> = GearEntity.fetchRequest()
                 gearFetchRequest.predicate = NSPredicate(format: "uuid == %@", gearId)
 
@@ -159,12 +171,8 @@ struct AddGearToHikeView: View {
                 }
             }
 
-            // Save to Core Data
             try context.save()
-
-            DispatchQueue.main.async {
-                self.dismiss()
-            }
+            dismiss()
         } catch {
             // Silently handle error
         }
@@ -175,7 +183,8 @@ struct GearSelectionRow: View {
     let gear: GearSwiftUI
     let isSelected: Bool
     let onTap: () -> Void
-    
+    @ObservedObject private var settingsManager = SettingsManagerSwiftUI.shared
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
@@ -183,21 +192,21 @@ struct GearSelectionRow: View {
                     .font(.body)
                     .fontWeight(.medium)
                     .foregroundColor(.primary)
-                
+
                 if !gear.desc.isEmpty {
                     Text(gear.desc)
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(2)
                 }
-                
-                Text(formatWeight(gear.weightInGrams))
+
+                Text(settingsManager.formatWeight(gear.weightInGrams))
                     .font(.caption)
                     .foregroundColor(.blue)
             }
-            
+
             Spacer()
-            
+
             if isSelected {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.blue)
@@ -214,17 +223,6 @@ struct GearSelectionRow: View {
         }
         .padding(.vertical, 4)
     }
-    
-    private func formatWeight(_ weightInGrams: Double) -> String {
-        let settings = SettingsManagerSwiftUI.shared.settings
-
-        if settings.imperial {
-            let ounces = weightInGrams * 0.035274
-            return String(format: "%.2f oz", ounces)
-        } else {
-            return String(format: "%.1f g", weightInGrams)
-        }
-    }
 }
 
 struct AddGearToHikeView_Previews: PreviewProvider {
@@ -233,7 +231,7 @@ struct AddGearToHikeView_Previews: PreviewProvider {
         sampleHike.name = "Sample Hike"
         sampleHike.desc = "A sample hike for preview"
         sampleHike.location = "Sample Location"
-        sampleHike.distance = 10.5
+        sampleHike.distance = "10.5"
         
         return AddGearToHikeView(hike: sampleHike)
     }

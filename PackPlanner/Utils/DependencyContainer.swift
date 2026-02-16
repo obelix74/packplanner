@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import UIKit
+import os
 
 /**
  * DependencyContainer - Centralized dependency injection system for PackPlanner
@@ -105,8 +107,8 @@ class DependencyContainer {
      */
     func resolve<T>(_ type: T.Type) throws -> T {
         let key = String(describing: type)
-        
-        return try queue.sync { [weak self] in
+
+        return try queue.sync(flags: .barrier) { [weak self] in
             guard let self = self else {
                 throw DIError.containerNotAvailable
             }
@@ -150,7 +152,7 @@ class DependencyContainer {
             }
             
             guard let typedInstance = instance as? T else {
-                throw DIError.typeMismatch(expected: String(describing: T.self), actual: String(describing: type(of: instance)))
+                throw DIError.typeMismatch(expected: "\(T.self)", actual: "\(Swift.type(of: instance))")
             }
             
             return typedInstance
@@ -283,7 +285,7 @@ struct Injected<T> {
         do {
             return try container.resolve(T.self)
         } catch {
-            print("Critical: Dependency injection failed for \(T.self): \(error)")
+            Logger.app.error("Dependency injection failed for \(T.self): \(error)")
             preconditionFailure("Critical dependency injection failure for \(T.self). Please restart the app.")
         }
     }
